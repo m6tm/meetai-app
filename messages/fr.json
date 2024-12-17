@@ -1,0 +1,18 @@
+{
+    "Header": {
+        "about": "À propos",
+        "services": "Services",
+        "protfolio": "Protfolio",
+        "contact": "Contact"
+    },
+    "Footer": {
+        "about": "À propos",
+        "mentions": "Mentions légales",
+        "protfolio": "Protfolio",
+        "contact": "Contact"
+    },
+    "HomePage": {
+        "title": "Salut le monde!",
+        "about": "Aller à la page À propos"
+    }
+}
