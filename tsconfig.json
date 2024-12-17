@@ -19,7 +19,7 @@
             }
         ],
         "paths": {
-            "@minds/*": ["./src/*"],
+            "@ai/*": ["./src/*"],
             "@styles/*": ["./src/app/[locale]/styles/*"],
             "@images/*": ["./public/images/*"]
         }
