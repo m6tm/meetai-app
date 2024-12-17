@@ -9,8 +9,8 @@
  */
 'use client';
 
-import { Carousel, CarouselContent, CarouselItem } from '@minds/components/ui/carousel';
-import { TESTIMONIALS } from '@minds/utils/constants';
+import { Carousel, CarouselContent, CarouselItem } from '@ai/components/ui/carousel';
+import { TESTIMONIALS } from '@ai/utils/constants';
 import { Quote, Star, StarHalf } from 'lucide-react';
 import Image from 'next/image';
 import { isInteger } from 'lodash';

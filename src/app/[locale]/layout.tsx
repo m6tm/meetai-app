@@ -12,11 +12,11 @@ import localFont from 'next/font/local';
 import './globals.css';
 import '@styles/bg.css';
 import '@styles/general.css';
-import { ThemeProvider } from '@minds/components/theme-provider';
+import { ThemeProvider } from '@ai/components/theme-provider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { routing } from '@minds/i18n/routing';
+import { routing } from '@ai/i18n/routing';
 
 const fleurDeLeachRegular = localFont({
     src: './fonts/FleurDeLeah-Regular.ttf',

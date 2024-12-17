@@ -10,9 +10,9 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Input } from '@minds/components/ui/input';
-import { Label } from '@minds/components/ui/label';
-import { Button } from '@minds/components/ui/button';
+import { Input } from '@ai/components/ui/input';
+import { Label } from '@ai/components/ui/label';
+import { Button } from '@ai/components/ui/button';
 import { MailIcon, PhoneIcon } from 'lucide-react';
 
 export default function Footer() {

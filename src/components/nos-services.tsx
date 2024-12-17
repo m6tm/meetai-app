@@ -11,7 +11,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { buttonVariants } from './ui/button';
-import { NosServicesProps } from '@minds/types/components-props';
+import { NosServicesProps } from '@ai/types/components-props';
 
 export default function NosServices({ service }: NosServicesProps) {
     return (

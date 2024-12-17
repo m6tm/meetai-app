@@ -9,13 +9,13 @@
  */
 
 import React from 'react';
-import LayoutComponent from '@minds/components/layout';
+import LayoutComponent from '@ai/components/layout';
 import '@styles/animations.css';
-import HomeBanner from '@minds/components/banners/home-banner';
-import NosServices from '@minds/components/nos-services';
-import { SERVICES } from '@minds/utils/constants';
+import HomeBanner from '@ai/components/banners/home-banner';
+import NosServices from '@ai/components/nos-services';
+import { SERVICES } from '@ai/utils/constants';
 import Image from 'next/image';
-import Testimonials from '@minds/components/testimonials';
+import Testimonials from '@ai/components/testimonials';
 
 export async function generateMetadata() {
     return {

@@ -8,7 +8,7 @@
  * the prior written permission of Microminds Tech Ltd.
  */
 
-import { TServiceCollection, TTestimonialCollection } from '@minds/types/data';
+import { TServiceCollection, TTestimonialCollection } from '@ai/types/data';
 
 const SERVICES: TServiceCollection = [
     {
