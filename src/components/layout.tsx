@@ -1,11 +1,11 @@
 /**
  * Proprietary and Confidential
- * Copyright (c) 2024 Microminds Tech Ltd. All rights reserved.
+ * Copyright (c) 2024 Meet ai LLC. All rights reserved.
  *
  * This software and its documentation are the exclusive property of
- * Microminds Tech Ltd. No part of this software may be reproduced,
+ * Meet ai LLC. No part of this software may be reproduced,
  * distributed, or transmitted in any form or by any means without
- * the prior written permission of Microminds Tech Ltd.
+ * the prior written permission of Meet ai LLC.
  */
 'use client';
 import React, { useState } from 'react';
@@ -39,7 +39,7 @@ export default function LayoutComponent({ children }: { children: React.ReactNod
         <>
             <div className="h-[60px] backdrop-blur-md bg-secondary/50 sticky top-0 left-0 z-50 flex items-center justify-between px-10 md:px-[100px] lg:px-[200px]">
                 <Link href="/" className="flex items-center gap-2 font-bold select-none font-fleur-sans text-3xl">
-                    Minds Tech.
+                    Meet ai
                 </Link>
 
                 <ul className="list-none space-x-4 hidden md:block">
@@ -83,7 +83,7 @@ export default function LayoutComponent({ children }: { children: React.ReactNod
                     </div>
                 </div>
             </div>
-            <main className="pb-10">{children}</main>
+            <main className="pb-10 min-h-[80vh]">{children}</main>
             <Footer />
         </>
     );

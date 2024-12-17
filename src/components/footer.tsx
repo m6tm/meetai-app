@@ -1,11 +1,11 @@
 /**
  * Proprietary and Confidential
- * Copyright (c) 2024 Microminds Tech Ltd. All rights reserved.
+ * Copyright (c) 2024 Meet ai LLC. All rights reserved.
  *
  * This software and its documentation are the exclusive property of
- * Microminds Tech Ltd. No part of this software may be reproduced,
+ * Meet ai LLC. No part of this software may be reproduced,
  * distributed, or transmitted in any form or by any means without
- * the prior written permission of Microminds Tech Ltd.
+ * the prior written permission of Meet ai LLC.
  */
 
 import Link from 'next/link';
@@ -62,7 +62,7 @@ export default function Footer() {
             </div>
             <div className="md:col-span-2 lg:col-span-3 order-3">
                 <p className="text-white text-center text-sm">
-                    Copyright © 2024 Microminds Tech Ltd. All rights reserved.
+                    Copyright © 2024 Meet ai LLC. All rights reserved.
                 </p>
             </div>
         </footer>
