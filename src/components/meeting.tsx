@@ -15,12 +15,11 @@ import {
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
-    DropdownMenuShortcut,
     DropdownMenuTrigger,
   } from "@ui/dropdown-menu"
 import { Button } from '@ui/button'
 import { Input } from '@ui/input'
-import { Video } from 'lucide-react'
+import { Link, Plus, Video } from 'lucide-react'
 import ScheduleMeetingDialog from './meeting/schedule-meeting-dialog'
 
 export default function Meeting() {
@@ -47,12 +46,12 @@ export default function Meeting() {
                     <DropdownMenuContent>
                         <DropdownMenuGroup className='space-y-1'>
                             <DropdownMenuItem className='cursor-pointer' onClick={opendialog}>
+                                <Link />
                                 Créer une réunion pour une date ultérieure
-                                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                             </DropdownMenuItem>
                             <DropdownMenuItem className='cursor-pointer'>
+                                <Plus />
                                 Démarrer une réunion instantanée
-                                <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>

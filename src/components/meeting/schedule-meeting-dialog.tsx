@@ -10,6 +10,8 @@
 
 import React, { ButtonHTMLAttributes, forwardRef } from 'react';
 import { Button } from "@ui/button"
+import { Label } from "@ui/label"
+import { Input } from "@ui/input"
 import {
   Dialog,
   DialogClose,
@@ -29,101 +31,143 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@ui/popover"
-import { Calendar as CalendarIcon, Loader2 } from "lucide-react"
+import { Calendar as CalendarIcon, Check, Copy, Loader2 } from "lucide-react"
 
 const ScheduleMeetingDialog = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>((props, ref) => {
   const [scheduleDate, setScheduleDate] = React.useState<Date>();
   const [scheduling, setScheduling] = React.useState<boolean>(false);
-  const closeModalButtonRef = React.useRef<HTMLButtonElement>(null);
+  const [scheduled, setScheduled] = React.useState<boolean>(false);
+  const [copied, setCopied] = React.useState<boolean>(false);
+  const [meetingLink, setMeetingLink] = React.useState<string>('');
   const { toast } = useToast()
 
   async function handleScheduleMeeting() {
-        setScheduling(true);
-        setTimeout(() => {
-          setScheduling(false);
-          toast({
-                title: 'Réunion programmée',
-                description: `Votre réunion a été programmée pour le ${format(scheduleDate!, 'PPP')}.`,
-          })
-        }, 3000);
+    setScheduling(true);
+    const code_link = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const _meetingLink = `${process.env.NEXT_PUBLIC_URL_ORIGIN}/join/${code_link}`;
+    setMeetingLink(_meetingLink);
+    setTimeout(() => {
+      setScheduling(false);
+      setScheduled(true)
+      toast({
+            title: 'Réunion programmée',
+            description: `Votre réunion a été programmée pour le ${format(scheduleDate!, 'PPP')}.`,
+      })
+    }, 3000);
+  }
+
+  function copyLink() {
+    navigator.clipboard.writeText(meetingLink);
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 3000);
+  }
+
+  function dialogDisplayTrigger(open: boolean) {
+    if (open) {
+      setScheduleDate(undefined);
+      setMeetingLink('');
+      setScheduled(false);
+    }
   }
   
   return (
-    <Dialog>
+    <Dialog onOpenChange={dialogDisplayTrigger}>
       <DialogTrigger asChild>
         <Button variant={'ghost'} {...props} ref={ref} className='hidden'>Ouvrir la boite modale</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Programmer une réunion</DialogTitle>
-          <DialogDescription>
-            Définir une date et un temps pour votre réunion. Nous vous enverrons un e-mail de rappel.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
+          <DialogTitle>
             {
-              scheduling ? (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[280px] justify-start text-left font-normal",
-                        !scheduleDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {scheduleDate ? format(scheduleDate, "PPP") : <span>Choisir une date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={scheduleDate}
-                      onSelect={setScheduleDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+              !scheduled ? 'Programmer une réunion' : 'Partager le lien'
+            }
+          </DialogTitle>
+          <DialogDescription>
+            {
+              !scheduled ? (
+                'Définir une date et un temps pour votre réunion. Nous vous enverrons un e-mail de rappel.'
               ) : (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[280px] justify-start text-left font-normal",
-                        !scheduleDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {scheduleDate ? format(scheduleDate, "PPP") : <span>Choisir une date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={scheduleDate}
-                      onSelect={setScheduleDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                'Toutes les personnes ayant ce lien et les droits d\'accès pourront accéder.'
               )
             }
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant={'secondary'} disabled={!scheduleDate || scheduling} onClick={handleScheduleMeeting}>
-            {
-              scheduling && <Loader2 className="animate-spin" />
-            }
-            Programmer mainenant
-          </Button>
-          <DialogClose asChild>
-            <Button variant={'secondary'} className='hidden' ref={closeModalButtonRef}>close</Button>
-          </DialogClose>
-        </DialogFooter>
+          </DialogDescription>
+        </DialogHeader>
+        {
+          !scheduled ? (
+            <div className="grid gap-4 py-4 w-full">
+              <div className="grid grid-cols-4 items-center gap-4 w-full">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-[280px] justify-start text-left font-normal",
+                        !scheduleDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {scheduleDate ? format(scheduleDate, "PPP") : <span>Choisir une date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={scheduleDate}
+                      onSelect={setScheduleDate}
+                      disabled={(date) => date < new Date()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <div className="grid flex-1 gap-2">
+                <Label htmlFor="link" className="sr-only">
+                  Link
+                </Label>
+                <Input
+                  id="link"
+                  value={meetingLink}
+                  readOnly
+                />
+              </div>
+              <Button type="submit" size="sm" onClick={copyLink} className="px-3">
+                <span className="sr-only">Copy</span>
+                {
+                  copied ? (
+                    <Check />
+                  ) : (
+                    <Copy />
+                  )
+                }
+              </Button>
+            </div>
+          )
+        }
+        {
+          !scheduled ? (
+            <DialogFooter>
+              <Button variant={'secondary'} disabled={!scheduleDate || scheduling} onClick={handleScheduleMeeting}>
+                {
+                  scheduling && <Loader2 className="animate-spin" />
+                }
+                Programmer mainenant
+              </Button>
+            </DialogFooter>
+          ) : (
+            <DialogFooter className="sm:justify-start">
+              <DialogClose asChild>
+                  <Button type="button" variant="secondary">
+                  Close
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          )
+        }
       </DialogContent>
     </Dialog>
   )

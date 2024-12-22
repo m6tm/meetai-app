@@ -17,6 +17,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@ai/i18n/routing';
+import { Toaster } from "@ui/toaster"
 
 const fleurDeLeachRegular = localFont({
     src: './fonts/FleurDeLeah-Regular.ttf',
@@ -52,6 +53,7 @@ export default async function RootLayout(
     const { locale } = params;
     const { children } = props;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!routing.locales.includes(locale as any)) {
         notFound();
     }
@@ -63,6 +65,7 @@ export default async function RootLayout(
             >
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
                     <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+                    <Toaster />
                 </ThemeProvider>
             </body>
         </html>
