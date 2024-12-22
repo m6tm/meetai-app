@@ -21,7 +21,10 @@
         "paths": {
             "@ai/*": ["./src/*"],
             "@styles/*": ["./src/app/[locale]/styles/*"],
-            "@images/*": ["./public/images/*"]
+            "@images/*": ["./public/images/*"],
+            "@ui/*": ["./src/components/ui/*"],
+            "@lib/*": ["./src/lib/*"],
+            "@hooks/*": ["./src/hooks/*"]
         }
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/i18n.js"],

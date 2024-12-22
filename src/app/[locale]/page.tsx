@@ -11,16 +11,13 @@
 import React from 'react';
 import LayoutComponent from '@ai/components/layout';
 import '@styles/animations.css';
-// import HomeBanner from '@ai/components/banners/home-banner';
-// import NosServices from '@ai/components/nos-services';
-// import { SERVICES } from '@ai/utils/constants';
-// import Image from 'next/image';
-// import Testimonials from '@ai/components/testimonials';
+import MeetingSideBar from '@ai/components/meeting-sidebar';
+import Meeting from '@ai/components/meeting';
 
 export async function generateMetadata() {
     return {
-        title: 'Meet ai LLC',
-        description: 'Meet ai LLC - Empowering Innovation Through Technology',
+        title: 'Meet ai LLC - Visioconference',
+        description: 'Meet ai LLC - Appels vidéo et visioconferences pour tous',
     };
 }
 
@@ -28,7 +25,10 @@ export default function Home() {
     // const services = SERVICES;
     return (
         <LayoutComponent>
-            <div className=""></div>
+            <div className="lg:flex">
+                <MeetingSideBar />
+                <Meeting />
+            </div>
         </LayoutComponent>
     );
 }

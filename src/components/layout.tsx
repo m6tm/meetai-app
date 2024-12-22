@@ -16,19 +16,11 @@ import Footer from './footer';
 
 const pages = [
     {
-        name: 'Services',
+        name: 'Pricing',
         href: '/',
     },
     {
-        name: 'Portfolio',
-        href: '/',
-    },
-    {
-        name: 'Contact',
-        href: '/',
-    },
-    {
-        name: 'À propos',
+        name: 'Connexion',
         href: '/',
     },
 ];
