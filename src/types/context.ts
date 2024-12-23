@@ -13,4 +13,6 @@ import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 export type TAppContext = {
     meetPanel: MEET_PANEL_TYPE,
     setMeetPanel: (meetPanel: MEET_PANEL_TYPE) => void,
+    autoriseMessage: boolean,
+    setAutoriseMessage: (autoriserMessage: boolean) => void,
 }

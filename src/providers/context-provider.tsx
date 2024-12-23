@@ -15,10 +15,13 @@ import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 
 export default function ContextProvider({ children }: { children: React.ReactNode; }) {
     const [meetPanel, setMeetPanel] = React.useState<MEET_PANEL_TYPE>(MEET_PANEL_TYPE.NONE);
+    const [autoriseMessage, setAutoriseMessage] = React.useState<boolean>(true);
 
     const context: TAppContext = {
         meetPanel,
         setMeetPanel,
+        autoriseMessage,
+        setAutoriseMessage
     }
     
     return (

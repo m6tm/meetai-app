@@ -14,6 +14,7 @@ import ControlPanel from "@ai/components/meeting/control-panel";
 import MeetDataFirst from "@ai/components/meeting/meet-data-first";
 import MeetDataInfo from "@ai/components/meeting/meet-data-info";
 import Participant from "@ai/components/meeting/participant";
+import MeetMessage from "@ai/components/meeting/meet-message";
 
 export default async function Meeting({ params }: { params: Promise<{ code: string }> }) {
     const code = (await params).code
@@ -24,6 +25,7 @@ export default async function Meeting({ params }: { params: Promise<{ code: stri
             <MeetDataFirst {...{ code }} />
             <MeetDataInfo {...{ code }} />
             <Participant />
+            <MeetMessage />
         </div>
     )
 }

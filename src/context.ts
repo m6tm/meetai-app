@@ -15,9 +15,13 @@ import { TAppContext } from "./types/context";
 const AppContext: Context<TAppContext> = createContext<{
     meetPanel: MEET_PANEL_TYPE,
     setMeetPanel: (meetPanel: MEET_PANEL_TYPE) => void,
+    autoriseMessage: boolean,
+    setAutoriseMessage: (autoriseMessage: boolean) => void
 }>({
     meetPanel: MEET_PANEL_TYPE.NONE,
     setMeetPanel: () => { },
+    autoriseMessage: true,
+    setAutoriseMessage: () => { }
 })
 
 export default AppContext

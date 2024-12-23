@@ -1,0 +1,16 @@
+.messages {
+    @apply flex-grow flex flex-col space-y-2;
+}
+
+.message-section {
+    @apply h-full w-full overflow-y-auto;
+}
+
+.input-section {
+    @apply rounded-[3rem] w-full bg-secondary flex items-center justify-between space-x-2 px-2;
+}
+
+.input-section textarea {
+    @apply bg-violet-100 outline-none border-none border-transparent focus:ring-0 focus:border-transparent focus:ring-offset-0 shadow-none;
+    @apply resize-none max-h-40 min-h-3;
+}
