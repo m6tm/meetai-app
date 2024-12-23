@@ -3,7 +3,12 @@
 }
 
 .message-section {
-    @apply h-full w-full overflow-y-auto;
+    @apply w-full overflow-y-auto;
+    height: calc(100% - 6rem);
+}
+
+.message-section::-webkit-scrollbar {
+    display: none;
 }
 
 .input-section {

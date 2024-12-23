@@ -21,6 +21,72 @@ import '@styles/messages.css'
 import { cn } from "@ai/lib/utils";
 import TextareaAutosize from 'react-textarea-autosize';
 
+const MESSAGES = [
+    {
+        id: 1,
+        message: "Bonjour tout le monde!",
+        date: new Date(),
+        author: "Alice Martin",
+        isAuthor: false,
+    },
+    {
+        id: 2,
+        message: "Salut Alice, comment vas-tu?",
+        date: new Date(),
+        author: "Thomas Dubois",
+        isAuthor: true,
+    },
+    {
+        id: 3,
+        message: "Je me joins à la discussion",
+        date: new Date(),
+        author: "Marie Lambert",
+        isAuthor: false,
+    },
+    {
+        id: 4,
+        message: "Bienvenue Marie!",
+        date: new Date(),
+        author: "Sophie Bernard",
+        isAuthor: false,
+    },
+    {
+        id: 5,
+        message: "Bonjour à tous!",
+        date: new Date(),
+        author: "Alice Martin",
+        isAuthor: false,
+    },
+    {
+        id: 6,
+        message: "Salut à tous!",
+        date: new Date(),
+        author: "Thomas Dubois",
+        isAuthor: true,
+    },
+    {
+        id: 7,
+        message: "Je me joins à la discussion",
+        date: new Date(),
+        author: "Marie Lambert",
+        isAuthor: false,
+    },
+    {
+        id: 8,
+        message: "Bienvenue Marie!",
+        date: new Date(),
+        author: "Sophie Bernard",
+        isAuthor: false,
+    },
+    {
+        id: 9,
+        message: "Bonjour à tous!",
+        date: new Date(),
+        author: "Alice Martin",
+        isAuthor: false,
+    }
+]
+
 export default function MeetMessage() {
     const {
         setMeetPanel,
@@ -49,6 +115,22 @@ export default function MeetMessage() {
             </div>
             <div className="messages">
                 <div className="message-section">
+                    <ul>
+                        {
+                            MESSAGES.map((message) => (
+                                <li key={message.id} className={cn("flex flex-col mb-4", message.isAuthor ? 'items-end' : 'items-start')}>
+                                    <div className={cn("max-w-[80%] rounded-lg px-4 py-2", 
+                                        message.isAuthor ? 'bg-gradient-to-br from-blue-400 to-blue-600 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-300')}>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="font-medium text-sm">{message.author}</span>
+                                            <span className="text-xs opacity-70">{message.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        </div>
+                                        <div className="text-sm">{message.message}</div>
+                                    </div>
+                                </li>
+                            ))
+                        }
+                    </ul>
                 </div>
                 <div className={cn("input-section")}>
                     <TextareaAutosize className="w-full" placeholder="Votre message ..." />
