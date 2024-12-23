@@ -17,12 +17,15 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
   } from "@ui/dropdown-menu"
-import { Button } from '@ui/button'
+  import { cn } from "@lib/utils"
+import { Button, buttonVariants } from '@ui/button'
 import { Input } from '@ui/input'
-import { Link, Plus, Video } from 'lucide-react'
+import { Link as ILink, Plus, Video } from 'lucide-react'
 import ScheduleMeetingDialog from './meeting/schedule-meeting-dialog'
+import { useRouter } from 'next/navigation'
 
 export default function Meeting() {
+    const router = useRouter()
     const [input, setInput] = React.useState("");
     const newSheduleRef = React.useRef<HTMLButtonElement>(null);
 
@@ -32,6 +35,14 @@ export default function Meeting() {
     }
 
     const opendialog = () => newSheduleRef.current?.click()
+
+    function getLinkCode() {
+        const origin: string = process.env.NEXT_PUBLIC_URL_ORIGIN as never
+        const regex = new RegExp(`^(${origin})`)
+        if (!regex.test(input)) return input
+        const code = input.replace(`${origin}/join/`, '').trim()
+        return code
+    }
     
     return (
         <div className="flex flex-col h-full w-full">
@@ -46,7 +57,7 @@ export default function Meeting() {
                     <DropdownMenuContent>
                         <DropdownMenuGroup className='space-y-1'>
                             <DropdownMenuItem className='cursor-pointer' onClick={opendialog}>
-                                <Link />
+                                <ILink />
                                 Créer une réunion pour une date ultérieure
                             </DropdownMenuItem>
                             <DropdownMenuItem className='cursor-pointer'>
@@ -58,7 +69,9 @@ export default function Meeting() {
                 </DropdownMenu>
                 <ScheduleMeetingDialog ref={newSheduleRef} />
                 <Input type="url" value={input} onChange={changeLinkInput} placeholder="Saisir un code ou un lien" className="max-w-sm" />
-                <Button variant="secondary" disabled={input.length === 0}>Participer</Button>
+                <Button
+                    className={cn(`${buttonVariants({ variant: "secondary" })} ${input.length <= 0 && 'pointer-events-none select-none bg-secondary/50'}`)}
+                    onClick={() => router.push(`/fr/meet/${getLinkCode()}`)}>Participer</Button>
             </div>
         </div>
     )

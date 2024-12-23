@@ -35,6 +35,7 @@ import { Calendar as CalendarIcon, Check, Copy, Loader2 } from "lucide-react"
 
 const ScheduleMeetingDialog = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>((props, ref) => {
   const [scheduleDate, setScheduleDate] = React.useState<Date>();
+  const [scheduleHour, setScheduleHour] = React.useState<string>('');
   const [scheduling, setScheduling] = React.useState<boolean>(false);
   const [scheduled, setScheduled] = React.useState<boolean>(false);
   const [copied, setCopied] = React.useState<boolean>(false);
@@ -51,7 +52,7 @@ const ScheduleMeetingDialog = forwardRef<HTMLButtonElement, ButtonHTMLAttributes
       setScheduled(true)
       toast({
             title: 'Réunion programmée',
-            description: `Votre réunion a été programmée pour le ${format(scheduleDate!, 'PPP')}.`,
+            description: `Votre réunion a été programmée pour le ${format(scheduleDate!, 'PPP')} à ${scheduleHour}.`,
       })
     }, 3000);
   }
@@ -61,7 +62,7 @@ const ScheduleMeetingDialog = forwardRef<HTMLButtonElement, ButtonHTMLAttributes
     setCopied(true);
     setTimeout(() => {
       setCopied(false);
-    }, 3000);
+    }, 2000);
   }
 
   function dialogDisplayTrigger(open: boolean) {
@@ -96,8 +97,8 @@ const ScheduleMeetingDialog = forwardRef<HTMLButtonElement, ButtonHTMLAttributes
         </DialogHeader>
         {
           !scheduled ? (
-            <div className="grid gap-4 py-4 w-full">
-              <div className="grid grid-cols-4 items-center gap-4 w-full">
+            <div className="py-4 w-full">
+              <div className="flex items-start justify-start flex-col w-full space-y-2">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -121,6 +122,8 @@ const ScheduleMeetingDialog = forwardRef<HTMLButtonElement, ButtonHTMLAttributes
                     />
                   </PopoverContent>
                 </Popover>
+                <span className='ms-4'>&Agrave;</span>
+                <Input type='time' value={scheduleHour} onChange={e => setScheduleHour(e.target?.value)} name='time' className='w-32' />
               </div>
             </div>
           ) : (
@@ -151,7 +154,7 @@ const ScheduleMeetingDialog = forwardRef<HTMLButtonElement, ButtonHTMLAttributes
         {
           !scheduled ? (
             <DialogFooter>
-              <Button variant={'secondary'} disabled={!scheduleDate || scheduling} onClick={handleScheduleMeeting}>
+              <Button variant={'secondary'} disabled={!scheduleDate || scheduleHour.length === 0 || scheduling} onClick={handleScheduleMeeting}>
                 {
                   scheduling && <Loader2 className="animate-spin" />
                 }

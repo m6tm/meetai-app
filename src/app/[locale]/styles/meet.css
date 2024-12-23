@@ -1,0 +1,91 @@
+.control-bar {
+    @apply absolute bottom-0 backdrop-blur-md bg-white/25 h-16 rounded-full flex justify-between items-center px-4 text-white font-extrabold;
+    width: calc(100% - 2rem);
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+}
+
+.media-control {
+    width: calc(45px * 2);
+    height: 45px;
+    background-color: #6d6d6d;
+    border-radius: calc(45px / 2);
+    display: flex;
+}
+
+.media-control > * {
+    width: 45px;
+    height: 45px;
+    border-radius: 100%;
+    @apply flex justify-center items-center;
+}
+
+.media-control > *:last-child:not(.muted) {
+    background-color: #858585;
+    transition: 0.3s ease-in;
+}
+
+.media-control > *:last-child:hover:not(.muted) {
+    background-color: #969696;
+}
+
+.media-control > *:last-child.muted {
+    @apply bg-orange-700;
+    transition: 0.3s ease-in;
+}
+
+.media-control > *:last-child:hover.muted {
+    @apply bg-orange-600;
+}
+
+.other-control-primary {
+    width: 45px;
+    height: 45px;
+    border-radius: 100%;
+    background-color: #858585;
+    transition: 0.3s ease-in;
+}
+
+.other-control-primary:hover {
+    background-color: #969696;
+}
+
+.other-control-secondary {
+    width: calc(45px * 2);
+    height: 45px;
+    border-radius: calc(45px / 2);
+    transition: 0.3s ease-in;
+    @apply bg-orange-700;
+}
+
+.other-control-secondary:hover {
+    @apply bg-orange-600;
+}
+
+.second-panel {
+    width: 45px;
+    height: 45px;
+    border-radius: calc(45px / 2);
+    background-color: #6d6d6d;
+    transition: 0.3s ease-in;
+    position: relative;
+}
+
+.second-panel:hover {
+    background-color: #858585;
+}
+
+.second-panel.active {
+    background-color: #858585;
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 23px;
+    height: 23px;
+    background-color: #969696;
+    @apply flex items-center justify-center rounded-full;
+}
