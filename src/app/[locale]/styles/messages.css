@@ -7,10 +7,14 @@
 }
 
 .input-section {
-    @apply rounded-[3rem] w-full bg-secondary flex items-center justify-between space-x-2 px-2;
+    @apply rounded-[2rem] overflow-hidden py-2 w-full bg-secondary flex items-center justify-between space-x-2 px-2;
 }
 
 .input-section textarea {
-    @apply bg-violet-100 outline-none border-none border-transparent focus:ring-0 focus:border-transparent focus:ring-offset-0 shadow-none;
-    @apply resize-none max-h-40 min-h-3;
+    @apply bg-transparent outline-none border-none border-transparent focus:ring-0 focus:border-transparent focus:ring-offset-0 shadow-none;
+    @apply resize-none max-h-32 min-h-3 px-3;
+}
+
+.input-section textarea::-webkit-scrollbar {
+    display: none;
 }

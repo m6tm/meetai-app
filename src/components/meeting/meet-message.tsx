@@ -12,7 +12,6 @@
 import React from "react";
 import { Button } from '@ui/button'
 import { Label } from '@ui/label'
-import { Textarea } from '@ui/textarea'
 import { SendHorizonal, X } from "lucide-react";
 import { TAppContext } from "@ai/types/context";
 import AppContext from "@ai/context";
@@ -20,6 +19,7 @@ import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { Switch } from "@ui/switch"
 import '@styles/messages.css'
 import { cn } from "@ai/lib/utils";
+import TextareaAutosize from 'react-textarea-autosize';
 
 export default function MeetMessage() {
     const {
@@ -29,21 +29,6 @@ export default function MeetMessage() {
         setAutoriseMessage,
     } = React.useContext<TAppContext>(AppContext);
     // const [message, setMessage] = React.useState<string>('')
-    const [textareaHeight, setTextareaHeight] = React.useState<number>(30)
-
-    let previousHeight = 30
-    function onInput(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-        if (e.key !== 'Enter' && e.key !== 'Backspace') return
-        const target = e.currentTarget
-        const currentHeight = target.scrollHeight
-        previousHeight = parseInt(target.style.height)
-        
-        target.style.height = '30px'
-        if (currentHeight > previousHeight) {
-            const newHeight = Math.max(30, currentHeight)
-            setTextareaHeight(newHeight)
-        }
-    }
     
     return meetPanel === MEET_PANEL_TYPE.MESSAGES && (
         <div className="absolute bg-white w-[350px] flex flex-col rounded-lg space-y-4 bottom-24 right-4 p-5 full-height">
@@ -63,14 +48,10 @@ export default function MeetMessage() {
                     onCheckedChange={() => setAutoriseMessage(!autoriseMessage)} />
             </div>
             <div className="messages">
-                <div className="message-section"></div>
-                <div className={cn("input-section", `h-[${textareaHeight}px]`)}>
-                    <Textarea
-                        rows={1} 
-                        className="resize-none" 
-                        onKeyUp={onInput}
-                        style={{ height: `${textareaHeight}px` }} 
-                    />
+                <div className="message-section">
+                </div>
+                <div className={cn("input-section")}>
+                    <TextareaAutosize className="w-full" placeholder="Votre message ..." />
                     <Button variant={'ghost'} className="size-10 rounded-full">
                         <SendHorizonal />
                     </Button>
