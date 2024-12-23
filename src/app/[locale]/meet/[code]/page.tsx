@@ -12,6 +12,8 @@ import React from "react";
 import '@styles/meet.css'
 import ControlPanel from "@ai/components/meeting/control-panel";
 import MeetDataFirst from "@ai/components/meeting/meet-data-first";
+import MeetDataInfo from "@ai/components/meeting/meet-data-info";
+import Participant from "@ai/components/meeting/participant";
 
 export default async function Meeting({ params }: { params: Promise<{ code: string }> }) {
     const code = (await params).code
@@ -19,7 +21,9 @@ export default async function Meeting({ params }: { params: Promise<{ code: stri
     return (
         <div className="flex flex-col h-screen w-full bg-neutral-800 relative select-none">
             <ControlPanel />
-            <MeetDataFirst {...{code}} />
+            <MeetDataFirst {...{ code }} />
+            <MeetDataInfo {...{ code }} />
+            <Participant />
         </div>
     )
 }

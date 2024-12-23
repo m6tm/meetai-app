@@ -24,7 +24,8 @@
             "@images/*": ["./public/images/*"],
             "@ui/*": ["./src/components/ui/*"],
             "@lib/*": ["./src/lib/*"],
-            "@hooks/*": ["./src/hooks/*"]
+            "@hooks/*": ["./src/hooks/*"],
+            "@enums/*": ["./src/enums/*"],
         }
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/i18n.js"],

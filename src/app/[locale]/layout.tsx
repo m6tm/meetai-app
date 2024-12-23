@@ -18,6 +18,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@ai/i18n/routing';
 import { Toaster } from "@ui/toaster"
+import ContextProvider from '@ai/providers/context-provider';
 
 const fleurDeLeachRegular = localFont({
     src: './fonts/FleurDeLeah-Regular.ttf',
@@ -63,10 +64,12 @@ export default async function RootLayout(
             <body
                 className={`${kleeOneRegular.variable} ${kleeOneSemiBold.variable} ${fleurDeLeachRegular.variable} antialiased`}
             >
-                <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                    <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
-                    <Toaster />
-                </ThemeProvider>
+                <ContextProvider>
+                    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+                        <Toaster />
+                    </ThemeProvider>
+                </ContextProvider>
             </body>
         </html>
     );

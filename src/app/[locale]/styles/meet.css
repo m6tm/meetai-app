@@ -89,3 +89,7 @@
     background-color: #969696;
     @apply flex items-center justify-center rounded-full;
 }
+
+.full-height {
+    height: calc(100vh - 7rem);
+}

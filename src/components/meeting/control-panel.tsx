@@ -8,12 +8,17 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client"
-import React from "react";
+import React, { useContext } from "react";
 import { Button } from "@ui/button"
 import { ChevronUp, Hand, Info, MessageSquare, Mic, MonitorUp, PhoneOff, Users, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { TAppContext } from "@ai/types/context";
+import AppContext from "@ai/context";
+import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
+import { cn } from "@ai/lib/utils";
 
 export default function ControlPanel() {
+    const { setMeetPanel, meetPanel } = useContext<TAppContext>(AppContext)
     const router = useRouter()
     return (
         <div className="control-bar">
@@ -49,14 +54,20 @@ export default function ControlPanel() {
                 </Button>
             </div>
             <div className="flex space-x-4">
-                <Button className="second-panel">
+                <Button
+                    className={cn(`second-panel${meetPanel === MEET_PANEL_TYPE.INFOS ? ' active' : ''}`)}
+                    onClick={() => setMeetPanel(MEET_PANEL_TYPE.INFOS)}>
                     <Info />
                 </Button>
-                <Button className="second-panel">
+                <Button
+                    className={cn(`second-panel${meetPanel === MEET_PANEL_TYPE.USERS ? ' active' : ''}`)}
+                    onClick={() => setMeetPanel(MEET_PANEL_TYPE.USERS)}>
                     <div className="badge">1</div>
                     <Users />
                 </Button>
-                <Button className="second-panel">
+                <Button
+                    className={cn(`second-panel${meetPanel === MEET_PANEL_TYPE.MESSAGES ? ' active' : ''}`)}
+                    onClick={() => setMeetPanel(MEET_PANEL_TYPE.MESSAGES)}>
                     <div className="badge">3</div>
                     <MessageSquare />
                 </Button>

@@ -9,3 +9,7 @@
 .active {
     @apply bg-secondary/50;
 }
+
+.decoration-none {
+    text-decoration: none !important;
+}
