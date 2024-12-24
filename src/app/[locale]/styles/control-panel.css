@@ -1,0 +1,10 @@
+.control-panel {
+    @apply absolute h-12 mx-auto bg-slate-500 left-0 right-0 rounded-full;
+    bottom: calc(100% + 0.5rem);
+    width: 300px;
+    padding: 0.5rem;
+}
+
+.control-panel .control-panel-btn {
+    @apply bg-slate-200 rounded-full text-black h-full w-full;
+}

@@ -80,14 +80,22 @@ const USERS = [
 
 export default function VideoScreen({ className }: { className?: string; }) {
     const videoRef = React.useRef<HTMLVideoElement>(null);
+    const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
     const user = USERS.find(user => user.isHost);
+
+    function fullScreen() {
+        if (!mainVideoScreenRef.current) return
+        mainVideoScreenRef.current.requestFullscreen({
+            navigationUI: 'auto',
+        });
+    }
 
     return (
         <div className="w-full h-full relative z-0">
             {
                 user && (
                     <div className="main-screen">
-                        <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full">
+                        <div ref={mainVideoScreenRef} className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full bg-slate-600">
                             <Avatar className="size-36">
                                 <AvatarImage src={user.avatar} alt={`Logo de ${user.name}`} />
                                 <AvatarFallback className="uppercase">{ user.name.slice(0, 2) }</AvatarFallback>
@@ -118,7 +126,7 @@ export default function VideoScreen({ className }: { className?: string; }) {
                                             Retirer de la réunion
                                             <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem className="cursor-pointer">
+                                        <DropdownMenuItem className="cursor-pointer" onClick={fullScreen}>
                                             Mettre en plein écran
                                             <DropdownMenuShortcut>⌘M</DropdownMenuShortcut>
                                         </DropdownMenuItem>

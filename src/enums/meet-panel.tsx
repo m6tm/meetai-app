@@ -14,3 +14,9 @@ export enum MEET_PANEL_TYPE {
     USERS = 1,
     MESSAGES = 2,
 }
+
+export enum MEDIA_CONTROL_TYPE {
+    NONE = -1,
+    VIDEO = 0,
+    AUDIO = 1,
+}

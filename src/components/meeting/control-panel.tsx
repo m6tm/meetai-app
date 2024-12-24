@@ -10,34 +10,52 @@
 "use client"
 import React, { useContext } from "react";
 import { Button } from "@ui/button"
-import { ChevronUp, Hand, Info, MessageSquare, Mic, MonitorUp, PhoneOff, Users, Video } from "lucide-react";
+import { ChevronDown, ChevronUp, Hand, Info, MessageSquare, Mic, MonitorUp, PhoneOff, Users, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { TAppContext } from "@ai/types/context";
 import AppContext from "@ai/context";
-import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
+import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { cn } from "@ai/lib/utils";
+import ControlPanelMediaAddon from "./control-panel-media-addon";
 
 export default function ControlPanel() {
-    const { setMeetPanel, meetPanel } = useContext<TAppContext>(AppContext)
+    const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useContext<TAppContext>(AppContext)
     const router = useRouter()
     return (
-        <div className="control-bar z-10">
-            <div className="">
+        <div className="control-bar z-10 relative">
+            <ControlPanelMediaAddon />
+            <div className="text-white">
                 <span>20:30</span>&nbsp;|&nbsp;
                 <span>09/05/2023</span>
             </div>
             <div className="flex space-x-4">
                 <div className="media-control">
-                    <Button className="bg-transparent hover:bg-transparent">
-                        <ChevronUp />
+                    <Button
+                        className="bg-transparent hover:bg-transparent"
+                        onClick={() => mediaControl !== MEDIA_CONTROL_TYPE.AUDIO ? setMediaControl(MEDIA_CONTROL_TYPE.AUDIO) : setMediaControl(MEDIA_CONTROL_TYPE.NONE)}>
+                        {
+                            mediaControl === MEDIA_CONTROL_TYPE.AUDIO ? (
+                                <ChevronDown />
+                            ) : (
+                                <ChevronUp />
+                            )
+                        }
                     </Button>
                     <Button>
                         <Mic />
                     </Button>
                 </div>
                 <div className="media-control">
-                    <Button className="bg-transparent hover:bg-transparent">
-                        <ChevronUp />
+                    <Button
+                        className="bg-transparent hover:bg-transparent"
+                        onClick={() => mediaControl !== MEDIA_CONTROL_TYPE.VIDEO ? setMediaControl(MEDIA_CONTROL_TYPE.VIDEO) : setMediaControl(MEDIA_CONTROL_TYPE.NONE)}>
+                        {
+                            mediaControl === MEDIA_CONTROL_TYPE.VIDEO ? (
+                                <ChevronDown />
+                            ) : (
+                                <ChevronUp />
+                            )
+                        }
                     </Button>
                     <Button>
                         <Video />

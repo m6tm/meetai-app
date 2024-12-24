@@ -11,17 +11,20 @@
 import React from "react";
 import AppContext from "@ai/context";
 import { TAppContext } from "@ai/types/context";
-import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
+import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 
 export default function ContextProvider({ children }: { children: React.ReactNode; }) {
     const [meetPanel, setMeetPanel] = React.useState<MEET_PANEL_TYPE>(MEET_PANEL_TYPE.NONE);
     const [autoriseMessage, setAutoriseMessage] = React.useState<boolean>(true);
+    const [mediaControl, setMediaControl] = React.useState<MEDIA_CONTROL_TYPE>(MEDIA_CONTROL_TYPE.NONE);
 
     const context: TAppContext = {
         meetPanel,
         setMeetPanel,
         autoriseMessage,
-        setAutoriseMessage
+        setAutoriseMessage,
+        mediaControl,
+        setMediaControl,
     }
     
     return (
