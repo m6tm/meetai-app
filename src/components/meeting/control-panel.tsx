@@ -21,7 +21,7 @@ export default function ControlPanel() {
     const { setMeetPanel, meetPanel } = useContext<TAppContext>(AppContext)
     const router = useRouter()
     return (
-        <div className="control-bar">
+        <div className="control-bar z-10">
             <div className="">
                 <span>20:30</span>&nbsp;|&nbsp;
                 <span>09/05/2023</span>

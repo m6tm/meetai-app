@@ -21,7 +21,7 @@ export default function MeetDataInfo({ code }: { code: string }) {
     const { setMeetPanel, meetPanel } = React.useContext<TAppContext>(AppContext);
     
     return meetPanel === MEET_PANEL_TYPE.INFOS && (
-        <div className="absolute bg-white w-[350px] rounded-lg space-y-4 bottom-24 right-4 p-5 full-height">
+        <div className="absolute z-10 bg-white w-[350px] rounded-lg space-y-4 bottom-24 right-4 p-5 full-height">
             <div className="flex items-center justify-between">
                 <h3 className="text-xl">Informations sur la réunion</h3>
                 <Button className="size-10 rounded-full" variant={'ghost'} onClick={() => setMeetPanel(MEET_PANEL_TYPE.NONE)}>

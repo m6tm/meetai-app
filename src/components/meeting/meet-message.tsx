@@ -97,7 +97,7 @@ export default function MeetMessage() {
     // const [message, setMessage] = React.useState<string>('')
     
     return meetPanel === MEET_PANEL_TYPE.MESSAGES && (
-        <div className="absolute bg-white w-[350px] flex flex-col rounded-lg space-y-4 bottom-24 right-4 p-5 full-height">
+        <div className="absolute z-10 bg-white w-[350px] flex flex-col rounded-lg space-y-4 bottom-24 right-4 p-5 full-height">
             <div className="flex items-center justify-between">
                 <h3 className="text-xl">Messages dans la réunion</h3>
                 <Button className="size-10 rounded-full" variant={'ghost'} onClick={() => setMeetPanel(MEET_PANEL_TYPE.NONE)}>

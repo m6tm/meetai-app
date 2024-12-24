@@ -16,7 +16,7 @@ import CopyElement from "@ai/components/meeting/_ui/copy-btn";
 export default function MeetDataFirst({ code }: { code: string }) {
     const [closed, setClosed] = React.useState<boolean>(false)
     return !closed ? (
-        <div className="absolute bg-white size-[350px] rounded-lg space-y-4 bottom-24 left-4 p-5">
+        <div className="absolute z-10 bg-white size-[350px] rounded-lg space-y-4 bottom-24 left-4 p-5">
             <div className="flex items-center justify-between">
                 <h3 className="text-xl">Votre réunion est prête</h3>
                 <Button className="size-10 rounded-full" variant={'ghost'} onClick={() => setClosed(true)}>

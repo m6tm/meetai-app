@@ -1,0 +1,30 @@
+.main-screen {
+    @apply w-full h-full relative z-0;
+}
+
+.other-screen {
+    @apply absolute top-4 p-4;
+    left: 1rem;
+    right: 1rem;
+    width: calc(100% - 2rem);
+    height: 200px;
+}
+
+.screen-child {
+    @apply flex items-center relative rounded-lg bg-slate-700 cursor-pointer;
+}
+
+.screen-child video {
+    @apply rounded-md;
+}
+
+.main-screen .more-btn,
+.screen-child .more-btn {
+    @apply opacity-0 bg-slate-600/30;
+    transition: 0.2s ease-in-out;
+}
+
+.main-screen:hover .more-btn,
+.screen-child:hover .more-btn {
+    @apply opacity-100 text-white;
+}
