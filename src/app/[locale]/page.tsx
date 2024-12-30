@@ -21,8 +21,7 @@ export async function generateMetadata() {
     };
 }
 
-export default function Home() {
-    // const services = SERVICES;
+export default async function Home() {
     return (
         <LayoutComponent>
             <div className="lg:flex">
