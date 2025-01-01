@@ -8,6 +8,28 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import Dexie from 'dexie';
+import Dexie, { type EntityTable } from 'dexie';
 
-export const db = new Dexie('meetai');
+interface UserModel {
+  id: number;
+  name: string;
+  age: number;
+}
+
+interface LocaleModel {
+  id: number;
+  locale: 'en' | 'fr';
+}
+
+const db = new Dexie('meetai') as Dexie & {
+  user: EntityTable<UserModel, 'id'>;
+  locale: EntityTable<LocaleModel, 'id'>;
+};
+
+db.version(1).stores({
+  user: '++id, email, password',
+  locale: '++id, locale',
+});
+
+export type { UserModel, LocaleModel };
+export { db };

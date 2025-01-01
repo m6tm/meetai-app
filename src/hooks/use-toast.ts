@@ -1,6 +1,13 @@
+/**
+ * Proprietary and Confidential
+ * Copyright (c) 2024 Meet ai LLC. All rights reserved.
+ *
+ * This software and its documentation are the exclusive property of
+ * Meet ai LLC. No part of this software may be reproduced,
+ * distributed, or transmitted in any form or by any means without
+ * the prior written permission of Meet ai LLC.
+ */
 "use client"
-
-// Inspired by react-hot-toast library
 import * as React from "react"
 
 import type {
@@ -18,6 +25,7 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
   UPDATE_TOAST: "UPDATE_TOAST",

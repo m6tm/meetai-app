@@ -7,7 +7,7 @@
  * distributed, or transmitted in any form or by any means without
  * the prior written permission of Meet ai LLC.
  */
-
+'use server'
 import 'server-only'
 import { SignJWT, jwtVerify } from 'jose'
 import { SessionPayload } from '@ai/types/definitions'
@@ -49,7 +49,8 @@ export async function createSession(userId: string, session_name: string = 'sess
   })
 }
 
-export async function updateSession(session_name: string = 'session', path: string = '/') {
+export async function updateSession(session_name: string, new_value: string, path: string = '/') {
+  session_name = !session_name ? 'session' : session_name
   const session = (await cookies()).get(session_name)?.value
   const payload = await decrypt(session)
  

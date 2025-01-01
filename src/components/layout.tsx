@@ -13,6 +13,7 @@ import { HamburgerMenuIcon } from '@radix-ui/react-icons';
 import { XIcon } from 'lucide-react';
 import Link from 'next/link';
 import Footer from './footer';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const pages = [
     {
@@ -27,6 +28,7 @@ const pages = [
 
 export default function LayoutComponent({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
+    
     return (
         <>
             <div className="h-[60px] backdrop-blur-md bg-secondary/50 sticky top-0 left-0 z-50 flex items-center justify-between px-10 md:px-[100px] lg:px-[200px]">
@@ -42,6 +44,9 @@ export default function LayoutComponent({ children }: { children: React.ReactNod
                             </Link>
                         </li>
                     ))}
+                    <li className="inline-block">
+                        <LanguageSwitcher />
+                    </li>
                 </ul>
 
                 <div className="md:hidden">

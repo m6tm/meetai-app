@@ -2,5 +2,7 @@
     "compile-hero.disable-compile-files-on-did-save-code": true,
     "i18n-ally.localesPaths": ["./messages"],
     "i18n-ally.sourceLanguage": "fr",
-    "i18n-ally.keystyle": "nested"
+    "i18n-ally.keystyle": "nested",
+    "WillLuke.nextjs.addTypesOnSave": true,
+    "WillLuke.nextjs.hasPrompted": true
 }

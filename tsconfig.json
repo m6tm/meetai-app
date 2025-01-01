@@ -13,6 +13,7 @@
         "isolatedModules": true,
         "jsx": "preserve",
         "incremental": true,
+        "types": ["next-intl"],
         "plugins": [
             {
                 "name": "next"
@@ -26,6 +27,7 @@
             "@lib/*": ["./src/lib/*"],
             "@hooks/*": ["./src/hooks/*"],
             "@enums/*": ["./src/enums/*"],
+            "next-intl/*": ["./node_modules/next-intl/*"]
         }
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/i18n.js"],
