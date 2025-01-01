@@ -18,7 +18,11 @@ const AppContext = createContext<TAppContext>({
     autoriseMessage: true,
     setAutoriseMessage: () => { },
     mediaControl: MEDIA_CONTROL_TYPE.NONE,
-    setMediaControl: () => { }
+    setMediaControl: () => { },
+    user: null,
+    googleSignIn: async () => { },
+    githubSignIn: async () => { },
+    logOut: async () => { },
 })
 
 export default AppContext

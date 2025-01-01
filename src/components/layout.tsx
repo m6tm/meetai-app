@@ -8,26 +8,40 @@
  * the prior written permission of Meet ai LLC.
  */
 'use client';
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { HamburgerMenuIcon } from '@radix-ui/react-icons';
 import { XIcon } from 'lucide-react';
-import Link from 'next/link';
 import Footer from './footer';
 import LanguageSwitcher from './LanguageSwitcher';
+import { Link } from '@ai/i18n/routing';
+import AppContext from '@ai/context';
+import UserProfileAvatar from './auth/UserProfileAvatar';
 
-const pages = [
+const _pages = [
     {
         name: 'Pricing',
         href: '/',
+        display: true,
     },
     {
         name: 'Connexion',
-        href: '/',
+        href: '/auth',
+        display: true,
     },
-];
+]
 
 export default function LayoutComponent({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
+    const { user } = useContext(AppContext)
+    const [pages, setPages] = useState(_pages)
+    
+    useEffect(() => {
+        const new_pages = _pages.map(page => {
+            if (page.href === '/auth') return { ...page, ...{ display: user === null } }
+            return page
+        })
+        setPages(new_pages)
+    }, [user])
     
     return (
         <>
@@ -37,9 +51,12 @@ export default function LayoutComponent({ children }: { children: React.ReactNod
                 </Link>
 
                 <ul className="list-none space-x-4 hidden md:block">
-                    {pages.map((page, index) => (
+                    {pages.map((page, index) => page.display && (
                         <li key={index} className="inline-block">
-                            <Link href={page.href} className="duration-200 hover:bg-secondary px-4 py-2 rounded-md">
+                            <Link
+                                href={page.href}
+                                className="duration-200 hover:bg-secondary px-4 py-2 rounded-md"
+                                >
                                 {page.name}
                             </Link>
                         </li>
@@ -47,6 +64,13 @@ export default function LayoutComponent({ children }: { children: React.ReactNod
                     <li className="inline-block">
                         <LanguageSwitcher />
                     </li>
+                    {
+                        user && (
+                            <li className="inline-block">
+                                <UserProfileAvatar />
+                            </li>
+                        )
+                    }
                 </ul>
 
                 <div className="md:hidden">
