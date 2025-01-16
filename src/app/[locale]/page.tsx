@@ -13,6 +13,8 @@ import LayoutComponent from '@ai/components/layout';
 import '@styles/animations.css';
 import MeetingSideBar from '@ai/components/meeting-sidebar';
 import Meeting from '@ai/components/meeting';
+import { Decimal } from '@prisma/client/runtime/library';
+import { PrismaClient } from '@prisma/client';
 
 export async function generateMetadata() {
     return {
@@ -21,7 +23,32 @@ export async function generateMetadata() {
     };
 }
 
+const plans = [
+    {
+        id: 1,
+        name: 'Basic',
+        price: new Decimal(0),
+        type: "BASIC"
+    },
+    {
+        id: 1,
+        name: 'Most popular',
+        price: new Decimal(49.99),
+        type: "SILVER"
+    },
+    {
+        id: 1,
+        name: 'Recommended',
+        price: new Decimal(99.99),
+        type: "GOLDEN"
+    },
+];
+
 export default async function Home() {
+    const prisma = new PrismaClient()
+    const basic = await prisma.user.findMany()
+    console.log(basic, plans);
+    
     return (
         <LayoutComponent>
             <div className="lg:flex">

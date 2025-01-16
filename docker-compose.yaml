@@ -4,7 +4,7 @@ services:
       context: .
     image: nextjs-dev
     ports:
-      - "3000:3000"
+      - "3500:3000"
     environment:
       - NODE_ENV=development
     develop:
