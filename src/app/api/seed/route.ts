@@ -8,12 +8,19 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import { PrismaClient, TypePlan } from '@prisma/client'
-import { Decimal } from '@prisma/client/runtime/library'
+import { Decimal } from '@prisma/client/runtime/library';
+import { prisma } from '@ai/adapters/db';
+import { NextResponse } from 'next/server';
+import { TypePlan } from '@prisma/client';
 
-const prisma = new PrismaClient()
+export async function POST() {
+    const has_test_user = (await prisma.user.findFirst()) !== null
+    if (has_test_user) return NextResponse.json({
+        message: 'The seed has already been run'
+    }, {
+        status: 400
+    })
 
-async function main() {
     const plans = [
         {
             name: 'Basic',
@@ -75,13 +82,20 @@ async function main() {
             }
         })
     }
+
+    return NextResponse.json({ message: 'Seed completed' });
 }
-main()
-  .then(async () => {
-    await prisma.$disconnect()
-  })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+
+export async function GET() {
+    const users = await prisma.user.findMany({
+        include: {
+            subscription: {
+                include: {
+                    plan: true
+                }
+            }
+        }
+    })
+    const plans = await prisma.plan.findMany()
+    return NextResponse.json({ message: 'Seeds', data: { users, plans } });
+}

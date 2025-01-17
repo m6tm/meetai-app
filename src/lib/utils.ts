@@ -14,3 +14,46 @@ import { twMerge } from 'tailwind-merge';
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
+
+export async function makeRequest(uri: string, form: FormData, method: string = 'GET', header?: HeadersInit) {
+    let response = {
+        error: null,
+        data: null
+    }
+
+    let _uri = uri
+    let options: RequestInit | undefined = undefined
+
+    if (method === 'GET') {
+        const data: { [key: string]: string } = {}
+        for (const [key, value] of form.entries()) {
+            data[key] = value.toString()
+        }
+        _uri += '?' + new URLSearchParams(data)
+    } else {
+        options = {
+            method,
+            headers: header,
+            body: form
+        }
+    }
+    
+    try {
+        // console.log(uri, form, method, header);
+        response = await fetch(_uri, options)
+        .then(response => response.json())
+        .catch((error) => {
+            return {
+                error,
+                data: null
+            }
+        })
+    } catch (error) {
+        response = {
+            error: error as never,
+            data: null
+        }
+    }
+
+    return response
+}

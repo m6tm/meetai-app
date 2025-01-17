@@ -8,6 +8,7 @@
  * the prior written permission of Meet ai LLC.
  */
 'use client'
+import { signIn } from "@ai/actions/auth.action";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import GithubSignIn from "@ai/components/auth/GithubSignIn";
 import GoogleSignIn from "@ai/components/auth/GoogleSignIn";
@@ -36,9 +37,13 @@ export default function Page() {
             console.error(error);
         }
     }
-
+    
     useEffect(() => {
-        if (user) router.push('/')
+        async function checkUser() {
+            await signIn(user)
+            router.push('/')
+        }
+        if (user) checkUser()
     }, [router, user])
 
     return (

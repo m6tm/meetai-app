@@ -9,13 +9,16 @@
  */
 
 import AppContext from "@ai/context";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@ui/avatar";
+import { Plan } from "@prisma/client";
+import { getUser } from "@ai/actions/user.action";
 
 
 export default function UserProfileAvatar() {
     const { user, logOut } = useContext(AppContext)
+    const [plan, setPlan] = useState<Plan | null>(null)
     
     const handleLogout = async () => {
         try {
@@ -25,6 +28,14 @@ export default function UserProfileAvatar() {
             console.error(error);
         }
     }
+
+    useEffect(() => {
+        async function getPlan() {
+            const { data } = await getUser(user?.email || '')
+            if (data) setPlan(data.subscription.plan)
+        }
+        if (user) getPlan()
+    }, [user])
 
     return user && (
         <DropdownMenu>
@@ -39,9 +50,13 @@ export default function UserProfileAvatar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
                 <DropdownMenuGroup>
-                    <DropdownMenuItem className="cursor-pointer">
-                        Your plan (free)
-                    </DropdownMenuItem>
+                    {
+                        plan && (
+                            <DropdownMenuItem className="cursor-pointer">
+                                Your plan ({plan.name})
+                            </DropdownMenuItem>
+                        )
+                    }
                     <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
                         Logout
                     </DropdownMenuItem>
