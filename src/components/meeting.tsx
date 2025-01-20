@@ -22,12 +22,13 @@ import { Button, buttonVariants } from '@ui/button'
 import { Input } from '@ui/input'
 import { Link as ILink, Plus, Video } from 'lucide-react'
 import ScheduleMeetingDialog from './meeting/schedule-meeting-dialog'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@ai/i18n/routing'
 
 export default function Meeting() {
     const router = useRouter()
     const [input, setInput] = React.useState("");
     const newSheduleRef = React.useRef<HTMLButtonElement>(null);
+    const origin: string = process.env.NEXT_PUBLIC_URL_ORIGIN as never
 
     function changeLinkInput(e: React.ChangeEvent<HTMLInputElement>) {
         const link = e.target.value;
@@ -37,11 +38,15 @@ export default function Meeting() {
     const opendialog = () => newSheduleRef.current?.click()
 
     function getLinkCode() {
-        const origin: string = process.env.NEXT_PUBLIC_URL_ORIGIN as never
         const regex = new RegExp(`^(${origin})`)
         if (!regex.test(input)) return input
         const code = input.replace(`${origin}/join/`, '').trim()
         return code
+    }
+    
+    function handleJoin() {
+        const code_link = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        router.push(`/meet/${code_link}`)
     }
     
     return (
@@ -60,7 +65,7 @@ export default function Meeting() {
                                 <ILink />
                                 Créer une réunion pour une date ultérieure
                             </DropdownMenuItem>
-                            <DropdownMenuItem className='cursor-pointer'>
+                            <DropdownMenuItem className='cursor-pointer' onClick={handleJoin}>
                                 <Plus />
                                 Démarrer une réunion instantanée
                             </DropdownMenuItem>
@@ -71,7 +76,7 @@ export default function Meeting() {
                 <Input type="url" value={input} onChange={changeLinkInput} placeholder="Saisir un code ou un lien" className="max-w-sm" />
                 <Button
                     className={cn(`${buttonVariants({ variant: "secondary" })} ${input.length <= 0 && 'pointer-events-none select-none bg-secondary/50'}`)}
-                    onClick={() => router.push(`/fr/meet/${getLinkCode()}`)}>Participer</Button>
+                    onClick={() => router.push(`/meet/${getLinkCode()}`)}>Participer</Button>
             </div>
         </div>
     )

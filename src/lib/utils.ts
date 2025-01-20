@@ -8,12 +8,28 @@
  * the prior written permission of Meet ai LLC.
  */
 
+import { db } from '@ai/db';
 import { RequestMethod } from '@ai/types/requests/other.type';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
+}
+
+export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export async function initializeLanguage() {
+    const _locale = await db.locale.count();
+    if (_locale === 0) {
+        await db.locale.add({ locale: 'en' });
+    }
+    return { language_setted: _locale === 0 }
+}
+
+export async function getLanguage() {
+    const _locale = await db.locale.orderBy('id').last();
+    return _locale
 }
 
 export async function makeRequest(uri: string, form: FormData, method: RequestMethod = 'GET', header?: HeadersInit) {

@@ -10,6 +10,7 @@
 'use client';
 import { db } from "@ai/db";
 import { usePathname, useRouter } from "@ai/i18n/routing";
+import { initializeLanguage } from "@ai/lib/utils";
 import { Button } from "@ui/button"
 import {
   DropdownMenu,
@@ -29,11 +30,10 @@ export default function LanguageSwitcher() {
     useEffect(() => {
         const fetchAndSetLocale = async () => {
             console.log("Fetching locale...");
-            const _locale = await db.locale.get(1);
+            const _locale = await db.locale.orderBy('id').last();
             if (_locale) {
                 setLocale(_locale.locale);
             } else {
-                await db.locale.add({ locale: default_locale });
                 setLocale(default_locale);
             }
         };
@@ -41,11 +41,14 @@ export default function LanguageSwitcher() {
     }, []);
 
     async function handleChangeLanguage(new_locale: 'en' | 'fr') {
-        const _locale = await db.locale.get(1);
-        if (!_locale) return;
+        let _locale = await db.locale.orderBy('id').last();
+        if (!_locale) {
+            await initializeLanguage()
+            _locale = (await db.locale.orderBy('id').last())!;
+        }
         await db.locale.update(_locale.id, { locale: new_locale });
         setLocale(new_locale);
-        router.push(pathname, { locale: new_locale });
+        router.replace(pathname, { locale: new_locale });
     }
     return (
         <div>

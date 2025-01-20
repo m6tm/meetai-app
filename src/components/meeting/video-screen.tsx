@@ -147,8 +147,8 @@ export default function VideoScreen({ className }: { className?: string; }) {
                 <Swiper
                     spaceBetween={50}
                     slidesPerView={4}
-                    onSlideChange={() => console.log('slide change')}
-                    onSwiper={(swiper) => console.log(swiper)}
+                    // onSlideChange={() => console.log('slide change')}
+                    // onSwiper={(swiper) => console.log(swiper)}
                     className="h-full"
                 >
                     {

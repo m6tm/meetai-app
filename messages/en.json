@@ -1,9 +1,18 @@
 {
-    "HomePage": {
-        "title": "Hello world!",
-        "about": "Go to the about page"
-    },
     "Header": {
-        "about": "About"
+        "about": "About",
+        "services": "Services",
+        "protfolio": "Protfolio",
+        "contact": "Contact"
+    },
+    "Footer": {
+        "about": "About",
+        "mentions": "Mentions légales",
+        "protfolio": "Protfolio",
+        "contact": "Contact"
+    },
+    "HomePage": {
+        "title": "Salut le monde!",
+        "about": "Aller à la page À propos"
     }
 }

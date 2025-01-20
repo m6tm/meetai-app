@@ -9,6 +9,7 @@
  */
 
 import Dexie, { type EntityTable } from 'dexie';
+import { LanguageType } from './types/definitions';
 
 interface UserModel {
   id: number;
@@ -18,7 +19,7 @@ interface UserModel {
 
 interface LocaleModel {
   id: number;
-  locale: 'en' | 'fr';
+  locale: LanguageType;
 }
 
 const db = new Dexie('meetai') as Dexie & {

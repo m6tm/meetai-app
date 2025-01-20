@@ -8,13 +8,13 @@ services:
         depends_on:
             - meetaidb
         ports:
-            - "3500:3000"
+            - '${FRONT_PORT}:3000'
         environment:
             - NODE_ENV=development
         networks:
             - default
         healthcheck:
-            test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}" ]
+            test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}']
             interval: 1m30s
             timeout: 30s
             retries: 5
@@ -33,7 +33,7 @@ services:
             - POSTGRES_HOST=${DB_HOST}
         restart: unless-stopped
         ports:
-            - "5432:5432"
+            - '5432:5432'
         networks:
             - default
 
