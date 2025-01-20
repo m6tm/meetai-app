@@ -22,14 +22,22 @@ export default function ContextProvider({ children }: { children: React.ReactNod
     const [user, setUser] = useState<User | null>(null)
 
     const googleSignIn = async () => {
-        const provider = new GoogleAuthProvider
-        signInWithPopup(fireAuth, provider)
+        try {
+            const provider = new GoogleAuthProvider()
+            await signInWithPopup(fireAuth, provider)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error: unknown) {
+        }
     }
 
     const githubSignIn = async () => {
-        const provider = new GithubAuthProvider
-        provider.addScope('repo')
-        signInWithPopup(fireAuth, provider)
+        try {
+            const provider = new GithubAuthProvider()
+            provider.addScope('repo')
+            await signInWithPopup(fireAuth, provider)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+        }
     }
 
     const logOut = async () => {

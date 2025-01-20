@@ -11,9 +11,6 @@
     "eslint": "eslint {public,src}/**/*.{js,jsx,ts,tsx} --fix",
     "prepare": "husky"
   },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx,json,css,md}": "prettier --write --ignore-unknown"
   },

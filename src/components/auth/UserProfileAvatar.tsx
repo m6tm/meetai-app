@@ -41,12 +41,9 @@ export default function UserProfileAvatar() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild className="bg-transparent border-none shadow-none">
                 <Avatar className="cursor-pointer absolute top-3">
-                {
-                    user.photoURL ? 
-                        <AvatarImage src={user.photoURL} alt="User avatar" /> :
-                        <AvatarFallback className="uppercase">{user.displayName?.slice(0, 2)}</AvatarFallback>
-                }
-            </Avatar>
+                    <AvatarFallback className="uppercase">{user.displayName?.slice(0, 2)}</AvatarFallback>
+                    <AvatarImage src={user.photoURL ?? ''} alt="User avatar" />
+                </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
                 <DropdownMenuGroup>

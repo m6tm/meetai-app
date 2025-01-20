@@ -78,7 +78,7 @@ export async function POST() {
             data: {
                 user_id: user.id,
                 plan_id: basicPlan.id,
-                endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+                endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
             }
         })
     }

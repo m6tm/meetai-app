@@ -8,6 +8,7 @@
  * the prior written permission of Meet ai LLC.
  */
 
+import { RequestMethod } from '@ai/types/requests/other.type';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -15,7 +16,7 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export async function makeRequest(uri: string, form: FormData, method: string = 'GET', header?: HeadersInit) {
+export async function makeRequest(uri: string, form: FormData, method: RequestMethod = 'GET', header?: HeadersInit) {
     let response = {
         error: null,
         data: null
