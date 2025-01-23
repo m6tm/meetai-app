@@ -17,6 +17,7 @@ import { fireAuth } from '@ai/firebase';
 import { db } from "@ai/db";
 import { usePathname, useRouter } from "@ai/i18n/routing";
 import { initializeLanguage } from "@ai/lib/utils";
+import Worker from "@ai/worker/worker";
 
 export default function ContextProvider({ children }: { children: React.ReactNode; }) {
     const pathname = usePathname();
@@ -25,6 +26,7 @@ export default function ContextProvider({ children }: { children: React.ReactNod
     const [autoriseMessage, setAutoriseMessage] = React.useState<boolean>(true);
     const [mediaControl, setMediaControl] = React.useState<MEDIA_CONTROL_TYPE>(MEDIA_CONTROL_TYPE.NONE);
     const [user, setUser] = useState<User | null>(null)
+    const [worker, setWorker] = useState<Worker | null>(null)
 
     const googleSignIn = async () => {
         try {
@@ -56,6 +58,7 @@ export default function ContextProvider({ children }: { children: React.ReactNod
             if (language_setted) router.replace(pathname, { locale: new_locale.locale });
         }
         setLanguage()
+
         const unsubscribe = onAuthStateChanged(fireAuth, currentUser => {
             setUser(currentUser)
         });
@@ -73,6 +76,8 @@ export default function ContextProvider({ children }: { children: React.ReactNod
         googleSignIn,
         githubSignIn,
         logOut,
+        worker,
+        setWorker,
     }
     
     return (

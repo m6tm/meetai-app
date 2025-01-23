@@ -32,25 +32,27 @@ export async function getLanguage() {
     return _locale
 }
 
-export async function makeRequest(uri: string, form: FormData, method: RequestMethod = 'GET', header?: HeadersInit) {
+export async function makeRequest(uri: string, form: FormData | undefined = undefined, method: RequestMethod = 'GET', header?: HeadersInit) {
     let response = {
         error: null,
         data: null
     }
 
     let _uri = uri
-    let options: RequestInit | undefined = undefined
+    let options: RequestInit | undefined = {
+        headers: header
+    }
 
     if (method === 'GET') {
         const data: { [key: string]: string } = {}
-        for (const [key, value] of form.entries()) {
-            data[key] = value.toString()
-        }
+        if (form)
+            for (const [key, value] of form.entries()) {
+                data[key] = value.toString()
+            }
         _uri += '?' + new URLSearchParams(data)
     } else {
         options = {
             method,
-            headers: header,
             body: form
         }
     }

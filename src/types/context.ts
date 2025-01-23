@@ -9,6 +9,7 @@
  */
 
 import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
+import Worker from "@ai/worker/worker";
 import { User } from "firebase/auth";
 
 export type TAppContext = {
@@ -22,4 +23,6 @@ export type TAppContext = {
     googleSignIn: () => Promise<void>,
     githubSignIn: () => Promise<void>,
     logOut: () => Promise<void>,
+    worker: Worker | null,
+    setWorker: (worker: Worker) => void,
 }
