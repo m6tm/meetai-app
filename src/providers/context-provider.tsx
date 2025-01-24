@@ -18,8 +18,10 @@ import { db } from "@ai/db";
 import { usePathname, useRouter } from "@ai/i18n/routing";
 import { initializeLanguage } from "@ai/lib/utils";
 import Worker from "@ai/worker/worker";
+import { EventEmitter } from "events"
 
 export default function ContextProvider({ children }: { children: React.ReactNode; }) {
+    const event = new EventEmitter();
     const pathname = usePathname();
     const router = useRouter();
     const [meetPanel, setMeetPanel] = React.useState<MEET_PANEL_TYPE>(MEET_PANEL_TYPE.NONE);
@@ -78,6 +80,7 @@ export default function ContextProvider({ children }: { children: React.ReactNod
         logOut,
         worker,
         setWorker,
+        event,
     }
     
     return (

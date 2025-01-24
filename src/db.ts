@@ -22,15 +22,29 @@ interface LocaleModel {
   locale: LanguageType;
 }
 
+interface PreferencesModel {
+  id: number;
+  audio: boolean;
+  video: boolean;
+}
+
 const db = new Dexie('meetai') as Dexie & {
   user: EntityTable<UserModel, 'id'>;
   locale: EntityTable<LocaleModel, 'id'>;
+  preferences: EntityTable<PreferencesModel, 'id'>;
 };
 
-db.version(1).stores({
+db
+  .version(1).stores({
+    user: '++id, email, password',
+    locale: '++id, locale',
+  })
+
+db.version(2).stores({
   user: '++id, email, password',
   locale: '++id, locale',
-});
+  preferences: '++id, audio, video',
+})
 
-export type { UserModel, LocaleModel };
+export type { UserModel, LocaleModel, PreferencesModel };
 export { db };

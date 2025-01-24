@@ -14,17 +14,17 @@ import Worker from "@ai/worker/worker"
 import { useContext, useEffect, useState } from "react"
 
 function BeginMeet() {
-    const { setWorker } = useContext<TAppContext>(AppContext)
+    const { setWorker, event } = useContext<TAppContext>(AppContext)
     const [started, setStarted] = useState<boolean>(false)
 
     useEffect(() => {
         if (!started) {
-            const worker = new Worker()
+            const worker = new Worker(event)
             worker.init()
             setWorker(worker)
             setStarted(true)
         }
-    }, [setWorker, started])
+    }, [event, setWorker, started])
 
     return (
         <div className=""></div>

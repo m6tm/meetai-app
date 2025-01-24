@@ -72,7 +72,9 @@ export default async function RootLayout(
             >
                 <ContextProvider>
                     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+                        <NextIntlClientProvider locale={locale} messages={messages}>
+                            {children}
+                        </NextIntlClientProvider>
                         <Toaster />
                     </ThemeProvider>
                 </ContextProvider>

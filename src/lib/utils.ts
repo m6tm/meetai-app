@@ -56,17 +56,17 @@ export async function makeRequest(uri: string, form: FormData | undefined = unde
             body: form
         }
     }
-    
+
     try {
         // console.log(uri, form, method, header);
         response = await fetch(_uri, options)
-        .then(response => response.json())
-        .catch((error) => {
-            return {
-                error,
-                data: null
-            }
-        })
+            .then(response => response.json())
+            .catch((error) => {
+                return {
+                    error,
+                    data: null
+                }
+            })
     } catch (error) {
         response = {
             error: error as never,
@@ -75,4 +75,11 @@ export async function makeRequest(uri: string, form: FormData | undefined = unde
     }
 
     return response
+}
+
+export const uuid = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 }

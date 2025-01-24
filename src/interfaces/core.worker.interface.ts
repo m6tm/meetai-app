@@ -9,8 +9,75 @@
  */
 
 import { type Socket } from 'socket.io-client'
+import { type EventEmitter } from 'events'
+
+export interface IParticipantAudio {
+    muted: boolean
+    volume: number
+}
+
+export interface IParticipantVideo {
+    muted: boolean
+    volume: number
+}
+
+export interface IParticipant {
+    id: string
+    name: string | undefined
+    avatar: string | undefined
+    email: string
+    pinned: boolean
+    audio: IParticipantAudio
+    video: IParticipantVideo
+}
+
+export interface IAudioSources {
+    microphone: Array<MediaStreamTrack> | undefined
+    speaker: Array<MediaStreamTrack> | undefined
+}
+
+export interface IAudioCurrentSource {
+    microphone: MediaStreamTrack | undefined
+    speaker: MediaStreamTrack | undefined
+}
+
+export interface IAudioMuted {
+    microphone: boolean
+    speaker: boolean
+}
+
+export interface IAudioVolume {
+    microphone: number
+    speaker: number
+}
+
+export interface IAudio {
+    sources: IAudioSources
+    currentSource: IAudioCurrentSource
+    muted: IAudioMuted
+    volume: IAudioVolume
+}
+
+export interface IVideoSources {
+    camera: Array<MediaStreamTrack> | undefined
+}
+
+export interface IVideoCurrentSource {
+    camera: MediaStreamTrack | undefined
+}
+
+export interface IVideo {
+    sources: IVideoSources
+    currentSource: IVideoCurrentSource
+    muted: boolean
+    volume: number
+}
 
 export interface ICoreWorker {
     socket: Socket | undefined
-    connect: () => Promise<Socket | Socket.DisconnectReason>
+    audio: IAudio
+    video: IVideo
+    participants: Array<IParticipant>
+    event: EventEmitter
+    connect: () => Promise<Socket | Socket.DisconnectReason | Error>
 }

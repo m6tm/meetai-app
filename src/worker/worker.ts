@@ -10,18 +10,24 @@
 
 import { IMeetWorker } from "@ai/interfaces/meet.worker.interface";
 import CoreWorker from "./core.worker";
+import { uuid } from "@ai/lib/utils";
+import { type EventEmitter } from "events";
 
 
 export default class Worker extends CoreWorker implements IMeetWorker {
 
-    constructor() {
-        super()
-        // TODO: Implement worker logic
+    constructor(event: EventEmitter) {
+        super(event)
     }
 
     async init() {
-        console.log('Going to starting ...');
+        this.token = uuid()
         await this.connect()
-        console.log('OK');
+
+        if (this.status !== 'connected') throw new Error('Failed to connect to the server')
+
+        await this.requestMediaStream()
+
+        if (this.stream === undefined) throw new Error('Failed to get media stream')
     }
 }
