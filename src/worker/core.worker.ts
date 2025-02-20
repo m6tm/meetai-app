@@ -10,10 +10,14 @@
 
 import { db } from "@ai/db";
 import { ICoreWorker, IParticipant } from "@ai/interfaces/core.worker.interface";
-import { uuid } from "@ai/lib/utils";
-import { MeetConnectionStatus } from "@ai/types/worker";
+import { makeRequest, uuid } from "@ai/lib/utils";
+import { MeetConnectionStatus, TMeetParticipants } from "@ai/types/worker";
 import { io, type Socket } from "socket.io-client";
 import { type EventEmitter } from "events";
+import { User } from "firebase/auth";
+import { GenerateMeetTokenResponse } from "@ai/types/requests/meet-token.request";
+import { RemoteParticipant, Room, RoomEvent } from 'livekit-client';
+import { generateRandomUserName } from "@ai/lib/meet.lib";
 
 
 export default class CoreWorker implements ICoreWorker {
@@ -47,12 +51,16 @@ export default class CoreWorker implements ICoreWorker {
         muted: true,
         volume: 1
     }
-    participants: Array<IParticipant> = [];
+    _participants: Array<IParticipant> = [];
+    participants: TMeetParticipants = [];
     token: string = ''
     stream: MediaStream | undefined = undefined;
     call_id: string = ''
     event!: EventEmitter;
     retry = 0
+    user: User | undefined = undefined
+    ws_url: string = process.env.NEXT_PUBLIC_LIVEKIT_WEBSOCKET_URL ?? ''
+    room: Room | undefined = undefined;
 
     constructor(event: EventEmitter) {
         this.event = event
@@ -133,4 +141,97 @@ export default class CoreWorker implements ICoreWorker {
             return undefined
         }
     }
+
+    connectToRoom = async () => {
+        if (this.token.length === 0) {
+            const form = new FormData();
+            const default_user = generateRandomUserName();
+            form.append('room_name', this.call_id);
+
+            if (this.user) {
+                form.append('participant_name', this.user.displayName ?? default_user);
+            } else {
+                form.append('participant_name', default_user);
+            }
+
+            const response = await makeRequest<GenerateMeetTokenResponse>('/api/get-token', form, 'POST');
+
+            if (!response.data) {
+                throw new Error('Failed to generate token');
+            }
+
+            this.token = response.data.token;
+        }
+
+        this.room = new Room();
+
+        this.room.on(RoomEvent.Connected, () => {
+            this.status = 'connected'
+            this.event.emit('je suis connecté à la salle');
+        });
+
+        await this.room.connect(this.ws_url, this.token, {
+            autoSubscribe: true,
+        });
+
+        this._participants = this.getParticipants(this.room);
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        this.room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+            console.log('Track subscribed :', track.kind, publication.trackSid, participant.identity);
+        });
+
+        this.room.on(RoomEvent.ParticipantConnected, () => this.event.emit('un utilisateur viens de se connecter'));
+
+        // this.room.on(RoomEvent.Disconnected, () => {});
+
+        this.room.on(RoomEvent.ParticipantDisconnected, () => this.event.emit('un utilisateur viens de se déconnecter'));
+    }
+
+    getParticipants = (room: Room): IParticipant[] => {
+        // Obtenir la liste des participants déjà présents
+        const _participants: IParticipant[] = [];
+        Array.from(room.remoteParticipants.values()).forEach((participant: RemoteParticipant) => {
+            const existingParticipant: IParticipant = {
+                id: participant.sid,
+                name: participant.identity,
+                avatar: undefined,
+                email: '',
+                pinned: false,
+                audio: {
+                    muted: false,
+                    volume: 1
+                },
+                video: {
+                    muted: false,
+                    volume: 1
+                },
+                isSelf: false,
+                isHost: false,
+            };
+            _participants.push(existingParticipant);
+        });
+
+        // Ajouter l'utilisateur actuel comme participant
+        const selfParticipant: IParticipant = {
+            id: room.localParticipant.sid,
+            name: this.user?.displayName ?? generateRandomUserName(),
+            avatar: undefined,
+            email: this.user?.email ?? '',
+            pinned: false,
+            audio: {
+                muted: false,
+                volume: 1
+            },
+            video: {
+                muted: false,
+                volume: 1
+            },
+            isSelf: true,
+            isHost: false,
+        };
+        _participants.push(selfParticipant);
+
+        return _participants;
+    };
 }

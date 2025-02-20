@@ -17,4 +17,4 @@ RUN yarn prepare
 EXPOSE 3000
 
 # Commande pour lancer l'application en mode développement
-CMD ["yarn", "dev"]
+CMD ["yarn", "dev", "--experimental-https"]

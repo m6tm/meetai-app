@@ -13,18 +13,18 @@ import { TAppContext } from "@ai/types/context"
 import Worker from "@ai/worker/worker"
 import { useContext, useEffect, useState } from "react"
 
-function BeginMeet() {
+function BeginMeet({ code }: { code: string }) {
     const { setWorker, event } = useContext<TAppContext>(AppContext)
     const [started, setStarted] = useState<boolean>(false)
 
     useEffect(() => {
         if (!started) {
-            const worker = new Worker(event)
+            const worker = new Worker(event, code)
             worker.init()
             setWorker(worker)
             setStarted(true)
         }
-    }, [event, setWorker, started])
+    }, [code, event, setWorker, started])
 
     return (
         <div className=""></div>

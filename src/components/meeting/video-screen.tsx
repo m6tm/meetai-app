@@ -9,7 +9,7 @@
  */
 "use client";
 import { cn } from "@ai/lib/utils";
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { Button } from '@ui/button'
 import { Swiper, SwiperSlide } from 'swiper/react';
 import {
@@ -32,56 +32,71 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@ui/dropdown-menu"
+import AppContext from "@ai/context";
+import Worker from "@ai/worker/worker";
+import { IParticipant } from "@ai/interfaces/core.worker.interface";
+import { generateRandomUserName, selectRandomUserToPin } from "@ai/lib/meet.lib";
 
-const USERS = [
+const USERS: IParticipant[] = [
     {
-        id: 1,
+        id: '1',
         name: 'Michael Smith',
         avatar: 'https://i.pravatar.cc/150?img=1',
         isHost: false,
+        email: '',
+        pinned: false,
+        audio: {
+            muted: false,
+            volume: 1
+        },
+        video: {
+            muted: false,
+            volume: 1
+        },
+        isSelf: false
     },
     {
-        id: 2,
+        id: '2',
         name: 'Emma Wilson',
         avatar: 'https://i.pravatar.cc/150?img=2',
         isHost: false,
+        email: '',
+        pinned: false,
+        audio: {
+            muted: false,
+            volume: 1
+        },
+        video: {
+            muted: false,
+            volume: 1
+        },
+        isSelf: false
     },
     {
-        id: 3,
+        id: '3',
         name: 'David Johnson',
         avatar: 'https://i.pravatar.cc/150?img=3',
         isHost: true,
+        email: '',
+        pinned: false,
+        audio: {
+            muted: false,
+            volume: 1
+        },
+        video: {
+            muted: false,
+            volume: 1
+        },
+        isSelf: false
     },
-    {
-        id: 4,
-        name: 'Sarah Brown',
-        avatar: 'https://i.pravatar.cc/150?img=4',
-        isHost: false,
-    },
-    {
-        id: 5,
-        name: 'James Anderson',
-        avatar: 'https://i.pravatar.cc/150?img=5',
-        isHost: false,
-    },
-    {
-        id: 6,
-        name: 'Olivia Taylor',
-        avatar: 'https://i.pravatar.cc/150?img=6',
-        isHost: false,
-    },
-    {
-        id: 7,
-        name: 'William Davis',
-        avatar: 'https://i.pravatar.cc/150?img=7',
-        isHost: false,
-    }
 ]
 
 export default function VideoScreen({ className }: { className?: string; }) {
+    const { worker } = useContext(AppContext)
     const videoRef = React.useRef<HTMLVideoElement>(null);
     const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
-    const user = USERS.find(user => user.isHost);
+    const [pinnedUser, setPinnedUser] = React.useState<IParticipant | null>(null);
+    const [participants, setParticipants] = React.useState<IParticipant[]>(USERS);
 
     function fullScreen() {
         if (!mainVideoScreenRef.current) return
@@ -90,15 +105,37 @@ export default function VideoScreen({ className }: { className?: string; }) {
         });
     }
 
+    function fetchParticipants(worker: Worker) {
+        const _participants = worker.getParticipants(worker.room!);
+        const participantToPin = selectRandomUserToPin(_participants);
+        setParticipants(_participants);
+
+        if (participantToPin) {
+            setPinnedUser(participantToPin);
+        }
+    }
+    
+    useEffect(() => {
+        function setWorkerStream(worker: Worker) {
+            worker.event.on('je suis connecté à la salle', () => fetchParticipants(worker));
+            worker.event.on('un utilisateur viens de se connecter', () => fetchParticipants(worker));
+            worker.event.on('un utilisateur viens de se déconnecter', () => fetchParticipants(worker));
+    
+            if (worker.status === 'connected') fetchParticipants(worker)
+        }
+        
+        if (worker) setWorkerStream(worker);
+    }, [worker])
+
     return (
         <div className="w-full h-full relative z-0">
             {
-                user && (
+                pinnedUser && (
                     <div className="main-screen">
                         <div ref={mainVideoScreenRef} className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full bg-slate-600">
                             <Avatar className="size-36">
-                                <AvatarImage src={user.avatar} alt={`Logo de ${user.name}`} />
-                                <AvatarFallback className="uppercase">{ user.name.slice(0, 2) }</AvatarFallback>
+                                <AvatarImage src={pinnedUser.avatar} alt={`Logo de ${pinnedUser.name}`} />
+                                <AvatarFallback className="uppercase">{ (pinnedUser.name ?? generateRandomUserName()).slice(0, 2) }</AvatarFallback>
                             </Avatar>
                         </div>
                         <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
@@ -152,12 +189,12 @@ export default function VideoScreen({ className }: { className?: string; }) {
                     className="h-full"
                 >
                     {
-                        USERS.filter((user) => !user.isHost).map((user) => (
+                        participants.filter((user) => !user.isHost).map((user) => (
                             <SwiperSlide key={user.id} className="screen-child">
                                 <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full">
                                     <Avatar className="size-24">
                                         <AvatarImage src={user.avatar} alt={`Logo de ${user.name}`} />
-                                        <AvatarFallback className="uppercase">{ user.name.slice(0, 2) }</AvatarFallback>
+                                        <AvatarFallback className="uppercase">{ (user.name ?? generateRandomUserName()).slice(0, 2) }</AvatarFallback>
                                     </Avatar>
                                 </div>
                                 <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">

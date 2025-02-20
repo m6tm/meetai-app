@@ -27,6 +27,8 @@ export interface IParticipant {
     avatar: string | undefined
     email: string
     pinned: boolean
+    isSelf: boolean;
+    isHost: boolean;
     audio: IParticipantAudio
     video: IParticipantVideo
 }
@@ -77,7 +79,15 @@ export interface ICoreWorker {
     socket: Socket | undefined
     audio: IAudio
     video: IVideo
-    participants: Array<IParticipant>
+    _participants: Array<IParticipant>
     event: EventEmitter
     connect: () => Promise<Socket | Socket.DisconnectReason | Error>
+    /**
+     * Une fonction pour activer les inputs audio et vidéo
+     */
+    requestMediaStream: () => Promise<MediaStream | undefined>
+    /**
+     * Une fonction pour se connecter à une salle de discussion avec livekit
+     */
+    connectToRoom: () => Promise<void>
 }

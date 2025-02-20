@@ -32,7 +32,7 @@ export async function getLanguage() {
     return _locale
 }
 
-export async function makeRequest(uri: string, form: FormData | undefined = undefined, method: RequestMethod = 'GET', header?: HeadersInit) {
+export async function makeRequest<TResponse>(uri: string, form: FormData | undefined = undefined, method: RequestMethod = 'GET', header?: HeadersInit): Promise<TResponse> {
     let response = {
         error: null,
         data: null
@@ -74,7 +74,7 @@ export async function makeRequest(uri: string, form: FormData | undefined = unde
         }
     }
 
-    return response
+    return response as TResponse
 }
 
 export const uuid = () => {
