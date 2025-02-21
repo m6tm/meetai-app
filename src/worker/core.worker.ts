@@ -18,20 +18,13 @@ import { GenerateMeetTokenResponse } from "@ai/types/requests/meet-token.request
 import { ConnectionState, RemoteParticipant, Room, RoomEvent } from 'livekit-client';
 import { generateRandomUserName } from "@ai/lib/meet.lib";
 import { User } from "@prisma/client";
+import { AppMode } from "@ai/types/definitions";
 
 
 export default class CoreWorker implements ICoreWorker {
     socket: Socket | undefined = undefined;
     status: MeetConnectionStatus = 'disconnected'
     audio = {
-        sources: {
-            microphone: undefined,
-            speaker: undefined
-        },
-        currentSource: {
-            microphone: undefined,
-            speaker: undefined
-        },
         muted: {
             microphone: true,
             speaker: false
@@ -42,12 +35,6 @@ export default class CoreWorker implements ICoreWorker {
         }
     }
     video = {
-        sources: {
-            camera: undefined
-        },
-        currentSource: {
-            camera: undefined
-        },
         muted: true,
         volume: 1
     }
@@ -60,7 +47,8 @@ export default class CoreWorker implements ICoreWorker {
     retry = 0
     user: User | undefined = undefined
     ws_url: string = process.env.NEXT_PUBLIC_LIVEKIT_WEBSOCKET_URL ?? ''
-    room: Room | undefined = undefined;
+    room: Room | undefined = undefined
+    mode: AppMode = process.env.NEXT_PUBLIC_APP_MODE as AppMode
 
     constructor(event: EventEmitter, user: User | undefined) {
         this.event = event
@@ -163,6 +151,19 @@ export default class CoreWorker implements ICoreWorker {
 
             this.token = response.data.token;
         }
+        const preferences = await db.preferences.orderBy('id').first()
+        let audio_muted = false,
+            video_muted = false;
+
+        if (preferences) {
+            audio_muted = preferences.audio
+            video_muted = preferences.video
+        } else {
+            db.preferences.add({
+                audio: false,
+                video: false
+            })
+        }
 
         this.room = new Room();
 
@@ -174,18 +175,26 @@ export default class CoreWorker implements ICoreWorker {
         await this.room.connect(this.ws_url, this.token, {
             autoSubscribe: true,
         });
-
         this._participants = this.getParticipants(this.room);
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        this.room.localParticipant.enableCameraAndMicrophone()
+
+        if (!audio_muted) {
+            this.room.localParticipant.setMicrophoneEnabled(false);
+        }
+        if (!video_muted) {
+            this.room.localParticipant.setCameraEnabled(false);
+        }
+
         this.room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
             console.log('Track subscribed :', track.kind, publication.trackSid, participant.identity);
         });
 
         this.room.on(RoomEvent.ParticipantConnected, () => this.event.emit('un utilisateur viens de se connecter'));
 
-        this.room.on(RoomEvent.Disconnected, () => {
+        this.room.on(RoomEvent.Disconnected, async () => {
             this.status = 'disconnected'
+            this.event.emit('je suis déconnecté de la salle')
         });
 
         this.room.on(RoomEvent.ParticipantDisconnected, () => this.event.emit('un utilisateur viens de se déconnecter'));
@@ -236,6 +245,29 @@ export default class CoreWorker implements ICoreWorker {
         _participants.push(selfParticipant);
 
         return _participants;
+    }
+
+    getAvailableCameras = async () => {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const virtualCameras = devices.filter(device => device.kind === 'videoinput' && device.deviceId !== 'default' && (device.label.includes('OBS') || device.label.includes('Virtual')));
+        const cameras = devices.filter(device => device.kind === 'videoinput' && (!device.label.includes('OBS') && !device.label.includes('Virtual')));
+
+        if (this.mode === 'development') return virtualCameras
+        return cameras
+    }
+
+    getAvailableAudioInput = async () => {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const microphone = devices.filter(device => device.kind === 'audioinput' && (!device.label.includes('OBS') && !device.label.includes('Virtual')));
+
+        return microphone
+    }
+
+    getAvailableAudioOutput = async () => {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const microphone = devices.filter(device => device.kind === 'audiooutput' && (!device.label.includes('OBS') && !device.label.includes('Virtual')));
+
+        return microphone
     }
 
     disconnect = async () => {

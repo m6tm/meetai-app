@@ -26,5 +26,5 @@ export type TAppContext = {
     githubSignIn: () => Promise<void>,
     logOut: () => Promise<void>,
     worker: Worker | null,
-    setWorker: (worker: Worker) => void,
+    setWorker: (worker: Worker | null) => void,
 }

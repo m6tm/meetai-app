@@ -13,3 +13,5 @@ import type { JWTPayload } from "jose";
 export type SessionPayload = JWTPayload
 
 export type LanguageType = 'en' | 'fr'
+
+export type AppMode = 'development' | 'production'

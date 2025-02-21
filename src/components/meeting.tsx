@@ -9,7 +9,7 @@
  */
 "use client"
 
-import React from 'react'
+import React, { useContext } from 'react'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,12 +23,14 @@ import { Input } from '@ui/input'
 import { Link as ILink, Plus, Video } from 'lucide-react'
 import ScheduleMeetingDialog from './meeting/schedule-meeting-dialog'
 import { useRouter } from '@ai/i18n/routing'
+import AppContext from '@ai/context'
 
 export default function Meeting() {
     const router = useRouter()
     const [input, setInput] = React.useState("");
     const newSheduleRef = React.useRef<HTMLButtonElement>(null);
     const origin: string = process.env.NEXT_PUBLIC_URL_ORIGIN as never
+    const {user} = useContext(AppContext)
 
     function changeLinkInput(e: React.ChangeEvent<HTMLInputElement>) {
         const link = e.target.value;
@@ -45,6 +47,7 @@ export default function Meeting() {
     }
     
     function handleJoin() {
+        if (!user) return router.push('/auth')
         const code_link = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         router.push(`/meet/${code_link}`)
     }
@@ -76,7 +79,7 @@ export default function Meeting() {
                 <Input type="url" value={input} onChange={changeLinkInput} placeholder="Saisir un code ou un lien" className="max-w-sm" />
                 <Button
                     className={cn(`${buttonVariants({ variant: "secondary" })} ${input.length <= 0 && 'pointer-events-none select-none bg-secondary/50'}`)}
-                    onClick={() => router.push(`/meet/${getLinkCode()}`)}>Participer</Button>
+                    onClick={() => user ? router.push(`/meet/${getLinkCode()}`) : router.push('/auth')}>Participer</Button>
             </div>
         </div>
     )

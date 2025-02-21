@@ -11,16 +11,25 @@
 import React, { useContext } from "react";
 import { Button } from "@ui/button"
 import { ChevronDown, ChevronUp, Hand, Info, MessageSquare, Mic, MonitorUp, PhoneOff, Users, Video } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { TAppContext } from "@ai/types/context";
 import AppContext from "@ai/context";
 import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { cn } from "@ai/lib/utils";
 import ControlPanelMediaAddon from "./control-panel-media-addon";
+import { useRouter } from "@ai/i18n/routing";
 
 export default function ControlPanel() {
-    const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useContext<TAppContext>(AppContext)
+    const { setMeetPanel, meetPanel, mediaControl, setMediaControl, worker, setWorker } = useContext<TAppContext>(AppContext)
     const router = useRouter()
+
+    async function handleLeave() {
+        console.log(worker.room)
+        if (!worker) return
+        await worker.disconnect()
+        setWorker(null)
+        router.push('/')
+    }
+
     return (
         <div className="control-bar z-10 relative">
             <ControlPanelMediaAddon />
@@ -67,7 +76,7 @@ export default function ControlPanel() {
                 <Button className="other-control-primary">
                     <Hand />
                 </Button>
-                <Button className="other-control-secondary" onClick={() => router.push('/fr')}>
+                <Button className="other-control-secondary" onClick={handleLeave}>
                     <PhoneOff />
                 </Button>
             </div>

@@ -17,7 +17,11 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+/**
+ * Wait for a given number of seconds
+ * @param s seconds
+ */
+export const sleep = (s: number) => new Promise((resolve) => setTimeout(resolve, s * 1000));
 
 export async function initializeLanguage() {
     const _locale = await db.locale.count();

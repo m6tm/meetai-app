@@ -54,8 +54,6 @@ export interface IAudioVolume {
 }
 
 export interface IAudio {
-    sources: IAudioSources
-    currentSource: IAudioCurrentSource
     muted: IAudioMuted
     volume: IAudioVolume
 }
@@ -69,8 +67,6 @@ export interface IVideoCurrentSource {
 }
 
 export interface IVideo {
-    sources: IVideoSources
-    currentSource: IVideoCurrentSource
     muted: boolean
     volume: number
 }

@@ -72,14 +72,14 @@ export default function VideoScreen({ className }: { className?: string; }) {
     }
 
     function fetchParticipants(worker: Worker) {
-        const _participants = worker.getParticipants(worker.room!);
+        if (!worker.room) return
+        const _participants = worker.getParticipants(worker.room);
         const participantToPin = selectRandomUserToPin(_participants);
         setParticipants(_participants);
 
         if (participantToPin) {
             setPinnedUser(participantToPin);
         }
-        console.log(_participants);
     }
     
     useEffect(() => {

@@ -10,7 +10,7 @@
 "use client"
 import AppContext from "@ai/context";
 import { MEDIA_CONTROL_TYPE } from "@ai/enums/meet-panel";
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@ui/button"
 import {
   DropdownMenu,
@@ -21,27 +21,64 @@ import {
 } from "@ui/dropdown-menu"
 import '@styles/control-panel.css'
 
+const fakeAudioMediaDeviceInfo: MediaDeviceInfo = {
+    deviceId: 'device-id',
+    groupId: 'group-id',
+    kind: 'audioinput',
+    label: 'Not defined',
+    toJSON: () => ({})
+}
+
+const fakeVideoMediaDeviceInfo: MediaDeviceInfo = {
+    deviceId: 'device-id',
+    groupId: 'group-id',
+    kind: 'videoinput',
+    label: 'Not defined',
+    toJSON: () => ({})
+}
+
 export default function ControlPanelMediaAddon() {
-    const { mediaControl } = React.useContext(AppContext)
+    const { mediaControl, worker } = React.useContext(AppContext)
+    const [videoSources, setVideoSources] = React.useState<MediaDeviceInfo[]>([])
+    const [audioSources, setAudioSources] = React.useState<MediaDeviceInfo[]>([])
+    const [videoSource, setVideoSource] = React.useState<MediaDeviceInfo>(fakeVideoMediaDeviceInfo)
+    const [audioSource, setAudioSource] = React.useState<MediaDeviceInfo>(fakeAudioMediaDeviceInfo)
+
+    useEffect(() => {
+        async function init() {
+            if (!worker) return
+            const videos = await worker.getAvailableCameras()
+            const audios = await worker.getAvailableAudioInput()
+            const activeDevices = {
+                audio: audios.find(device => device.deviceId === 'default') ?? fakeAudioMediaDeviceInfo,
+                video: videos.find(device => device.deviceId === 'default') ?? fakeVideoMediaDeviceInfo,
+            }
+
+            setVideoSources(videos)
+            setAudioSources(audios)
+            setAudioSource(activeDevices.audio!)
+            setVideoSource(activeDevices.video!)
+        }
+        init()
+    }, [worker]);
+    
     return mediaControl !== MEDIA_CONTROL_TYPE.NONE && <>
         {
             mediaControl === MEDIA_CONTROL_TYPE.VIDEO && (
                 <div className="control-panel">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="control-panel-btn">Source video 2</Button>
+                            <Button variant="outline" className="control-panel-btn">{ videoSource.label }</Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56 bg-white/30 backdrop-blur-sm border-white/30">
                             <DropdownMenuGroup>
-                                <DropdownMenuItem className="cursor-pointer text-white">
-                                    Source video 1
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="cursor-pointer text-white">
-                                    Source video 2
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="cursor-pointer text-white">
-                                    Source video 3
-                                </DropdownMenuItem>
+                                {
+                                    videoSources.map((video, key) => (
+                                        <DropdownMenuItem key={key} className="cursor-pointer text-white">
+                                            {video.label}
+                                        </DropdownMenuItem>
+                                    ))
+                                }
                             </DropdownMenuGroup>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -53,19 +90,17 @@ export default function ControlPanelMediaAddon() {
                 <div className="control-panel">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="control-panel-btn">Source audio 1</Button>
+                        <Button variant="outline" className="control-panel-btn">{ audioSource.label }</Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56 bg-white/30 backdrop-blur-sm border-white/30">
                         <DropdownMenuGroup>
-                            <DropdownMenuItem className="cursor-pointer text-white">
-                                Source audio 1
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer text-white">
-                                Source audio 2
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer text-white">
-                                Source audio 3
-                            </DropdownMenuItem>
+                            {
+                                audioSources.map((audio, key) => (
+                                    <DropdownMenuItem key={key} className="cursor-pointer text-white">
+                                        {audio.label}
+                                    </DropdownMenuItem>
+                                ))
+                            }
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>

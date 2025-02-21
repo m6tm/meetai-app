@@ -18,7 +18,6 @@ import { useContext, useEffect, useState } from "react"
 function BeginMeet({ code }: { code: string }) {
     const { setWorker, worker, event, user } = useContext<TAppContext>(AppContext)
     const [started, setStarted] = useState<boolean>(false)
-    const [userSetted, setUserSetted] = useState<boolean>(false)
 
     useEffect(() => {
         async function init() {
@@ -30,21 +29,8 @@ function BeginMeet({ code }: { code: string }) {
             setWorker(worker)
             setStarted(true)
         }
-        
-        async function handleUserIsSetted() {
-            if (!started && !userSetted) await init()
-            if (started && userSetted && worker) {
-                const _user = await getUser(user?.email ?? 'empty')
-                let userData: CustomUser | undefined = undefined
-                if (_user.data) userData = _user.data
-                worker.user = userData
-                worker.disconnect()
-                worker.connectToRoom()
-            }
-            if (user && !userSetted) setUserSetted(true)
-        }
-        handleUserIsSetted()
-    }, [code, event, setWorker, started, user, userSetted, worker])
+        if (user && !started) init()
+    }, [code, event, setWorker, started, user, worker])
     
     return (
         <div className=""></div>
