@@ -8,7 +8,7 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client";
-import { cn } from "@ai/lib/utils";
+import { cn, shortName } from "@ai/lib/utils";
 import React, { useContext, useEffect } from "react";
 import { Button } from '@ui/button'
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -40,40 +40,6 @@ import { generateRandomUserName, selectRandomUserToPin } from "@ai/lib/meet.lib"
 const USERS: IParticipant[] = [
     {
         id: '1',
-        name: 'Michael Smith',
-        avatar: 'https://i.pravatar.cc/150?img=1',
-        isHost: false,
-        email: '',
-        pinned: false,
-        audio: {
-            muted: false,
-            volume: 1
-        },
-        video: {
-            muted: false,
-            volume: 1
-        },
-        isSelf: false
-    },
-    {
-        id: '2',
-        name: 'Emma Wilson',
-        avatar: 'https://i.pravatar.cc/150?img=2',
-        isHost: false,
-        email: '',
-        pinned: false,
-        audio: {
-            muted: false,
-            volume: 1
-        },
-        video: {
-            muted: false,
-            volume: 1
-        },
-        isSelf: false
-    },
-    {
-        id: '3',
         name: 'David Johnson',
         avatar: 'https://i.pravatar.cc/150?img=3',
         isHost: true,
@@ -113,6 +79,7 @@ export default function VideoScreen({ className }: { className?: string; }) {
         if (participantToPin) {
             setPinnedUser(participantToPin);
         }
+        console.log(_participants);
     }
     
     useEffect(() => {
@@ -135,7 +102,7 @@ export default function VideoScreen({ className }: { className?: string; }) {
                         <div ref={mainVideoScreenRef} className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full bg-slate-600">
                             <Avatar className="size-36">
                                 <AvatarImage src={pinnedUser.avatar} alt={`Logo de ${pinnedUser.name}`} />
-                                <AvatarFallback className="uppercase">{ (pinnedUser.name ?? generateRandomUserName()).slice(0, 2) }</AvatarFallback>
+                                <AvatarFallback className="uppercase">{ shortName(pinnedUser.name ?? generateRandomUserName()) }</AvatarFallback>
                             </Avatar>
                         </div>
                         <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
@@ -194,7 +161,7 @@ export default function VideoScreen({ className }: { className?: string; }) {
                                 <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full">
                                     <Avatar className="size-24">
                                         <AvatarImage src={user.avatar} alt={`Logo de ${user.name}`} />
-                                        <AvatarFallback className="uppercase">{ (user.name ?? generateRandomUserName()).slice(0, 2) }</AvatarFallback>
+                                        <AvatarFallback className="uppercase">{ shortName(user.name ?? generateRandomUserName()) }</AvatarFallback>
                                     </Avatar>
                                 </div>
                                 <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">

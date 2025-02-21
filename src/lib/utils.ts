@@ -83,3 +83,9 @@ export const uuid = () => {
         return v.toString(16);
     });
 }
+
+export const shortName = (name: string) => {
+    const names = name.includes('-') ? name.split('-') : name.split(' ');
+    if (names.length === 1) return names[0].substring(0, 2).toUpperCase();
+    return `${names[0].substring(0, 1)}${names[1].substring(0, 1)}`.toUpperCase();
+}

@@ -8,24 +8,44 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client"
+import { getUser } from "@ai/actions/user.action"
 import AppContext from "@ai/context"
 import { TAppContext } from "@ai/types/context"
+import { CustomUser } from "@ai/types/requests/user.request"
 import Worker from "@ai/worker/worker"
 import { useContext, useEffect, useState } from "react"
 
 function BeginMeet({ code }: { code: string }) {
-    const { setWorker, event } = useContext<TAppContext>(AppContext)
+    const { setWorker, worker, event, user } = useContext<TAppContext>(AppContext)
     const [started, setStarted] = useState<boolean>(false)
+    const [userSetted, setUserSetted] = useState<boolean>(false)
 
     useEffect(() => {
-        if (!started) {
-            const worker = new Worker(event, code)
+        async function init() {
+            const _user = await getUser(user?.email ?? 'empty')
+            let userData: CustomUser | undefined = undefined
+            if (_user.data) userData = _user.data
+            const worker = new Worker(event, code, userData)
             worker.init()
             setWorker(worker)
             setStarted(true)
         }
-    }, [code, event, setWorker, started])
-
+        
+        async function handleUserIsSetted() {
+            if (!started && !userSetted) await init()
+            if (started && userSetted && worker) {
+                const _user = await getUser(user?.email ?? 'empty')
+                let userData: CustomUser | undefined = undefined
+                if (_user.data) userData = _user.data
+                worker.user = userData
+                worker.disconnect()
+                worker.connectToRoom()
+            }
+            if (user && !userSetted) setUserSetted(true)
+        }
+        handleUserIsSetted()
+    }, [code, event, setWorker, started, user, userSetted, worker])
+    
     return (
         <div className=""></div>
     )

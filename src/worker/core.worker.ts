@@ -14,10 +14,10 @@ import { makeRequest, uuid } from "@ai/lib/utils";
 import { MeetConnectionStatus, TMeetParticipants } from "@ai/types/worker";
 import { io, type Socket } from "socket.io-client";
 import { type EventEmitter } from "events";
-import { User } from "firebase/auth";
 import { GenerateMeetTokenResponse } from "@ai/types/requests/meet-token.request";
-import { RemoteParticipant, Room, RoomEvent } from 'livekit-client';
+import { ConnectionState, RemoteParticipant, Room, RoomEvent } from 'livekit-client';
 import { generateRandomUserName } from "@ai/lib/meet.lib";
+import { User } from "@prisma/client";
 
 
 export default class CoreWorker implements ICoreWorker {
@@ -62,8 +62,9 @@ export default class CoreWorker implements ICoreWorker {
     ws_url: string = process.env.NEXT_PUBLIC_LIVEKIT_WEBSOCKET_URL ?? ''
     room: Room | undefined = undefined;
 
-    constructor(event: EventEmitter) {
+    constructor(event: EventEmitter, user: User | undefined) {
         this.event = event
+        this.user = user
     }
 
     connect = async (): Promise<Socket | Socket.DisconnectReason | Error> => {
@@ -149,7 +150,7 @@ export default class CoreWorker implements ICoreWorker {
             form.append('room_name', this.call_id);
 
             if (this.user) {
-                form.append('participant_name', this.user.displayName ?? default_user);
+                form.append('participant_name', this.user.name ?? default_user);
             } else {
                 form.append('participant_name', default_user);
             }
@@ -167,7 +168,7 @@ export default class CoreWorker implements ICoreWorker {
 
         this.room.on(RoomEvent.Connected, () => {
             this.status = 'connected'
-            this.event.emit('je suis connecté à la salle');
+            this.event.emit('je suis connecté à la salle')
         });
 
         await this.room.connect(this.ws_url, this.token, {
@@ -183,7 +184,9 @@ export default class CoreWorker implements ICoreWorker {
 
         this.room.on(RoomEvent.ParticipantConnected, () => this.event.emit('un utilisateur viens de se connecter'));
 
-        // this.room.on(RoomEvent.Disconnected, () => {});
+        this.room.on(RoomEvent.Disconnected, () => {
+            this.status = 'disconnected'
+        });
 
         this.room.on(RoomEvent.ParticipantDisconnected, () => this.event.emit('un utilisateur viens de se déconnecter'));
     }
@@ -215,7 +218,7 @@ export default class CoreWorker implements ICoreWorker {
         // Ajouter l'utilisateur actuel comme participant
         const selfParticipant: IParticipant = {
             id: room.localParticipant.sid,
-            name: this.user?.displayName ?? generateRandomUserName(),
+            name: this.user?.name ?? generateRandomUserName(),
             avatar: undefined,
             email: this.user?.email ?? '',
             pinned: false,
@@ -233,5 +236,12 @@ export default class CoreWorker implements ICoreWorker {
         _participants.push(selfParticipant);
 
         return _participants;
-    };
+    }
+
+    disconnect = async () => {
+        if (this.room) {
+            if (this.room.state === ConnectionState.Connected) await this.room.disconnect();
+            this.room = undefined;
+        }
+    }
 }

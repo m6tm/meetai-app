@@ -11,12 +11,13 @@
 import { IMeetWorker } from "@ai/interfaces/meet.worker.interface";
 import CoreWorker from "./core.worker";
 import { type EventEmitter } from "events";
+import { User } from "@prisma/client";
 
 
 export default class Worker extends CoreWorker implements IMeetWorker {
 
-    constructor(event: EventEmitter, meet_id: string) {
-        super(event)
+    constructor(event: EventEmitter, meet_id: string, user: User | undefined) {
+        super(event, user)
         this.call_id = meet_id
     }
 

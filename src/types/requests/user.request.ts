@@ -14,7 +14,7 @@ type CustomSubscription = Subscription & {
     plan: Plan
 }
 
-type CustomUser = User & {
+export type CustomUser = User & {
     subscription: CustomSubscription
 }
 
