@@ -9,7 +9,7 @@
  */
 "use client"
 import React, { useEffect, useState } from "react";
-import AppContext from "@ai/context";
+import AppContext from "@ai/context/context";
 import { TAppContext } from "@ai/types/context";
 import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider, GithubAuthProvider, User } from 'firebase/auth'
@@ -17,7 +17,6 @@ import { fireAuth } from '@ai/firebase';
 import { db } from "@ai/db";
 import { usePathname, useRouter } from "@ai/i18n/routing";
 import { initializeLanguage } from "@ai/lib/utils";
-import Worker from "@ai/worker/worker";
 import { EventEmitter } from "events"
 
 export default function ContextProvider({ children }: { children: React.ReactNode; }) {
@@ -28,7 +27,6 @@ export default function ContextProvider({ children }: { children: React.ReactNod
     const [autoriseMessage, setAutoriseMessage] = React.useState<boolean>(true);
     const [mediaControl, setMediaControl] = React.useState<MEDIA_CONTROL_TYPE>(MEDIA_CONTROL_TYPE.NONE);
     const [user, setUser] = useState<User | null>(null)
-    const [worker, setWorker] = useState<Worker | null>(null)
 
     const googleSignIn = async () => {
         try {
@@ -78,8 +76,6 @@ export default function ContextProvider({ children }: { children: React.ReactNod
         googleSignIn,
         githubSignIn,
         logOut,
-        worker,
-        setWorker,
         event,
     }
     

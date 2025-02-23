@@ -13,7 +13,7 @@ import React from "react";
 import { Button } from '@ui/button'
 import { UserPlus, X } from "lucide-react";
 import { TAppContext } from "@ai/types/context";
-import AppContext from "@ai/context";
+import AppContext from "@ai/context/context";
 import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { Input } from "@ui/input";
 import {

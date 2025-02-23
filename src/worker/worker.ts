@@ -26,8 +26,6 @@ export default class Worker extends CoreWorker implements IMeetWorker {
 
         if (this.status !== 'connected') throw new Error('Failed to connect to the server')
 
-        console.log('Starting meeting');
-
         await this.connectToRoom()
 
         // await this.requestMediaStream()

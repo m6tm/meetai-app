@@ -19,6 +19,7 @@ import { ConnectionState, RemoteParticipant, Room, RoomEvent } from 'livekit-cli
 import { generateRandomUserName } from "@ai/lib/meet.lib";
 import { User } from "@prisma/client";
 import { AppMode } from "@ai/types/definitions";
+import { isMeetPage } from "@ai/components/meeting/begin-meet";
 
 
 export default class CoreWorker implements ICoreWorker {
@@ -132,6 +133,7 @@ export default class CoreWorker implements ICoreWorker {
     }
 
     connectToRoom = async () => {
+        if (!isMeetPage()) return
         if (this.token.length === 0) {
             const form = new FormData();
             const default_user = generateRandomUserName();
@@ -151,6 +153,7 @@ export default class CoreWorker implements ICoreWorker {
 
             this.token = response.data.token;
         }
+
         const preferences = await db.preferences.orderBy('id').first()
         let audio_muted = false,
             video_muted = false;
@@ -178,6 +181,7 @@ export default class CoreWorker implements ICoreWorker {
         this._participants = this.getParticipants(this.room);
 
         this.room.localParticipant.enableCameraAndMicrophone()
+        console.log('activation de la caméra: ', this.token);
 
         if (!audio_muted) {
             this.room.localParticipant.setMicrophoneEnabled(false);
@@ -272,8 +276,39 @@ export default class CoreWorker implements ICoreWorker {
 
     disconnect = async () => {
         if (this.room) {
-            if (this.room.state === ConnectionState.Connected) await this.room.disconnect();
+            this.room.localParticipant.trackPublications.forEach(publication => {
+                if (publication.track) {
+                    publication.track.stop();
+                    this.room?.localParticipant.unpublishTrack(publication.track);
+                }
+            });
+
+            this.room.removeAllListeners(RoomEvent.Connected);
+            this.room.removeAllListeners(RoomEvent.Disconnected);
+            this.room.removeAllListeners(RoomEvent.ParticipantConnected);
+            this.room.removeAllListeners(RoomEvent.ParticipantDisconnected);
+            this.room.removeAllListeners(RoomEvent.TrackSubscribed);
+
+            if (this.room.state === ConnectionState.Connected) {
+                await this.room.disconnect();
+            }
             this.room = undefined;
         }
+
+        if (this.socket) {
+            this.socket.disconnect();
+            this.socket.io.opts.reconnection = false;
+            this.socket = undefined;
+        }
+
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            this.stream = undefined;
+        }
+
+        this.token = ''
+        this.status = 'disconnected';
+        this.stream = undefined;
+        this._participants = [];
     }
 }

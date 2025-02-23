@@ -12,7 +12,7 @@ import { signIn } from "@ai/actions/auth.action";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import GithubSignIn from "@ai/components/auth/GithubSignIn";
 import GoogleSignIn from "@ai/components/auth/GoogleSignIn";
-import AppContext from "@ai/context";
+import AppContext from "@ai/context/context";
 import { useRouter } from "@ai/i18n/routing";
 import { useContext, useEffect } from "react";
 

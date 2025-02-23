@@ -14,7 +14,7 @@ import { Button } from '@ui/button'
 import { UserPlus, X } from "lucide-react";
 import CopyElement from "@ai/components/meeting/_ui/copy-btn";
 import { TAppContext } from "@ai/types/context";
-import AppContext from "@ai/context";
+import AppContext from "@ai/context/context";
 import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 
 export default function MeetDataInfo({ code }: { code: string }) {

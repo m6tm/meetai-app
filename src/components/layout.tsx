@@ -14,7 +14,7 @@ import { XIcon } from 'lucide-react';
 import Footer from './footer';
 import LanguageSwitcher from './LanguageSwitcher';
 import { Link } from '@ai/i18n/routing';
-import AppContext from '@ai/context';
+import AppContext from '@ai/context/context';
 import UserProfileAvatar from './auth/UserProfileAvatar';
 
 const _pages = [

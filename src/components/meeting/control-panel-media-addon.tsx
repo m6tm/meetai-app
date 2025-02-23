@@ -8,7 +8,7 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client"
-import AppContext from "@ai/context";
+import AppContext from "@ai/context/context";
 import { MEDIA_CONTROL_TYPE } from "@ai/enums/meet-panel";
 import React, { useEffect } from "react";
 import { Button } from "@ui/button"

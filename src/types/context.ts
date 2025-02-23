@@ -25,6 +25,10 @@ export type TAppContext = {
     googleSignIn: () => Promise<void>,
     githubSignIn: () => Promise<void>,
     logOut: () => Promise<void>,
+}
+
+export type TAppWorkerContext = {
+    event: EventEmitter,
     worker: Worker | null,
     setWorker: (worker: Worker | null) => void,
 }

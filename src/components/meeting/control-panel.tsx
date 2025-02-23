@@ -11,23 +11,26 @@
 import React, { useContext } from "react";
 import { Button } from "@ui/button"
 import { ChevronDown, ChevronUp, Hand, Info, MessageSquare, Mic, MonitorUp, PhoneOff, Users, Video } from "lucide-react";
-import { TAppContext } from "@ai/types/context";
-import AppContext from "@ai/context";
+import { TAppContext, TAppWorkerContext } from "@ai/types/context";
+import AppContext from "@ai/context/context";
 import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { cn } from "@ai/lib/utils";
 import ControlPanelMediaAddon from "./control-panel-media-addon";
 import { useRouter } from "@ai/i18n/routing";
+import AppWorkerContext from "@ai/context/worker.context";
 
 export default function ControlPanel() {
-    const { setMeetPanel, meetPanel, mediaControl, setMediaControl, worker, setWorker } = useContext<TAppContext>(AppContext)
+    const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useContext<TAppContext>(AppContext)
+    const { worker, setWorker } = useContext<TAppWorkerContext>(AppWorkerContext)
     const router = useRouter()
 
     async function handleLeave() {
-        console.log(worker.room)
-        if (!worker) return
-        await worker.disconnect()
-        setWorker(null)
-        router.push('/')
+        if (worker) {
+            await worker.disconnect();
+            setWorker(null);
+        }
+        console.log('déconnexion');
+        router.push('/');
     }
 
     return (

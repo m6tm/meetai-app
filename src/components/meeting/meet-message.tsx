@@ -14,7 +14,7 @@ import { Button } from '@ui/button'
 import { Label } from '@ui/label'
 import { SendHorizonal, X } from "lucide-react";
 import { TAppContext } from "@ai/types/context";
-import AppContext from "@ai/context";
+import AppContext from "@ai/context/context";
 import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { Switch } from "@ui/switch"
 import '@styles/messages.css'

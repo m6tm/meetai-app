@@ -8,7 +8,7 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import AppContext from "@ai/context";
+import AppContext from "@ai/context/context";
 import { useContext, useEffect, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@ui/avatar";

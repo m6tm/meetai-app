@@ -29,7 +29,6 @@ export default function LanguageSwitcher() {
 
     useEffect(() => {
         const fetchAndSetLocale = async () => {
-            console.log("Fetching locale...");
             const _locale = await db.locale.orderBy('id').last();
             if (_locale) {
                 setLocale(_locale.locale);

@@ -32,10 +32,11 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@ui/dropdown-menu"
-import AppContext from "@ai/context";
+import AppContext from "@ai/context/context";
 import Worker from "@ai/worker/worker";
 import { IParticipant } from "@ai/interfaces/core.worker.interface";
 import { generateRandomUserName, selectRandomUserToPin } from "@ai/lib/meet.lib";
+import AppWorkerContext from "@ai/context/worker.context";
 
 const USERS: IParticipant[] = [
     {
@@ -58,7 +59,7 @@ const USERS: IParticipant[] = [
 ]
 
 export default function VideoScreen({ className }: { className?: string; }) {
-    const { worker } = useContext(AppContext)
+    const { worker } = useContext(AppWorkerContext)
     const videoRef = React.useRef<HTMLVideoElement>(null);
     const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
     const [pinnedUser, setPinnedUser] = React.useState<IParticipant | null>(null);

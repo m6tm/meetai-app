@@ -23,7 +23,7 @@ import { Input } from '@ui/input'
 import { Link as ILink, Plus, Video } from 'lucide-react'
 import ScheduleMeetingDialog from './meeting/schedule-meeting-dialog'
 import { useRouter } from '@ai/i18n/routing'
-import AppContext from '@ai/context'
+import AppContext from '@ai/context/context'
 
 export default function Meeting() {
     const router = useRouter()

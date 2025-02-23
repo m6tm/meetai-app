@@ -17,19 +17,28 @@ import Participant from "@ai/components/meeting/participant";
 import MeetMessage from "@ai/components/meeting/meet-message";
 import VideoScreen from "@ai/components/meeting/video-screen";
 import BeginMeet from "@ai/components/meeting/begin-meet";
+import WorkerProvider from "@ai/providers/worker-provider";
 
-export default async function Meeting({ params }: { params: Promise<{ code: string }> }) {
+export default async function Page({ params }: { params: Promise<{ code: string }> }) {
     const code = (await params).code
-    
     return (
-        <div className="flex flex-col h-screen w-full bg-neutral-800 relative select-none">
-            <BeginMeet {...{ code }} />
-            <VideoScreen />
-            <ControlPanel />
-            <MeetDataFirst {...{ code }} />
-            <MeetDataInfo {...{ code }} />
-            <Participant />
-            <MeetMessage />
-        </div>
+        <Meeting key={code} {...{ params: { code } }} />
+    )
+}
+
+function Meeting({ params }: { params: { code: string } }) {
+    const code = params.code
+    return (
+        <WorkerProvider>
+            <div className="flex flex-col h-screen w-full bg-neutral-800 relative select-none">
+                <BeginMeet {...{ code }} />
+                <VideoScreen />
+                <ControlPanel />
+                <MeetDataFirst {...{ code }} />
+                <MeetDataInfo {...{ code }} />
+                <Participant />
+                <MeetMessage />
+            </div>
+        </WorkerProvider>
     )
 }
