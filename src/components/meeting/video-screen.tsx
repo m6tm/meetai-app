@@ -8,8 +8,8 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client";
-import { cn } from "@ai/lib/utils";
-import React from "react";
+import { cn, shortUserName } from "@ai/lib/utils";
+import React, { useEffect } from "react";
 import { Button } from '@ui/button'
 import { Swiper, SwiperSlide } from 'swiper/react';
 import {
@@ -32,7 +32,10 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@ui/dropdown-menu"
+import { IParticipant } from "@ai/interfaces/core.worker.interface";
+import { useMeetParticipantStore } from "@ai/stores/meet.store";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const USERS = [
     {
         id: 1,
@@ -44,44 +47,21 @@ const USERS = [
         id: 2,
         name: 'Emma Wilson',
         avatar: 'https://i.pravatar.cc/150?img=2',
-        isHost: false,
+        isHost: true,
     },
     {
         id: 3,
         name: 'David Johnson',
         avatar: 'https://i.pravatar.cc/150?img=3',
-        isHost: true,
-    },
-    {
-        id: 4,
-        name: 'Sarah Brown',
-        avatar: 'https://i.pravatar.cc/150?img=4',
         isHost: false,
     },
-    {
-        id: 5,
-        name: 'James Anderson',
-        avatar: 'https://i.pravatar.cc/150?img=5',
-        isHost: false,
-    },
-    {
-        id: 6,
-        name: 'Olivia Taylor',
-        avatar: 'https://i.pravatar.cc/150?img=6',
-        isHost: false,
-    },
-    {
-        id: 7,
-        name: 'William Davis',
-        avatar: 'https://i.pravatar.cc/150?img=7',
-        isHost: false,
-    }
 ]
 
 export default function VideoScreen({ className }: { className?: string; }) {
     const videoRef = React.useRef<HTMLVideoElement>(null);
+    const { participants } = useMeetParticipantStore()
     const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
-    const user = USERS.find(user => user.isHost);
+    const [activeUser, setActiveUser] = React.useState<IParticipant | undefined>(undefined);
 
     function fullScreen() {
         if (!mainVideoScreenRef.current) return
@@ -90,15 +70,23 @@ export default function VideoScreen({ className }: { className?: string; }) {
         });
     }
 
+    useEffect(() => {
+        participants.forEach((participant: IParticipant) => {
+            if (participant.pinned) {
+                setActiveUser(participant)
+            }
+        })
+    }, [participants])
+
     return (
         <div className="w-full h-full relative z-0">
             {
-                user && (
+                activeUser && (
                     <div className="main-screen">
                         <div ref={mainVideoScreenRef} className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full bg-slate-600">
                             <Avatar className="size-36">
-                                <AvatarImage src={user.avatar} alt={`Logo de ${user.name}`} />
-                                <AvatarFallback className="uppercase">{ user.name.slice(0, 2) }</AvatarFallback>
+                                <AvatarImage src={activeUser.avatar} alt={`Logo de ${activeUser.name}`} />
+                                <AvatarFallback className="uppercase">{ shortUserName(activeUser.name) }</AvatarFallback>
                             </Avatar>
                         </div>
                         <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
@@ -152,12 +140,12 @@ export default function VideoScreen({ className }: { className?: string; }) {
                     className="h-full"
                 >
                     {
-                        USERS.filter((user) => !user.isHost).map((user) => (
+                        participants.filter((user) => !user.isHost).map((user) => (
                             <SwiperSlide key={user.id} className="screen-child">
                                 <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full">
                                     <Avatar className="size-24">
                                         <AvatarImage src={user.avatar} alt={`Logo de ${user.name}`} />
-                                        <AvatarFallback className="uppercase">{ user.name.slice(0, 2) }</AvatarFallback>
+                                        <AvatarFallback className="uppercase">{ shortUserName(user.name) }</AvatarFallback>
                                     </Avatar>
                                 </div>
                                 <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">

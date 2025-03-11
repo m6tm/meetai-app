@@ -8,10 +8,16 @@
  * the prior written permission of Meet ai LLC.
  */
 
-// import Worker from "@ai/worker/worker";
+import { User } from "firebase/auth"
+import { create } from "zustand"
 
-export type TAppContext = {
-    googleSignIn: () => Promise<void>,
-    githubSignIn: () => Promise<void>,
-    logOut: () => Promise<void>,
+
+export type UserStore = {
+    user: User | null
+    setUser: (user: User | null) => void
 }
+
+export const useUserStore = create<UserStore>((set) => ({
+    user: null,
+    setUser: (user: User | null) => set({ user })
+}))

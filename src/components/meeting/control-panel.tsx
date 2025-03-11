@@ -8,19 +8,69 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client"
-import React, { useContext } from "react";
+import React from "react";
 import { Button } from "@ui/button"
-import { ChevronDown, ChevronUp, Hand, Info, MessageSquare, Mic, MonitorUp, PhoneOff, Users, Video } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { TAppContext } from "@ai/types/context";
-import AppContext from "@ai/context";
+import { ChevronDown, ChevronUp, Hand, Info, MessageSquare, Mic, MicOff, MonitorUp, PhoneOff, Users, Video, VideoOff } from "lucide-react";
 import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { cn } from "@ai/lib/utils";
 import ControlPanelMediaAddon from "./control-panel-media-addon";
+import { useMeetParticipantStore, useMeetStore } from "@ai/stores/meet.store";
+import { db } from "@ai/db";
+import { useRouter } from "@ai/i18n/routing";
 
 export default function ControlPanel() {
-    const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useContext<TAppContext>(AppContext)
+    const { setMeetPanel, meetPanel, mediaControl, setMediaControl, refreshSources, worker } = useMeetStore()
+    const { participants, setParitipantMediaState } = useMeetParticipantStore()
+    const localParticipant = participants.find((participant) => participant.isSelf)!
     const router = useRouter()
+
+    const handleAudioToggleButton = () => {
+        if (mediaControl !== MEDIA_CONTROL_TYPE.AUDIO) {
+            setMediaControl(MEDIA_CONTROL_TYPE.AUDIO)
+        } else {
+            setMediaControl(MEDIA_CONTROL_TYPE.NONE)
+        }
+        refreshSources()
+    }
+
+    const handleVideoToggleButton = () => {
+        if (mediaControl !== MEDIA_CONTROL_TYPE.VIDEO) {
+            setMediaControl(MEDIA_CONTROL_TYPE.VIDEO)
+        } else {
+            setMediaControl(MEDIA_CONTROL_TYPE.NONE)
+        }
+        refreshSources()
+    }
+
+    const handleAudioMuteButton = async () => {
+        const participant = participants.find((participant) => participant.isSelf)
+        if (!participant || !worker) return
+        const audioToggled = await worker.setMyAudioLocalDevice(!participant.audio.muted)
+        const preferences = await db.preferences.orderBy('id').first()
+        if (audioToggled && preferences) {
+            preferences.audio = !participant.audio.muted
+            db.preferences.update(preferences.id, preferences)
+        }
+        setParitipantMediaState(participant.id, 'audio', audioToggled ? !participant.audio.muted : undefined, undefined)
+    }
+
+    const handleVideoMuteButton = async () => {
+        const participant = participants.find((participant) => participant.isSelf)
+        if (!participant || !worker) return
+        const videoToggled = await worker.setMyVideoLocalDevice(!participant.video.muted)
+        const preferences = await db.preferences.orderBy('id').first()
+        if (videoToggled && preferences) {
+            preferences.video = !participant.video.muted
+            await db.preferences.update(preferences.id, preferences)
+            setParitipantMediaState(participant.id, 'video', undefined, !participant.video.muted)
+        }
+    }
+
+    const handleLogoutButton = async () => {
+        if (worker) await worker.disconnect();
+        router.push('/')
+    }
+
     return (
         <div className="control-bar z-10 relative">
             <ControlPanelMediaAddon />
@@ -32,7 +82,7 @@ export default function ControlPanel() {
                 <div className="media-control">
                     <Button
                         className="bg-transparent hover:bg-transparent"
-                        onClick={() => mediaControl !== MEDIA_CONTROL_TYPE.AUDIO ? setMediaControl(MEDIA_CONTROL_TYPE.AUDIO) : setMediaControl(MEDIA_CONTROL_TYPE.NONE)}>
+                        onClick={handleAudioToggleButton}>
                         {
                             mediaControl === MEDIA_CONTROL_TYPE.AUDIO ? (
                                 <ChevronDown />
@@ -41,14 +91,20 @@ export default function ControlPanel() {
                             )
                         }
                     </Button>
-                    <Button>
-                        <Mic />
+                    <Button onClick={handleAudioMuteButton} className={cn((localParticipant && !localParticipant.audio.muted) && 'muted')}>
+                        {
+                            (localParticipant && !localParticipant.audio.muted) ? (
+                                <MicOff />
+                            ) : (
+                                <Mic />
+                            )
+                        }
                     </Button>
                 </div>
                 <div className="media-control">
                     <Button
                         className="bg-transparent hover:bg-transparent"
-                        onClick={() => mediaControl !== MEDIA_CONTROL_TYPE.VIDEO ? setMediaControl(MEDIA_CONTROL_TYPE.VIDEO) : setMediaControl(MEDIA_CONTROL_TYPE.NONE)}>
+                        onClick={handleVideoToggleButton}>
                         {
                             mediaControl === MEDIA_CONTROL_TYPE.VIDEO ? (
                                 <ChevronDown />
@@ -57,8 +113,14 @@ export default function ControlPanel() {
                             )
                         }
                     </Button>
-                    <Button>
-                        <Video />
+                    <Button onClick={handleVideoMuteButton} className={cn((localParticipant && !localParticipant.video.muted) && 'muted')}>
+                        {
+                            (localParticipant && !localParticipant.video.muted) ? (
+                                <VideoOff />
+                            ) : (
+                                <Video />
+                            )
+                        }
                     </Button>
                 </div>
                 <Button className="other-control-primary">
@@ -67,7 +129,7 @@ export default function ControlPanel() {
                 <Button className="other-control-primary">
                     <Hand />
                 </Button>
-                <Button className="other-control-secondary" onClick={() => router.push('/fr')}>
+                <Button className="other-control-secondary" onClick={handleLogoutButton}>
                     <PhoneOff />
                 </Button>
             </div>

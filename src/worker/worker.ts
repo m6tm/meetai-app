@@ -10,24 +10,25 @@
 
 import { IMeetWorker } from "@ai/interfaces/meet.worker.interface";
 import CoreWorker from "./core.worker";
-import { uuid } from "@ai/lib/utils";
 import { type EventEmitter } from "events";
+import { User } from "firebase/auth";
 
 
 export default class Worker extends CoreWorker implements IMeetWorker {
 
-    constructor(event: EventEmitter) {
-        super(event)
+    constructor(event: EventEmitter, code: string, user: User | null) {
+        super(event, code)
+        if (user) this.user = user
     }
 
     async init() {
-        this.token = uuid()
         await this.connect()
 
         if (this.status !== 'connected') throw new Error('Failed to connect to the server')
+        await this.startMeet()
 
-        await this.requestMediaStream()
+        // await this.requestMediaStream()
 
-        if (this.stream === undefined) throw new Error('Failed to get media stream')
+        // if (this.stream === undefined) throw new Error('Failed to get media stream')
     }
 }

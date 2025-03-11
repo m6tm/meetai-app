@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack -H 0.0.0.0",
+    "dev": "next dev --turbopack -H 0.0.0.0 --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -43,6 +43,8 @@
     "embla-carousel-react": "^8.3.1",
     "firebase": "^11.1.0",
     "jose": "^5.9.6",
+    "livekit-client": "^2.9.5",
+    "livekit-server-sdk": "^2.10.2",
     "lodash": "^4.17.21",
     "lucide-react": "^0.454.0",
     "next": "^15.0.3",
@@ -57,7 +59,8 @@
     "socket.io-client": "^4.8.1",
     "swiper": "^11.1.15",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",

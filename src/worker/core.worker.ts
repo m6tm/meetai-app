@@ -10,10 +10,14 @@
 
 import { db } from "@ai/db";
 import { ICoreWorker, IParticipant } from "@ai/interfaces/core.worker.interface";
-import { uuid } from "@ai/lib/utils";
+import { makeRequest, uuid } from "@ai/lib/utils";
 import { MeetConnectionStatus } from "@ai/types/worker";
 import { io, type Socket } from "socket.io-client";
 import { type EventEmitter } from "events";
+import { User } from "firebase/auth";
+import { RemoteParticipant, Room, RoomEvent, TrackPublication } from 'livekit-client';
+import { generateRandomUserName } from "@ai/lib/meet.lib";
+import { GenerateMeetTokenResponse } from "@ai/types/requests/meet-token.request";
 
 
 export default class CoreWorker implements ICoreWorker {
@@ -47,14 +51,18 @@ export default class CoreWorker implements ICoreWorker {
         muted: true,
         volume: 1
     }
-    participants: Array<IParticipant> = [];
+    _participants: Array<IParticipant> = [];
+    participants: IParticipant[] = [];
     token: string = ''
     stream: MediaStream | undefined = undefined;
     call_id: string = ''
     event!: EventEmitter;
     retry = 0
+    user: User | undefined = undefined
+    ws_url: string = process.env.NEXT_PUBLIC_LIVEKIT_WEBSOCKET_URL ?? ''
+    room: Room | undefined = undefined;
 
-    constructor(event: EventEmitter) {
+    constructor(event: EventEmitter, public code: string) {
         this.event = event
     }
 
@@ -132,5 +140,151 @@ export default class CoreWorker implements ICoreWorker {
             console.error(error)
             return undefined
         }
+    }
+
+    startMeet = async () => {
+        if (this.token.length === 0) {
+            const form = new FormData();
+            const default_user = generateRandomUserName();
+            form.append('room_name', this.code);
+
+            if (this.user) {
+                form.append('participant_name', this.user.displayName ?? default_user);
+            } else {
+                form.append('participant_name', default_user);
+            }
+
+            const response = await makeRequest<GenerateMeetTokenResponse>('/api/get-token', form, 'POST');
+
+            if (!response.data) {
+                throw new Error('Failed to generate token');
+            }
+
+
+            this.token = response.data.token;
+        }
+
+        this.room = new Room();
+
+        this.room.on(RoomEvent.Connected, () => {
+            this.status = 'connected'
+            this.event.emit('je suis connecté à la salle');
+        });
+
+        await this.room.connect(this.ws_url, this.token, {
+            autoSubscribe: true,
+        });
+
+        this._participants = this.getParticipants();
+
+        this.room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+            console.log('Track subscribed :', track.kind, publication.trackSid, participant.identity);
+        });
+
+        this.room.on(RoomEvent.ParticipantConnected, (participant) => {
+            this.event.emit('un utilisateur viens de se connecter');
+            participant.on('trackMuted', (track: TrackPublication) => {
+                this.event.emit('un participant a désactivé une piste audio/video', participant, track);
+            });
+            participant.on('trackUnmuted', (track: TrackPublication) => {
+                this.event.emit('un participant a activé une piste audio/video', participant, track);
+            });
+        });
+
+        // this.room.on(RoomEvent.Disconnected, () => {});
+
+        this.room.on(RoomEvent.ParticipantDisconnected, () => this.event.emit('un utilisateur viens de se déconnecter'));
+    }
+
+    getParticipants = (): IParticipant[] => {
+        if (!this.room) return []
+        // Obtenir la liste des participants déjà présents
+        const _participants: IParticipant[] = [];
+        Array.from(this.room.remoteParticipants.values()).forEach((participant: RemoteParticipant) => {
+            const existingParticipant: IParticipant = {
+                id: participant.sid,
+                name: participant.identity,
+                avatar: undefined,
+                email: '',
+                pinned: false,
+                audio: {
+                    muted: false,
+                    volume: 1
+                },
+                video: {
+                    muted: false,
+                    volume: 1
+                },
+                isSelf: false,
+                isHost: false,
+            };
+            _participants.push(existingParticipant);
+        });
+
+        // Ajouter l'utilisateur actuel comme participant
+        const selfParticipant: IParticipant = {
+            id: this.room.localParticipant.sid,
+            name: this.user?.displayName ?? generateRandomUserName(),
+            avatar: undefined,
+            email: this.user?.email ?? '',
+            pinned: true,
+            audio: {
+                muted: false,
+                volume: 1
+            },
+            video: {
+                muted: false,
+                volume: 1
+            },
+            isSelf: true,
+            isHost: false,
+        };
+        _participants.push(selfParticipant);
+
+        this.event.emit('met à jour la liste des participants', _participants);
+
+        return _participants;
+    }
+
+    setMyLocalDevice = async (audio: boolean, video: boolean) => {
+        if (!this.room) return { audioToggled: false, videoToggled: false }
+
+        let audioToggled = false;
+        let videoToggled = false;
+        if (audio) audioToggled = !!(await this.room.localParticipant.setMicrophoneEnabled(true));
+        if (!audio) audioToggled = !!(await this.room.localParticipant.setMicrophoneEnabled(false));
+        if (video) videoToggled = !!(await this.room.localParticipant.setCameraEnabled(true));
+        if (!video) videoToggled = !!(await this.room.localParticipant.setCameraEnabled(false));
+        return { audioToggled, videoToggled }
+    }
+
+    setMyAudioLocalDevice = async (audio: boolean) => {
+        if (!this.room) return false
+
+        let audioToggled = false;
+        if (audio) audioToggled = !!(await this.room.localParticipant.setMicrophoneEnabled(true));
+        if (!audio) audioToggled = !!(await this.room.localParticipant.setMicrophoneEnabled(false));
+        return audioToggled
+    }
+
+    setMyVideoLocalDevice = async (video: boolean) => {
+        if (!this.room) return false
+
+        let videoToggled = false;
+        if (video) videoToggled = !!(await this.room.localParticipant.setCameraEnabled(true));
+        if (!video) videoToggled = !!(await this.room.localParticipant.setCameraEnabled(false));
+        return videoToggled
+    }
+
+    disconnect = async () => {
+        if (this.room) {
+            await this.room.disconnect();
+            this.room = undefined;
+        }
+        if (this.socket) {
+            this.socket.disconnect();
+            this.socket = undefined;
+        }
+        this.event.emit('déconnexion en cours')
     }
 }

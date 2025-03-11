@@ -8,7 +8,6 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client"
-import AppContext from "@ai/context";
 import { MEDIA_CONTROL_TYPE } from "@ai/enums/meet-panel";
 import React from "react";
 import { Button } from "@ui/button"
@@ -20,9 +19,11 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu"
 import '@styles/control-panel.css'
+import { useMeetStore } from "@ai/stores/meet.store";
 
 export default function ControlPanelMediaAddon() {
-    const { mediaControl } = React.useContext(AppContext)
+    const { mediaControl, videoSources, audioSources } = useMeetStore()
+
     return mediaControl !== MEDIA_CONTROL_TYPE.NONE && <>
         {
             mediaControl === MEDIA_CONTROL_TYPE.VIDEO && (
@@ -33,15 +34,15 @@ export default function ControlPanelMediaAddon() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56 bg-white/30 backdrop-blur-sm border-white/30">
                             <DropdownMenuGroup>
-                                <DropdownMenuItem className="cursor-pointer text-white">
-                                    Source video 1
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="cursor-pointer text-white">
-                                    Source video 2
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="cursor-pointer text-white">
-                                    Source video 3
-                                </DropdownMenuItem>
+                                {
+                                    videoSources.map((source, index) => (
+                                        <DropdownMenuItem key={index} className="cursor-pointer text-white">
+                                            {
+                                                source.deviceId === 'default' ? `Default (${source.groupId.slice(0, 5)})` : source.label
+                                            }
+                                        </DropdownMenuItem>
+                                    ))
+                                }
                             </DropdownMenuGroup>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -57,15 +58,15 @@ export default function ControlPanelMediaAddon() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56 bg-white/30 backdrop-blur-sm border-white/30">
                         <DropdownMenuGroup>
-                            <DropdownMenuItem className="cursor-pointer text-white">
-                                Source audio 1
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer text-white">
-                                Source audio 2
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer text-white">
-                                Source audio 3
-                            </DropdownMenuItem>
+                            {
+                                audioSources.map((source, index) => (
+                                    <DropdownMenuItem key={index} className="cursor-pointer text-white">
+                                        {
+                                            source.deviceId === 'default' ? `Default (${source.groupId.slice(0, 5)})` : source.label
+                                        }
+                                    </DropdownMenuItem>
+                                ))
+                            }
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>

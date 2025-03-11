@@ -29,6 +29,8 @@ export interface IParticipant {
     pinned: boolean
     audio: IParticipantAudio
     video: IParticipantVideo
+    isHost: boolean
+    isSelf: boolean
 }
 
 export interface IAudioSources {

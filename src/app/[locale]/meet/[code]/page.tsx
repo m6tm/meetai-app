@@ -23,7 +23,7 @@ export default async function Meeting({ params }: { params: Promise<{ code: stri
     
     return (
         <div className="flex flex-col h-screen w-full bg-neutral-800 relative select-none">
-            <BeginMeet />
+            <BeginMeet {...{ code }} />
             <VideoScreen />
             <ControlPanel />
             <MeetDataFirst {...{ code }} />

@@ -8,10 +8,12 @@
  * the prior written permission of Meet ai LLC.
  */
 
-// import Worker from "@ai/worker/worker";
-
-export type TAppContext = {
-    googleSignIn: () => Promise<void>,
-    githubSignIn: () => Promise<void>,
-    logOut: () => Promise<void>,
+/**
+ * Réponse de la génération du jeton d'une réunion
+ */
+export type GenerateMeetTokenResponse = {
+    message: string
+    data: {
+        token: string
+    } | null
 }

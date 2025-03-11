@@ -12,6 +12,7 @@ import { db } from '@ai/db';
 import { RequestMethod } from '@ai/types/requests/other.type';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { generateRandomUserName } from './meet.lib';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -32,7 +33,7 @@ export async function getLanguage() {
     return _locale
 }
 
-export async function makeRequest(uri: string, form: FormData | undefined = undefined, method: RequestMethod = 'GET', header?: HeadersInit) {
+export async function makeRequest<TResponse>(uri: string, form: FormData | undefined = undefined, method: RequestMethod = 'GET', header?: HeadersInit): Promise<TResponse> {
     let response = {
         error: null,
         data: null
@@ -74,7 +75,7 @@ export async function makeRequest(uri: string, form: FormData | undefined = unde
         }
     }
 
-    return response
+    return response as TResponse
 }
 
 export const uuid = () => {
@@ -82,4 +83,18 @@ export const uuid = () => {
         const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
+}
+
+export const shortUserName = (user_name: string | null | undefined) => {
+    if (!user_name) return generateRandomUserName()
+
+    const words = user_name.split(/[\s\W]+/);
+    if (words.length > 1) {
+        return words.map(word => word.charAt(0).toUpperCase()).join('')
+    }
+
+    if (user_name.length > 5) {
+        return user_name.substring(0, 5) + '...'
+    }
+    return user_name
 }
