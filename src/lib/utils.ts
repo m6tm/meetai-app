@@ -9,7 +9,7 @@
  */
 
 import { db } from '@ai/db';
-import { RequestMethod } from '@ai/types/requests/other.type';
+import { RequestMethod, UniversalResponse } from '@ai/types/requests/other.type';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -32,11 +32,7 @@ export async function getLanguage() {
     return _locale
 }
 
-export async function makeRequest(uri: string, form: FormData | undefined = undefined, method: RequestMethod = 'GET', header?: HeadersInit) {
-    let response = {
-        error: null,
-        data: null
-    }
+export async function makeRequest<TResponse>(uri: string, form: FormData | undefined = undefined, method: RequestMethod = 'GET', header?: HeadersInit): Promise<UniversalResponse<TResponse>> {
 
     let _uri = uri
     let options: RequestInit | undefined = {
@@ -58,28 +54,35 @@ export async function makeRequest(uri: string, form: FormData | undefined = unde
     }
 
     try {
-        // console.log(uri, form, method, header);
-        response = await fetch(_uri, options)
-            .then(response => response.json())
-            .catch((error) => {
-                return {
-                    error,
-                    data: null
-                }
-            })
+        const fetchResponse = await fetch(_uri, options)
+        const jsonResponse = await fetchResponse.json()
+        return {
+            error: null,
+            code: fetchResponse.status,
+            data: jsonResponse as TResponse
+        }
     } catch (error) {
-        response = {
-            error: error as never,
+        return {
+            error: (error as Error).message,
+            code: 500,
             data: null
         }
     }
-
-    return response
 }
+
+export const randomUserName = () => `user-${Math.floor(Math.random() * 1000000)}`;
 
 export const uuid = () => {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
+}
+
+export const shortDisplayUserName = (name: string) => {
+    const nameArr = name.split(/[ _-]/)
+    if (nameArr.length > 1) {
+        return nameArr[0][0] + nameArr[1][0]
+    }
+    return nameArr[0][0]
 }

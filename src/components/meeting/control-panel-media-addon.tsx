@@ -8,7 +8,6 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client"
-import AppContext from "@ai/context";
 import { MEDIA_CONTROL_TYPE } from "@ai/enums/meet-panel";
 import React from "react";
 import { Button } from "@ui/button"
@@ -20,9 +19,10 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu"
 import '@styles/control-panel.css'
+import { useMeetPanelStore } from "@ai/app/stores/meet.stote";
 
 export default function ControlPanelMediaAddon() {
-    const { mediaControl } = React.useContext(AppContext)
+    const { mediaControl } = useMeetPanelStore()
     return mediaControl !== MEDIA_CONTROL_TYPE.NONE && <>
         {
             mediaControl === MEDIA_CONTROL_TYPE.VIDEO && (

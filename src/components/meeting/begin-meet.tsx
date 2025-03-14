@@ -8,26 +8,50 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client"
-import AppContext from "@ai/context"
-import { TAppContext } from "@ai/types/context"
-import Worker from "@ai/worker/worker"
-import { useContext, useEffect, useState } from "react"
+import ControlPanel from "@ai/components/meeting/control-panel";
+import MeetDataFirst from "@ai/components/meeting/meet-data-first";
+import MeetDataInfo from "@ai/components/meeting/meet-data-info";
+import Participant from "@ai/components/meeting/participant";
+import MeetMessage from "@ai/components/meeting/meet-message";
+import VideoScreen from "@ai/components/meeting/video-screen";
+import { LiveKitRoom } from '@livekit/components-react';
+import { useRoomToken } from "@ai/hooks/useRoomAuth";
+import { useUserStore } from "@ai/app/stores/user.store";
+import { useEffect } from "react";
+import { randomUserName, sleep } from "@ai/lib/utils";
 
-function BeginMeet() {
-    const { setWorker, event } = useContext<TAppContext>(AppContext)
-    const [started, setStarted] = useState<boolean>(false)
+const serverUrl = process.env.NEXT_PUBLIC_LIVEKIT_WEBSOCKET_URL;
 
+function BeginMeet({ code }: { code: string }) {
+    const { token, fetchToken } = useRoomToken();
+    const { user } = useUserStore()
+    
     useEffect(() => {
-        if (!started) {
-            const worker = new Worker(event)
-            worker.init()
-            setWorker(worker)
-            setStarted(true)
+        async function init() {
+            await sleep(1000 * 3)
+            if (user && user.displayName) fetchToken(code, user.displayName)
+            if (!user || !user.displayName) fetchToken(code, randomUserName())
         }
-    }, [event, setWorker, started])
+        init()
+    }, [code, fetchToken, user]);
+
+    if (!token) {
+        return <div className="flex items-center justify-center h-screen w-full">
+            <span>Loading...</span>
+        </div>;
+    }
 
     return (
-        <div className=""></div>
+        <LiveKitRoom serverUrl={serverUrl} token={token} connect={true}>
+            <div className="flex flex-col h-screen w-full bg-neutral-800 relative select-none">
+                <VideoScreen />
+                <ControlPanel />
+                <MeetDataFirst {...{ code }} />
+                <MeetDataInfo {...{ code }} />
+                <Participant />
+                <MeetMessage />
+            </div>
+        </LiveKitRoom>
     )
 }
 

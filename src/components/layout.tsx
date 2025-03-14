@@ -8,14 +8,14 @@
  * the prior written permission of Meet ai LLC.
  */
 'use client';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HamburgerMenuIcon } from '@radix-ui/react-icons';
 import { XIcon } from 'lucide-react';
 import Footer from './footer';
 import LanguageSwitcher from './LanguageSwitcher';
 import { Link } from '@ai/i18n/routing';
-import AppContext from '@ai/context';
 import UserProfileAvatar from './auth/UserProfileAvatar';
+import { useUserStore } from '@ai/app/stores/user.store';
 
 const _pages = [
     {
@@ -32,7 +32,7 @@ const _pages = [
 
 export default function LayoutComponent({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
-    const { user } = useContext(AppContext)
+    const { user } = useUserStore()
     const [pages, setPages] = useState(_pages)
     
     useEffect(() => {

@@ -8,27 +8,22 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client"
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import AppContext from "@ai/context";
 import { TAppContext } from "@ai/types/context";
-import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
-import { signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider, GithubAuthProvider, User } from 'firebase/auth'
+import { signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider, GithubAuthProvider } from 'firebase/auth'
 import { fireAuth } from '@ai/firebase';
 import { db } from "@ai/db";
 import { usePathname, useRouter } from "@ai/i18n/routing";
 import { initializeLanguage } from "@ai/lib/utils";
-import Worker from "@ai/worker/worker";
 import { EventEmitter } from "events"
+import { useUserStore } from "@ai/app/stores/user.store";
 
 export default function ContextProvider({ children }: { children: React.ReactNode; }) {
     const event = new EventEmitter();
     const pathname = usePathname();
     const router = useRouter();
-    const [meetPanel, setMeetPanel] = React.useState<MEET_PANEL_TYPE>(MEET_PANEL_TYPE.NONE);
-    const [autoriseMessage, setAutoriseMessage] = React.useState<boolean>(true);
-    const [mediaControl, setMediaControl] = React.useState<MEDIA_CONTROL_TYPE>(MEDIA_CONTROL_TYPE.NONE);
-    const [user, setUser] = useState<User | null>(null)
-    const [worker, setWorker] = useState<Worker | null>(null)
+    const { setUser } = useUserStore()
 
     const googleSignIn = async () => {
         try {
@@ -65,21 +60,12 @@ export default function ContextProvider({ children }: { children: React.ReactNod
             setUser(currentUser)
         });
         return () => unsubscribe()
-    }, [pathname, router, user])
+    }, [pathname, router, setUser])
 
     const context: TAppContext = {
-        meetPanel,
-        setMeetPanel,
-        autoriseMessage,
-        setAutoriseMessage,
-        mediaControl,
-        setMediaControl,
-        user,
         googleSignIn,
         githubSignIn,
         logOut,
-        worker,
-        setWorker,
         event,
     }
     

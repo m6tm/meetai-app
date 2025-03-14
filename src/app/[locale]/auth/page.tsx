@@ -9,6 +9,7 @@
  */
 'use client'
 import { signIn } from "@ai/actions/auth.action";
+import { useUserStore } from "@ai/app/stores/user.store";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import GithubSignIn from "@ai/components/auth/GithubSignIn";
 import GoogleSignIn from "@ai/components/auth/GoogleSignIn";
@@ -18,7 +19,8 @@ import { useContext, useEffect } from "react";
 
 
 export default function Page() {
-    const { googleSignIn, githubSignIn, user } = useContext(AppContext)
+    const { googleSignIn, githubSignIn } = useContext(AppContext)
+    const { user } = useUserStore()
     const router = useRouter()
 
     const handleGoogleSignIn = async () => {

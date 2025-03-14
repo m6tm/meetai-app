@@ -8,18 +8,17 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client"
-import React, { useContext } from "react";
+import React from "react";
 import { Button } from "@ui/button"
 import { ChevronDown, ChevronUp, Hand, Info, MessageSquare, Mic, MonitorUp, PhoneOff, Users, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { TAppContext } from "@ai/types/context";
-import AppContext from "@ai/context";
 import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { cn } from "@ai/lib/utils";
 import ControlPanelMediaAddon from "./control-panel-media-addon";
+import { useMeetPanelStore } from "@ai/app/stores/meet.stote";
 
 export default function ControlPanel() {
-    const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useContext<TAppContext>(AppContext)
+    const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useMeetPanelStore()
     const router = useRouter()
     return (
         <div className="control-bar z-10 relative">

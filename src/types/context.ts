@@ -8,23 +8,11 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
-import Worker from "@ai/worker/worker";
-import { User } from "firebase/auth";
 import { type EventEmitter } from "events"
 
 export type TAppContext = {
-    meetPanel: MEET_PANEL_TYPE,
-    setMeetPanel: (meetPanel: MEET_PANEL_TYPE) => void,
-    autoriseMessage: boolean,
-    setAutoriseMessage: (autoriserMessage: boolean) => void,
-    mediaControl: MEDIA_CONTROL_TYPE,
-    setMediaControl: (mediaControl: MEDIA_CONTROL_TYPE) => void,
-    user: User | null,
     event: EventEmitter,
     googleSignIn: () => Promise<void>,
     githubSignIn: () => Promise<void>,
     logOut: () => Promise<void>,
-    worker: Worker | null,
-    setWorker: (worker: Worker) => void,
 }

@@ -13,12 +13,11 @@ import React from "react";
 import { Button } from '@ui/button'
 import { UserPlus, X } from "lucide-react";
 import CopyElement from "@ai/components/meeting/_ui/copy-btn";
-import { TAppContext } from "@ai/types/context";
-import AppContext from "@ai/context";
 import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
+import { useMeetPanelStore } from "@ai/app/stores/meet.stote";
 
 export default function MeetDataInfo({ code }: { code: string }) {
-    const { setMeetPanel, meetPanel } = React.useContext<TAppContext>(AppContext);
+    const { setMeetPanel, meetPanel } = useMeetPanelStore()
     
     return meetPanel === MEET_PANEL_TYPE.INFOS && (
         <div className="absolute z-10 bg-white w-[350px] rounded-lg space-y-4 bottom-24 right-4 p-5 full-height">

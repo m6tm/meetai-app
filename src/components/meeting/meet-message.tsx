@@ -13,13 +13,12 @@ import React from "react";
 import { Button } from '@ui/button'
 import { Label } from '@ui/label'
 import { SendHorizonal, X } from "lucide-react";
-import { TAppContext } from "@ai/types/context";
-import AppContext from "@ai/context";
 import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { Switch } from "@ui/switch"
 import '@styles/messages.css'
 import { cn } from "@ai/lib/utils";
 import TextareaAutosize from 'react-textarea-autosize';
+import { useMeetPanelStore } from "@ai/app/stores/meet.stote";
 
 const MESSAGES = [
     {
@@ -93,7 +92,7 @@ export default function MeetMessage() {
         meetPanel,
         autoriseMessage,
         setAutoriseMessage,
-    } = React.useContext<TAppContext>(AppContext);
+    } = useMeetPanelStore()
     // const [message, setMessage] = React.useState<string>('')
     
     return meetPanel === MEET_PANEL_TYPE.MESSAGES && (

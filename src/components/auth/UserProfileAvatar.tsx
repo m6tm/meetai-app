@@ -14,10 +14,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { Avatar, AvatarFallback, AvatarImage } from "@ui/avatar";
 import { Plan } from "@prisma/client";
 import { getUser } from "@ai/actions/user.action";
+import { useUserStore } from "@ai/app/stores/user.store";
 
 
 export default function UserProfileAvatar() {
-    const { user, logOut } = useContext(AppContext)
+    const { logOut } = useContext(AppContext)
+    const { user } = useUserStore()
     const [plan, setPlan] = useState<Plan | null>(null)
     
     const handleLogout = async () => {
