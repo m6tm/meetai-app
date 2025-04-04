@@ -17,14 +17,16 @@ import VideoScreen from "@ai/components/meeting/video-screen";
 import { LiveKitRoom } from '@livekit/components-react';
 import { useRoomToken } from "@ai/hooks/useRoomAuth";
 import { useUserStore } from "@ai/app/stores/user.store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { randomUserName, sleep } from "@ai/lib/utils";
+import WaitPage from "./meet-waitting";
 
 const serverUrl = process.env.NEXT_PUBLIC_LIVEKIT_WEBSOCKET_URL;
 
 function BeginMeet({ code }: { code: string }) {
     const { token, fetchToken } = useRoomToken();
-    const { user } = useUserStore()
+    const { user, responded } = useUserStore()
+    const [ready, setReady] = useState(false);
     
     useEffect(() => {
         async function init() {
@@ -32,18 +34,25 @@ function BeginMeet({ code }: { code: string }) {
             if (user && user.displayName) fetchToken(code, user.displayName)
             if (!user || !user.displayName) fetchToken(code, randomUserName())
         }
-        init()
-    }, [code, fetchToken, user]);
+        if (responded) init()
+    }, [code, fetchToken, responded, user]);
 
     if (!token) {
-        return <div className="flex items-center justify-center h-screen w-full">
-            <span>Loading...</span>
-        </div>;
+        return <div className="flex items-center justify-center h-full text-white">Loading...</div>
     }
 
     return (
-        <LiveKitRoom serverUrl={serverUrl} token={token} connect={true}>
+        <LiveKitRoom 
+            serverUrl={serverUrl} 
+            token={token} 
+            connect={true}
+        >
             <div className="flex flex-col h-screen w-full bg-neutral-800 relative select-none">
+                {
+                    !ready && (
+                        <WaitPage setReady={setReady} />
+                    )
+                }
                 <VideoScreen />
                 <ControlPanel />
                 <MeetDataFirst {...{ code }} />

@@ -23,9 +23,11 @@ import { Input } from '@ui/input'
 import { Link as ILink, Plus, Video } from 'lucide-react'
 import ScheduleMeetingDialog from './meeting/schedule-meeting-dialog'
 import { useRouter } from '@ai/i18n/routing'
+import { useUserStore } from '@ai/app/stores/user.store'
 
 export default function Meeting() {
     const router = useRouter()
+    const { user } = useUserStore()
     const [input, setInput] = React.useState("");
     const newSheduleRef = React.useRef<HTMLButtonElement>(null);
     const origin: string = process.env.NEXT_PUBLIC_URL_ORIGIN as never
@@ -56,25 +58,30 @@ export default function Meeting() {
 
             <div className="flex justify-center space-x-4 my-10">
                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger disabled={!user} asChild>
                         <Button variant="secondary"><Video />Nouvelle réunion</Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuGroup className='space-y-1'>
-                            <DropdownMenuItem className='cursor-pointer' onClick={opendialog}>
-                                <ILink />
-                                Créer une réunion pour une date ultérieure
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className='cursor-pointer' onClick={handleJoin}>
-                                <Plus />
-                                Démarrer une réunion instantanée
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
+                        {
+                            user && (
+                                <DropdownMenuGroup className='space-y-1'>
+                                    <DropdownMenuItem className='cursor-pointer' onClick={opendialog}>
+                                        <ILink />
+                                        Créer une réunion pour une date ultérieure
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className='cursor-pointer' onClick={handleJoin}>
+                                        <Plus />
+                                        Démarrer une réunion instantanée
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                            )
+                        }
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <ScheduleMeetingDialog ref={newSheduleRef} />
                 <Input type="url" value={input} onChange={changeLinkInput} placeholder="Saisir un code ou un lien" className="max-w-sm" />
                 <Button
+                    disabled={!user}
                     className={cn(`${buttonVariants({ variant: "secondary" })} ${input.length <= 0 && 'pointer-events-none select-none bg-secondary/50'}`)}
                     onClick={() => router.push(`/meet/${getLinkCode()}`)}>Participer</Button>
             </div>

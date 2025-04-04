@@ -14,9 +14,13 @@ import { User } from "firebase/auth"
 export type UserStore = {
     user: User | null
     setUser: (user: User | null) => void
+    responded: boolean
+    setResponded: (responded: boolean) => void
 }
 
 export const useUserStore = create<UserStore>((set) => ({
     user: null,
-    setUser: (user: User | null) => set({ user })
+    setUser: (user: User | null) => set({ user }),
+    responded: false,
+    setResponded: (responded: boolean) => set({ responded })
 }))

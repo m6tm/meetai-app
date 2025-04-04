@@ -23,7 +23,7 @@ export default function ContextProvider({ children }: { children: React.ReactNod
     const event = new EventEmitter();
     const pathname = usePathname();
     const router = useRouter();
-    const { setUser } = useUserStore()
+    const { setUser, setResponded } = useUserStore()
 
     const googleSignIn = async () => {
         try {
@@ -58,9 +58,10 @@ export default function ContextProvider({ children }: { children: React.ReactNod
 
         const unsubscribe = onAuthStateChanged(fireAuth, currentUser => {
             setUser(currentUser)
+            setResponded(true)
         });
         return () => unsubscribe()
-    }, [pathname, router, setUser])
+    }, [pathname, router, setResponded, setUser])
 
     const context: TAppContext = {
         googleSignIn,
