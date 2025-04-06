@@ -8,10 +8,11 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import { PrismaClient, TypePlan } from '@prisma/client'
+import { getPrisma } from '@ai/adapters/db'
+import { TypePlan } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/library'
 
-const prisma = new PrismaClient()
+const prisma = getPrisma()
 
 async function main() {
     const plans = [
@@ -31,7 +32,7 @@ async function main() {
             type: TypePlan.GOLDEN
         },
     ]
-    
+
     for (const plan of plans) {
         await prisma.plan.upsert({
             where: {
@@ -77,11 +78,11 @@ async function main() {
     }
 }
 main()
-  .then(async () => {
-    await prisma.$disconnect()
-  })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+    .then(async () => {
+        await prisma.$disconnect()
+    })
+    .catch(async (e) => {
+        console.error(e)
+        await prisma.$disconnect()
+        process.exit(1)
+    })

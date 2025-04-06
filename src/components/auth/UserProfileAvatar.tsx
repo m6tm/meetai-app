@@ -19,8 +19,9 @@ import { useUserStore } from "@ai/app/stores/user.store";
 
 export default function UserProfileAvatar() {
     const { logOut } = useContext(AppContext)
-    const { user } = useUserStore()
+    const { user, responded } = useUserStore()
     const [plan, setPlan] = useState<Plan | null>(null)
+    const [nickname, setNickname] = useState<string>('')
     
     const handleLogout = async () => {
         try {
@@ -33,11 +34,14 @@ export default function UserProfileAvatar() {
 
     useEffect(() => {
         async function getPlan() {
-            const { data } = await getUser(user?.email || '')
-            if (data) setPlan(data.subscription.plan)
+            const { data } = await getUser(user!.email ?? '')
+            if (data) {
+                setPlan(data.subscription.plan)
+                setNickname(data.nickname)
         }
-        if (user) getPlan()
-    }, [user])
+            }
+        if (responded && user) getPlan()
+    }, [responded, user])
 
     return user && (
         <DropdownMenu>
@@ -49,6 +53,9 @@ export default function UserProfileAvatar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
                 <DropdownMenuGroup>
+                    <DropdownMenuItem>
+                        #{ nickname }
+                    </DropdownMenuItem>
                     {
                         plan && (
                             <DropdownMenuItem className="cursor-pointer">

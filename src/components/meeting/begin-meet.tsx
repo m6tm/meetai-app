@@ -38,7 +38,11 @@ function BeginMeet({ code }: { code: string }) {
     }, [code, fetchToken, responded, user]);
 
     if (!token) {
-        return <div className="flex items-center justify-center h-full text-white">Loading...</div>
+        return <div className="flex items-center justify-center h-screen">
+            <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full border-4 border-neutral-300 border-t-blue-500 animate-spin"></div>
+            </div>
+        </div>
     }
 
     return (

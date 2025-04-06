@@ -9,7 +9,8 @@
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { AccessToken, TrackSource } from 'livekit-server-sdk';
-import { TParticipantMetadata } from "@ai/types/data";
+import { TParticipantMetadata, TMeetRole } from "@ai/types/data";
+import { serializeData } from "@ai/lib/utils";
 
 const apiKey = process.env.LIVEKIT_KEY;
 const apiSecret = process.env.LIVEKIT_SECRET;
@@ -26,18 +27,19 @@ export async function POST(request: NextRequest) {
 
     if (!room_name || !participant_name) {
         return NextResponse.json({
-            message: 'room_name or participant_name are required',
-            data: null
+            error: 'room_name or participant_name are required',
+            data: null,
+            code: 400
         }, {
             status: 400
         })
     }
 
-    const metadata = JSON.stringify({
-        name: participant_name,
-        role: role ? role : 'participant',
+    const metadata = serializeData<TParticipantMetadata>({
+        name: participant_name as string,
+        role: role ? (role as TMeetRole) : 'participant' as TMeetRole,
         joined: false,
-    } as TParticipantMetadata);
+    });
 
     const token = new AccessToken(apiKey, apiSecret, {
         identity: participant_name as string,
@@ -57,7 +59,8 @@ export async function POST(request: NextRequest) {
     const jwt = await token.toJwt();
 
     return NextResponse.json({
-        message: 'success',
-        token: jwt
+        error: null,
+        data: { token: jwt },
+        code: 200
     })
 }

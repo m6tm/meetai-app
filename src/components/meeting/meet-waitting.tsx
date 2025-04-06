@@ -16,6 +16,7 @@ import { Button } from "@ai/components/ui/button"
 import { Mic, MicOff, Video, VideoOff } from "lucide-react"
 import { db } from "@ai/db"
 import { useRouter } from "@ai/i18n/routing"
+import { getParticipantMetadata } from "@ai/lib/utils"
 
 type WaitPageProps = {
     setReady: (ready: boolean) => void
@@ -54,6 +55,8 @@ export default function WaitPage({ setReady }: WaitPageProps) {
             await localParticipant.setCameraEnabled(false)
             await localParticipant.setMicrophoneEnabled(false)
         }
+
+        console.log(getParticipantMetadata(localParticipant));
     }, [localParticipant]);
 
     useEffect(() => {

@@ -32,6 +32,7 @@ import {
   PopoverTrigger,
 } from "@ui/popover"
 import { Calendar as CalendarIcon, Check, Copy, Loader2 } from "lucide-react"
+import { SelectMultiple } from '../ui/select-multiple';
 
 const ScheduleMeetingDialog = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement>>((props, ref) => {
   const [scheduleDate, setScheduleDate] = React.useState<Date>();
@@ -124,6 +125,17 @@ const ScheduleMeetingDialog = forwardRef<HTMLButtonElement, ButtonHTMLAttributes
                 </Popover>
                 <span className='ms-4'>&Agrave;</span>
                 <Input type='time' value={scheduleHour} onChange={e => setScheduleHour(e.target?.value)} name='time' className='w-32' />
+                <SelectMultiple 
+                  options={[
+                    { label: 'Madelxp', value: 'madelxp@gmail.com' },
+                    { label: 'John Doe', value: 'john.doe@example.com' },
+                    { label: 'Jane Smith', value: 'jane.smith@example.com' },
+                    { label: 'Alice Johnson', value: 'alice.johnson@example.com' },
+                    { label: 'Bob Brown', value: 'bob.brown@example.com' },
+                  ]}
+                  placeholder="Sélectionner une personne"
+                  onChange={(values) => {console.log(values)}}
+                />
               </div>
             </div>
           ) : (

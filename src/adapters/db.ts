@@ -8,8 +8,15 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "@prisma/client";
+import { cache } from "react";
 
-const prisma = new PrismaClient()
-
-export { prisma }
+/**
+ * Creates and caches a new PrismaClient instance.
+ * This ensures only one PrismaClient is created for the application lifecycle.
+ * 
+ * @returns {PrismaClient} A cached instance of PrismaClient
+ * @example
+ * const prisma = getPrisma()
+ */
+export const getPrisma = cache(() => new PrismaClient())

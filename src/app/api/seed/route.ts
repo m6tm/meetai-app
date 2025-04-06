@@ -9,16 +9,17 @@
  */
 
 import { Decimal } from '@prisma/client/runtime/library';
-import { prisma } from '@ai/adapters/db';
 import { NextResponse } from 'next/server';
 import { TypePlan } from '@prisma/client';
+import { getPrisma } from '@ai/adapters/db';
 
 export async function POST() {
+    const prisma = getPrisma();
     const has_test_user = (await prisma.user.findFirst()) !== null
     if (has_test_user) return NextResponse.json({
-        message: 'The seed has already been run'
-    }, {
-        status: 400
+        error: 'The seed has already been run',
+        data: null,
+        code: 400
     })
 
     const plans = [
@@ -38,12 +39,10 @@ export async function POST() {
             type: TypePlan.GOLDEN
         },
     ]
-    
+
     for (const plan of plans) {
         await prisma.plan.upsert({
-            where: {
-                name: plan.name
-            },
+            where: { name: plan.name },
             update: {
                 price: plan.price,
                 type: plan.type
@@ -57,9 +56,7 @@ export async function POST() {
     }
 
     const user = await prisma.user.upsert({
-        where: {
-            email: 'test@test.com'
-        },
+        where: { email: 'test@test.com' },
         update: {},
         create: {
             name: 'Test User',
@@ -68,9 +65,7 @@ export async function POST() {
     })
 
     const basicPlan = await prisma.plan.findUnique({
-        where: {
-            name: 'Basic'
-        }
+        where: { name: 'Basic' }
     })
 
     if (basicPlan) {
@@ -83,10 +78,15 @@ export async function POST() {
         })
     }
 
-    return NextResponse.json({ message: 'Seed completed' });
+    return NextResponse.json({
+        error: null,
+        data: 'Seed completed',
+        code: 200
+    });
 }
 
 export async function GET() {
+    const prisma = getPrisma();
     const users = await prisma.user.findMany({
         include: {
             subscription: {
@@ -97,5 +97,9 @@ export async function GET() {
         }
     })
     const plans = await prisma.plan.findMany()
-    return NextResponse.json({ message: 'Seeds', data: { users, plans } });
+    return NextResponse.json({
+        error: null,
+        data: { users, plans },
+        code: 200
+    });
 }

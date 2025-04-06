@@ -9,8 +9,10 @@
  */
 
 import { db } from '@ai/db';
+import { TParticipantMetadata } from '@ai/types/data';
 import { RequestMethod, UniversalResponse } from '@ai/types/requests/other.type';
 import { clsx, type ClassValue } from 'clsx';
+import { Participant } from 'livekit-client';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -35,8 +37,15 @@ export async function getLanguage() {
 export async function makeRequest<TResponse>(uri: string, form: FormData | undefined = undefined, method: RequestMethod = 'GET', header?: HeadersInit): Promise<UniversalResponse<TResponse>> {
 
     let _uri = uri
+    const mode = process.env.NEXT_PUBLIC_APP_MODE
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const dev_options: RequestInit = mode && mode === 'development' ? {
+        mode: 'cors',
+        credentials: 'include',
+    } : {}
     let options: RequestInit | undefined = {
-        headers: header
+        // ...dev_options,
+        headers: header,
     }
 
     if (method === 'GET') {
@@ -58,10 +67,12 @@ export async function makeRequest<TResponse>(uri: string, form: FormData | undef
         const jsonResponse = await fetchResponse.json()
         return {
             error: null,
+            data: null,
+            ...jsonResponse,
             code: fetchResponse.status,
-            data: jsonResponse as TResponse
         }
     } catch (error) {
+        console.error('Request:', error)
         return {
             error: (error as Error).message,
             code: 500,
@@ -85,4 +96,32 @@ export const shortDisplayUserName = (name: string) => {
         return nameArr[0][0] + nameArr[1][0]
     }
     return nameArr[0][0]
+}
+
+const SECRET_BKEY = 'NWjsfWojyzBd1MrHql+AseAnSPyehaQC/hhv3VPxRu8=';
+
+export const serializeData = <T>(data: T) => {
+    const serializedData = JSON.stringify(data);
+    const encodedData = btoa(serializedData + SECRET_BKEY);
+    return encodedData;
+}
+
+export const deserializeData = <T>(data: string) => {
+    const decodedData = atob(data);
+    const cleanedData = decodedData.replace(SECRET_BKEY, '');
+    const parsedData = JSON.parse(cleanedData);
+    return parsedData as T;
+}
+
+export const getParticipantMetadata = (participant: Participant): TParticipantMetadata | undefined => {
+    const metadata = participant.metadata;
+    if (!metadata) return undefined;
+
+    try {
+        const parsedMetadata = deserializeData<TParticipantMetadata>(metadata);
+        return parsedMetadata;
+    } catch (error) {
+        console.error('Error parsing metadata:', error);
+        return undefined;
+    }
 }

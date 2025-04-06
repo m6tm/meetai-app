@@ -9,15 +9,12 @@
  */
 
 import { makeRequest } from "@ai/lib/utils"
-import { User } from "firebase/auth"
+import { faker } from "@faker-js/faker"
 
-
-export async function signIn(user: User | null) {
-    if (!user || !user.email) return null
-    const { email, displayName } = user
+export async function signIn(email?: string | null, displayName?: string | null) {
+    if (!email) return null
     const form = new FormData()
-
     form.append('email', email)
-    form.append('name', displayName ?? '')
+    form.append('name', displayName ?? faker.person.firstName())
     return makeRequest('/api/auth/signin', form, 'POST')
 }

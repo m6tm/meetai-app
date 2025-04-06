@@ -11,8 +11,8 @@
 import { makeRequest } from "@ai/lib/utils";
 import { UserResponse } from "@ai/types/requests/user.request";
 
-export function getUser(email: string): Promise<UserResponse> {
+export function getUser(email: string) {
     const form = new FormData()
     form.append('email', email)
-    return makeRequest('/api/auth/user', form, 'GET')
+    return makeRequest<UserResponse>('/api/auth/user', form, 'GET')
 }

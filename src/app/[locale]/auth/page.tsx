@@ -42,7 +42,7 @@ export default function Page() {
     
     useEffect(() => {
         async function checkUser() {
-            await signIn(user)
+            await signIn(user?.email, user?.displayName)
             router.push('/')
         }
         if (user) checkUser()

@@ -8,24 +8,29 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import { prisma } from "@ai/adapters/db"
+import { getPrisma } from "@ai/adapters/db"
 import { TypePlan } from "@prisma/client"
 import { NextRequest, NextResponse } from "next/server"
+import { faker } from '@faker-js/faker';
 
 
 export async function POST(req: NextRequest) {
     const form = await req.formData()
     const email = form.get('email')?.toString()
     const name = form.get('name')?.toString() ?? ''
+    const nickname = form.get('nickname')
 
     if (typeof email !== 'string') {
         return NextResponse.json({
-            error: 'The email is required'
+            error: 'The email is required',
+            data: null,
+            code: 400
         }, {
             status: 400
         })
     }
 
+    const prisma = getPrisma()
     const user_exist = (await prisma.user.findUnique({
         where: {
             email
@@ -36,6 +41,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
             error: 'User already exist',
             data: null,
+            code: 400
         }, {
             status: 400
         })
@@ -54,10 +60,11 @@ export async function POST(req: NextRequest) {
             }
         })
 
-        await prisma.user.create({
+        const user = await prisma.user.create({
             data: {
                 email,
                 name,
+                nickname: nickname ? nickname.toString() : faker.person.middleName(),
                 subscription: {
                     create: {
                         plan: {
@@ -72,13 +79,16 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({
             error: null,
-            data: null,
+            data: user,
+            code: 200
         })
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
         return NextResponse.json({
-            error: 'Something went wrong',
+            error: 'Something went wrong' + ' ' + (error as Error).message,
             data: null,
+            code: 500
         }, {
             status: 500
         })

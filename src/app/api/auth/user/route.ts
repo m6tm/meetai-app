@@ -8,19 +8,23 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import { prisma } from "@ai/adapters/db";
-import { UserResponse } from "@ai/types/requests/user.request";
+import { getPrisma } from "@ai/adapters/db";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextRequest): Promise<NextResponse<UserResponse>> {
+export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const email = searchParams.get('email')?.toString();
 
     if (!email) {
-        return NextResponse.json({ data: null }, { status: 400 });
+        return NextResponse.json({
+            error: 'Email is required',
+            data: null,
+            code: 400
+        }, { status: 400 });
     }
 
     try {
+        const prisma = getPrisma();
         const user = await prisma.user.findUnique({
             where: {
                 email
@@ -34,10 +38,18 @@ export async function GET(request: NextRequest): Promise<NextResponse<UserRespon
             }
         });
 
-        return NextResponse.json({ data: user as never });
+        return NextResponse.json({
+            error: null,
+            data: user,
+            code: 200
+        });
 
     } catch (error) {
-        console.error("Error fetching user:", error); // Log the error for debugging
-        return NextResponse.json({ data: null }, { status: 500 });
+        console.error("Error fetching user:", error);
+        return NextResponse.json({
+            error: 'Internal server error',
+            data: null,
+            code: 500
+        }, { status: 500 });
     }
 }
