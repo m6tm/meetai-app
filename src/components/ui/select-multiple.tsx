@@ -52,6 +52,11 @@ export function SelectMultiple({ options, placeholder = "Search...", onChange }:
                 setOpen(false)
                 input.blur()
             }
+            if (e.key === "Enter") {
+                const newSelected = [...selected, { label: inputValue, value: inputValue }]
+                setSelected(newSelected)
+                setInputValue("")
+            }
         }
     }
 
@@ -99,7 +104,7 @@ export function SelectMultiple({ options, placeholder = "Search...", onChange }:
                     />
                 </div>
             </div>
-            <div className="relative mt-2">
+            <div className="relative mt-2 z-10">
                 {open && filteredOptions.length > 0 && (
                     <ul className="absolute top-0 left-0 w-full rounded-md border bg-background shadow-md p-2">
                         {filteredOptions.map((option) => (

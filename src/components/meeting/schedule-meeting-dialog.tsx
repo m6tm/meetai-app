@@ -133,7 +133,7 @@ const ScheduleMeetingDialog = forwardRef<HTMLButtonElement, ButtonHTMLAttributes
                     { label: 'Alice Johnson', value: 'alice.johnson@example.com' },
                     { label: 'Bob Brown', value: 'bob.brown@example.com' },
                   ]}
-                  placeholder="Sélectionner une personne"
+                  placeholder="Ajouter une personne"
                   onChange={(values) => {console.log(values)}}
                 />
               </div>
