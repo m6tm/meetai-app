@@ -125,3 +125,13 @@ export const getParticipantMetadata = (participant: Participant): TParticipantMe
         return undefined;
     }
 }
+
+export function generateMeetCode<T>(customData?: T): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    if (customData) return serializeData({ code, customData });
+    return serializeData({ code, customData: undefined });
+}

@@ -18,6 +18,7 @@ import { usePathname, useRouter } from "@ai/i18n/routing";
 import { initializeLanguage } from "@ai/lib/utils";
 import { EventEmitter } from "events"
 import { useUserStore } from "@ai/app/stores/user.store";
+import { signOutNow } from "@ai/actions/auth.action";
 
 export default function ContextProvider({ children }: { children: React.ReactNode; }) {
     const event = new EventEmitter();
@@ -45,6 +46,7 @@ export default function ContextProvider({ children }: { children: React.ReactNod
     }
 
     const logOut = async () => {
+        await signOutNow()
         signOut(fireAuth)
     }
 

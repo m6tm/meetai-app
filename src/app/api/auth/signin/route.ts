@@ -12,6 +12,7 @@ import { getPrisma } from "@ai/adapters/db"
 import { TypePlan } from "@prisma/client"
 import { NextRequest, NextResponse } from "next/server"
 import { faker } from '@faker-js/faker';
+import { createSession } from "@ai/lib/session";
 
 
 export async function POST(req: NextRequest) {
@@ -35,15 +36,14 @@ export async function POST(req: NextRequest) {
         where: {
             email
         }
-    })) !== null
+    }))
 
     if (user_exist) {
+        await createSession(user_exist.email, 'session', '/')
         return NextResponse.json({
-            error: 'User already exist',
+            error: 'User already exists',
             data: null,
-            code: 400
-        }, {
-            status: 400
+            code: 200
         })
     }
 
@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
                 }
             }
         })
+        await createSession(user.email, 'session', '/')
 
         return NextResponse.json({
             error: null,

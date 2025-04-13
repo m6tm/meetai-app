@@ -18,3 +18,7 @@ export async function signIn(email?: string | null, displayName?: string | null)
     form.append('name', displayName ?? faker.person.firstName())
     return makeRequest('/api/auth/signin', form, 'POST')
 }
+
+export async function signOutNow() {
+    return makeRequest('/api/auth/signout', undefined, 'POST')
+}

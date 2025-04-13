@@ -21,7 +21,7 @@ import AppContext from "@ai/context";
 import { useUserStore } from "@ai/app/stores/user.store";
 
 export default function Header() {
-    const { user } = useUserStore();
+    const { user, responded } = useUserStore();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [meetingCode, setMeetingCode] = useState<string>("");
     const { googleSignIn, logOut } = useContext(AppContext)
@@ -66,8 +66,8 @@ export default function Header() {
                 <ThemeToggle />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-transparent">
-                            {user ? (
+                        <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-transparent outline-none focus:outline-none">
+                            {user && responded ? (
                                 <Avatar className="h-8 w-8">
                                     <AvatarImage src={user.photoURL || "https://picsum.photos/id/11/100/100"} alt={user.displayName || "User Avatar"} />
                                     <AvatarFallback>{user.displayName?.charAt(0).toUpperCase() || 'CN'}</AvatarFallback>

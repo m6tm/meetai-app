@@ -105,7 +105,8 @@ export default function AppLayout() {
 
     const handleJoinWithCode = () => {
         // Redirect to the meeting link using the entered joinCode
-        router.push(`/meet/${joinCode}`);
+        if (joinCode.length > 0) router.push(`/meet/${joinCode}`);
+        if (state.meetCode) router.push(`/meet/${state.meetCode}`);
     };
 
     const handleDialogChange = (open: boolean) => {
@@ -132,122 +133,149 @@ export default function AppLayout() {
                     <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">Connect with anyone, anywhere, instantly.</p>
                     <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:space-x-4 justify-center">
                         <Button>Start Instant Meeting</Button>
-                        <Dialog open={open} onOpenChange={handleDialogChange}>
-                            <DialogTrigger asChild>
-                                <Button variant="outline">Schedule Meeting</Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px]">
-                                <DialogHeader>
-                                    <DialogTitle>Schedule a Meeting</DialogTitle>
-                                    <DialogDescription>
-                                        Choose a date and time, and invite attendees.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <form action={formAction} className="grid gap-4 py-4">
-                                    {!state.meetCode ? (
-                                        <>
-                                            {
-                                                !pending && (
-                                                    <p className={cn(
-                                                        state.status === 'ok' ? 'text-green-400' : 'text-red-400'
-                                                    )}>{state.message}</p>
-                                                )
-                                            }
-                                            <div className="grid gap-2">
-                                                <Calendar
-                                                    mode="single"
-                                                    className="mx-auto"
-                                                    selected={date}
-                                                    onSelect={setDate}
-                                                    disabled={(date) => date < subDays(new Date(), 1)}
-                                                    initialFocus
-                                                />
-                                                <input type="hidden" name="start_date" value={getFullDateTime()} onChange={() => {}} />
-                                            </div>
-                                            <div className="grid gap-2">
-                                                <Label htmlFor="time">Time</Label>
-                                                <Input
-                                                    type="time"
-                                                    id="time"
-                                                    defaultValue={time}
-                                                    className="w-[240px]"
-                                                    onChange={(e) => setTime(e.target.value)}
-                                                />
-                                            </div>
-                                            <div className="grid gap-2">
-                                                <Label htmlFor="emails">Invite Attendee</Label>
-
-                                                <div className="flex flex-row space-x-2">
-                                                    <Input
-                                                        type="email"
-                                                        id="emails"
-                                                        placeholder="name@example.com"
-                                                        value={emails}
-                                                        onChange={(e) => setEmails(e.target.value)}
-                                                        onKeyDown={handleEmailKeyDown}
-                                                    />
-                                                    <Button type="button" className="h-full" size="sm" onClick={addEmail}>
-                                                        Add
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                            {invitedEmails.length > 0 && (
-                                                <div>
-                                                    <Label>Invited</Label>
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {invitedEmails.map((email) => (
-                                                            <div key={email} className="flex items-center space-x-2">
-                                                                <span>{email}</span>
-                                                                <input type="hidden" name="invited_emails[]" value={email} />
-                                                                <Button
-                                                                    variant="secondary"
-                                                                    size="icon"
-                                                                    onClick={() => removeEmail(email)}
-                                                                >
-                                                                    x
-                                                                </Button>
-                                                            </div>
-                                                        ))}
+                        {
+                            user && (
+                                <Dialog open={open} onOpenChange={handleDialogChange}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline" disabled={!user} className={!user ? 'disabled:cursor-not-allowed' : ''}>Schedule Meeting</Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-[425px]">
+                                        <DialogHeader>
+                                            <DialogTitle>Schedule a Meeting</DialogTitle>
+                                            <DialogDescription>
+                                                Choose a date and time, and invite attendees.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <form action={formAction} className="grid gap-4 py-4">
+                                            {!state.meetCode ? (
+                                                <>
+                                                    {
+                                                        !pending && (
+                                                            <p className={cn(
+                                                                state.status === 'ok' ? 'text-green-400' : 'text-red-400'
+                                                            )}>{state.message}</p>
+                                                        )
+                                                    }
+                                                    <div className="grid gap-2">
+                                                        <Calendar
+                                                            mode="single"
+                                                            className="mx-auto"
+                                                            selected={date}
+                                                            onSelect={setDate}
+                                                            disabled={(date) => date < subDays(new Date(), 1)}
+                                                            initialFocus
+                                                        />
+                                                        <input type="hidden" name="start_date" value={getFullDateTime()} onChange={() => {}} />
                                                     </div>
-                                                </div>
+                                                    <div className="grid gap-2">
+                                                        <Label htmlFor="time">Time</Label>
+                                                        <Input
+                                                            type="time"
+                                                            id="time"
+                                                            defaultValue={time}
+                                                            className="w-[240px]"
+                                                            onChange={(e) => setTime(e.target.value)}
+                                                        />
+                                                    </div>
+                                                    {
+                                                        !user && (
+                                                            <div className="grid gap-2">
+                                                                <Label htmlFor="emails">Invite Attendee</Label>
+                                                                <div className="flex flex-row space-x-2">
+                                                                    <Input
+                                                                        type="email"
+                                                                        id="emails"
+                                                                        placeholder="name@example.com"
+                                                                        value={emails}
+                                                                        onChange={(e) => setEmails(e.target.value)}
+                                                                        onKeyDown={handleEmailKeyDown}
+                                                                    />
+                                                                    <Button type="button" className="h-full" size="sm" onClick={addEmail}>
+                                                                        Add
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    }
+                                                    <div className="grid gap-2">
+                                                        <Label htmlFor="emails">Invite Attendee</Label>
+
+                                                        <div className="flex flex-row space-x-2">
+                                                            <Input
+                                                                type="email"
+                                                                id="emails"
+                                                                placeholder="name@example.com"
+                                                                value={emails}
+                                                                onChange={(e) => setEmails(e.target.value)}
+                                                                onKeyDown={handleEmailKeyDown}
+                                                            />
+                                                            <Button type="button" className="h-full" size="sm" onClick={addEmail}>
+                                                                Add
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                    {invitedEmails.length > 0 && (
+                                                        <div>
+                                                            <Label>Invited</Label>
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {invitedEmails.map((email) => (
+                                                                    <div key={email} className="flex items-center space-x-2">
+                                                                        <span>{email}</span>
+                                                                        <input type="hidden" name="invited_emails[]" value={email} />
+                                                                        <Button
+                                                                            variant="secondary"
+                                                                            size="icon"
+                                                                            onClick={() => removeEmail(email)}
+                                                                        >
+                                                                            x
+                                                                        </Button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    <Button type="submit" disabled={pending}>
+                                                        {pending ? (
+                                                            <>
+                                                                Scheduling...
+                                                                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                                                            </>
+                                                        ) : (
+                                                            "Schedule"
+                                                        )}
+                                                    </Button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="grid gap-2">
+                                                        <Label htmlFor="inviteLink">Invitation Link</Label>
+                                                        <input type="hidden" name="state" value="reset" />
+                                                        <Input
+                                                            id="inviteLink"
+                                                            className="cursor-not-allowed"
+                                                            value={getLink()}
+                                                            disabled
+                                                        />
+                                                    </div>
+                                                    <Button onClick={copyToClipboard} type="button">
+                                                        <Copy /> Copy Link
+                                                    </Button>
+                                                    <Button onClick={handleJoinWithCode} type="button">
+                                                        Join now
+                                                    </Button>
+                                                    <Button className="hidden sr-only" type="submit" ref={resetBtnRef}>
+                                                        Close
+                                                    </Button>
+                                                </>
                                             )}
-                                            <Button type="submit" disabled={pending}>
-                                                {pending ? (
-                                                    <>
-                                                        Scheduling...
-                                                        <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                                                    </>
-                                                ) : (
-                                                    "Schedule"
-                                                )}
-                                            </Button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="grid gap-2">
-                                                <Label htmlFor="inviteLink">Invitation Link</Label>
-                                                <input type="hidden" name="state" value="reset" />
-                                                <Input
-                                                    id="inviteLink"
-                                                    className="cursor-not-allowed"
-                                                    value={getLink()}
-                                                    disabled
-                                                />
-                                            </div>
-                                            <Button onClick={copyToClipboard} type="button">
-                                                <Copy /> Copy Link
-                                            </Button>
-                                            <Button className="hidden sr-only" type="submit" ref={resetBtnRef}>
-                                                Close
-                                            </Button>
-                                        </>
-                                    )}
-                                </form>
-                            </DialogContent>
-                        </Dialog>
+                                        </form>
+                                    </DialogContent>
+                                </Dialog>
+                            )
+                        }
                         <Dialog open={meetingCodeOpen} onOpenChange={setMeetingCodeOpen}>
                             <DialogTrigger asChild>
-                                <Button variant="secondary">
+                                <Button variant="secondary" disabled={!user} className={!user ? 'disabled:cursor-not-allowed' : ''}>
                                     Enter meeting code
                                 </Button>
                             </DialogTrigger>
