@@ -13,6 +13,7 @@ import LayoutComponent from '@ai/components/layout';
 import '@styles/animations.css';
 import MeetingSideBar from '@ai/components/meeting-sidebar';
 import Meeting from '@ai/components/meeting';
+import AppLayout from '@ai/components/app-layout';
 
 export async function generateMetadata() {
     return {
@@ -23,11 +24,18 @@ export async function generateMetadata() {
 
 export default async function Home() {
     return (
+        <AppLayout />
+    );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function MainApp() {
+    return (
         <LayoutComponent>
             <div className="lg:flex">
                 <MeetingSideBar />
                 <Meeting />
             </div>
         </LayoutComponent>
-    );
+    )
 }

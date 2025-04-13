@@ -8,12 +8,10 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import type { JWTPayload } from "jose";
+import { cache } from "react";
+import { Resend } from 'resend'
 
-export type SessionPayload = JWTPayload
-
-export type LanguageType = 'en' | 'fr'
-
-export type defaultStateAction = {
-    message?: string
-}
+export const getMail = cache(() => {
+    const resent = new Resend(process.env.RESEND_API_KEY);
+    return resent;
+})

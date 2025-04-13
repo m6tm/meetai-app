@@ -40,6 +40,10 @@ export function SelectMultiple({ options, placeholder = "Search...", onChange }:
         onChange?.(newSelected.map((item) => item.value))
     }
 
+    const isValidEmail = (email: string) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    }
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         const input = inputRef.current
         if (input) {
@@ -52,10 +56,11 @@ export function SelectMultiple({ options, placeholder = "Search...", onChange }:
                 setOpen(false)
                 input.blur()
             }
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && inputValue.trim() && isValidEmail(inputValue)) {
                 const newSelected = [...selected, { label: inputValue, value: inputValue }]
                 setSelected(newSelected)
                 setInputValue("")
+                onChange?.(newSelected.map((item) => item.value))
             }
         }
     }
@@ -105,7 +110,7 @@ export function SelectMultiple({ options, placeholder = "Search...", onChange }:
                 </div>
             </div>
             <div className="relative mt-2 z-10">
-                {open && filteredOptions.length > 0 && (
+                {open && (filteredOptions.length > 0 || (inputValue && isValidEmail(inputValue))) && (
                     <ul className="absolute top-0 left-0 w-full rounded-md border bg-background shadow-md p-2">
                         {filteredOptions.map((option) => (
                             <li
@@ -116,11 +121,19 @@ export function SelectMultiple({ options, placeholder = "Search...", onChange }:
                                 {option.label}
                             </li>
                         ))}
+                        {inputValue && isValidEmail(inputValue) && !filteredOptions.some(opt => opt.value === inputValue) && (
+                            <li
+                                onClick={() => handleSelect({ label: inputValue, value: inputValue })}
+                                className="px-2 py-1.5 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                            >
+                                Add {inputValue}
+                            </li>
+                        )}
                     </ul>
                 )}
-                {open && filteredOptions.length === 0 && (
+                {open && filteredOptions.length === 0 && !isValidEmail(inputValue) && (
                     <div className="absolute top-0 left-0 w-full rounded-md border bg-background shadow-md p-2">
-                        <p className="text-sm text-muted-foreground px-2 py-1.5">No results found.</p>
+                        <p className="text-sm text-muted-foreground px-2 py-1.5">Enter a valid email address.</p>
                     </div>
                 )}
             </div>

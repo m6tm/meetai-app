@@ -9,57 +9,82 @@
  */
 
 import { getPrisma } from "@ai/adapters/db"
+import { Role } from "@prisma/client"
+import { NextResponse } from "next/server"
 
 
 export async function POST(request: Request) {
     const formData = await request.formData()
-    const room_code = formData.get('code')
-    const participant_email = formData.get('email')
+    const code = formData.get('code')
+    const guests: string[] = JSON.parse(String(formData.get('guests') ?? '[]'))
+    const moderator = formData.get('moderator')
     const startDate = formData.get('start_date')
-    const endDate = formData.get('end_date')
 
-    if (!room_code || !participant_email) {
-        return new Response(JSON.stringify({
-            error: 'room code and participant email are required',
+    if (!code || !moderator) {
+        return NextResponse.json({
+            error: 'code and moderator are required',
             data: null,
             code: 400
-        }), {
+        }, {
             status: 400,
         })
     }
 
     const prisma = getPrisma()
+
+    // Create or find moderator
     const user = await prisma.user.findFirst({
-        where: {
-            email: participant_email as string,
-        }
+        where: { email: moderator as string }
     })
 
     if (!user) {
-        return new Response(JSON.stringify({
-            error: 'user not found',
+        return NextResponse.json({
+            error: 'moderator not found',
             data: null,
             code: 404
-        }), {
+        }, {
             status: 404,
         })
     }
 
+    // Create meeting
     const meeting = await prisma.meeting.create({
         data: {
-            code: room_code as string,
-            user_id: user.id,
-            startDate: startDate ? new Date(startDate as string) : null,
-            endDate: endDate ? new Date(endDate as string) : null,
-            role: 'moderator',
+            code: code as string,
+            startDate: startDate ? new Date(startDate as string) : undefined,
         }
     })
 
-    return new Response(JSON.stringify({
+    await prisma.guestMeeting.create({
+        data: {
+            meeting_id: meeting.id,
+            role: Role.moderator,
+            updatedAt: new Date(),
+            user_id: user.id
+        }
+    })
+
+    // Create guests and their meeting associations
+    for (const guestEmail of guests) {
+        const guest = await prisma.guest.upsert({
+            where: { email: guestEmail },
+            create: { email: guestEmail },
+            update: {}
+        })
+
+        await prisma.guestMeeting.create({
+            data: {
+                meeting_id: meeting.id,
+                role: Role.guest,
+                updatedAt: new Date(),
+                guest_id: guest.id,
+            }
+        })
+    }
+
+    return NextResponse.json({
         error: null,
-        data: meeting,
-        code: 201
-    }), {
-        status: 201,
+        data: null,
+        code: 200
     })
 }
