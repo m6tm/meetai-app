@@ -8,30 +8,69 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client"
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Button } from "@ui/button"
-import { ChevronDown, ChevronUp, Hand, Info, MessageSquare, Mic, MonitorUp, PhoneOff, Users, Video } from "lucide-react";
+import { ChevronDown, ChevronUp, Hand, Info, MessageSquare, Mic, MicOff, MonitorUp, PhoneOff, Users, Video, VideoOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { cn } from "@ai/lib/utils";
 import ControlPanelMediaAddon from "./control-panel-media-addon";
 import { useMeetPanelStore } from "@ai/app/stores/meet.stote";
+import { format } from "date-fns";
+import { useLocalParticipant } from "@livekit/components-react";
+import { db } from "@ai/db";
 
 export default function ControlPanel() {
-    const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useMeetPanelStore()
+    const { setMeetPanel, meetPanel, mediaControl } = useMeetPanelStore()
     const router = useRouter()
+    const currentDate = format(new Date(), 'dd/MM/yyyy')
+    const hourRef = useRef<HTMLSpanElement | null>(null)
+    const { localParticipant } = useLocalParticipant()
+
+    useEffect(() => {
+        const updateTime = () => {
+            if (hourRef.current) {
+                const now = new Date()
+                hourRef.current.innerHTML = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+            }
+        }
+
+        const intervalId = setInterval(updateTime, 1000)
+        updateTime()
+
+        return () => clearInterval(intervalId)
+    }, [])
+
+    const handleMediaControl = async (type: MEDIA_CONTROL_TYPE) => {
+        if (type === MEDIA_CONTROL_TYPE.AUDIO) {
+            const response = await localParticipant.setMicrophoneEnabled(!localParticipant.isMicrophoneEnabled)
+            if (response) {
+                const preferences = (await db.preferences.orderBy('id').first())!
+                preferences.audio = !response.isMuted
+                await db.preferences.put(preferences)
+            }
+        }
+        if (type === MEDIA_CONTROL_TYPE.VIDEO) {
+            const response = await localParticipant.setCameraEnabled(!localParticipant.isCameraEnabled)
+            if (response) {
+                const preferences = (await db.preferences.orderBy('id').first())!
+                preferences.video = !response.isMuted
+                await db.preferences.put(preferences)
+            }
+        }
+    }
+
     return (
         <div className="control-bar z-10 relative">
             <ControlPanelMediaAddon />
             <div className="text-white">
-                <span>20:30</span>&nbsp;|&nbsp;
-                <span>09/05/2023</span>
+                <span ref={hourRef}></span>&nbsp;|&nbsp;
+                <span>{ currentDate }</span>
             </div>
             <div className="flex space-x-4">
                 <div className="media-control">
                     <Button
-                        className="bg-transparent hover:bg-transparent"
-                        onClick={() => mediaControl !== MEDIA_CONTROL_TYPE.AUDIO ? setMediaControl(MEDIA_CONTROL_TYPE.AUDIO) : setMediaControl(MEDIA_CONTROL_TYPE.NONE)}>
+                        className="bg-transparent hover:bg-transparent">
                         {
                             mediaControl === MEDIA_CONTROL_TYPE.AUDIO ? (
                                 <ChevronDown />
@@ -40,14 +79,15 @@ export default function ControlPanel() {
                             )
                         }
                     </Button>
-                    <Button>
-                        <Mic />
+                    <Button
+                        onClick={() => handleMediaControl(MEDIA_CONTROL_TYPE.AUDIO)}
+                        className={cn({ "muted": !localParticipant.isMicrophoneEnabled })}>
+                        {localParticipant.isMicrophoneEnabled ? <Mic /> : <MicOff />}
                     </Button>
                 </div>
                 <div className="media-control">
                     <Button
-                        className="bg-transparent hover:bg-transparent"
-                        onClick={() => mediaControl !== MEDIA_CONTROL_TYPE.VIDEO ? setMediaControl(MEDIA_CONTROL_TYPE.VIDEO) : setMediaControl(MEDIA_CONTROL_TYPE.NONE)}>
+                        className="bg-transparent hover:bg-transparent">
                         {
                             mediaControl === MEDIA_CONTROL_TYPE.VIDEO ? (
                                 <ChevronDown />
@@ -56,8 +96,10 @@ export default function ControlPanel() {
                             )
                         }
                     </Button>
-                    <Button>
-                        <Video />
+                    <Button
+                        onClick={() => handleMediaControl(MEDIA_CONTROL_TYPE.VIDEO)}
+                        className={cn({ "muted": !localParticipant.isCameraEnabled })}>
+                        {localParticipant.isCameraEnabled ? <Video /> : <VideoOff />}
                     </Button>
                 </div>
                 <Button className="other-control-primary">

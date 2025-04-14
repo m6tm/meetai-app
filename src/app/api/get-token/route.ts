@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
     }
 
     const metadata = serializeData<TParticipantMetadata>({
-        name: participant_name as string,
         role: role ? (role as TMeetRole) : 'participant' as TMeetRole,
         joined: false,
     });
@@ -46,6 +45,7 @@ export async function POST(request: NextRequest) {
         name: participant_name as string,
         metadata: metadata,
     });
+
     token.addGrant({
         roomJoin: true,
         room: room_name as string,

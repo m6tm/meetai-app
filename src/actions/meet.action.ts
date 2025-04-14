@@ -14,19 +14,7 @@ import { getSession } from "@ai/lib/session";
 import { generateMeetCode, makeRequest } from "@ai/lib/utils";
 import { defaultStateAction } from "@ai/types/definitions";
 import { GuestMeeting } from "@prisma/client";
-import { User } from "firebase/auth";
 import { z } from "zod"
-
-export async function saveInvitation(code: string, guests: string[], moderator: string, date?: Date) {
-    const formData = new FormData();
-    formData.append('code', code);
-    formData.append('guests', JSON.stringify(guests));
-    formData.append('moderator', moderator);
-    if (date) formData.append('start_date', date.toISOString());
-
-    const response = await makeRequest<null>('/api/meet/new', formData, 'POST');
-    return response;
-}
 
 export type CreateInvitationResponse = {
     message: string;
@@ -67,12 +55,18 @@ export async function createInvitation(state: defaultStateAction, form: FormData
     const { start_date, invited_emails } = parsed.data;
 
     const session = await getSession('session')
-    const meetCode = generateMeetCode()
+    let meetCode = generateMeetCode()
     if (!session) return {
         message: "Invitation created successfully",
         meetCode: meetCode,
         status: 'ok',
     }
+
+    meetCode = generateMeetCode({
+        participants: invited_emails ?? [],
+        mode: 'private',
+        moderator: session.userId,
+    })
 
     const prisma = getPrisma()
     const user = await prisma.user.findUnique({
@@ -123,10 +117,9 @@ export async function createInvitation(state: defaultStateAction, form: FormData
     };
 }
 
-export async function getMyMeetings(user: User) {
-    const formData = new FormData();
-    formData.append('userId', user.uid);
-
-    const response = await makeRequest<GuestMeeting[] | null>('/api/meet/my-meetings', formData, 'GET');
-    return response;
+export async function getMyMeetings() {
+    return await makeRequest<GuestMeeting[] | null>('/api/meet/my-meetings', undefined, 'GET', {
+        "Content-type": "application/json",
+        "Accept": "application/json",
+    });
 }

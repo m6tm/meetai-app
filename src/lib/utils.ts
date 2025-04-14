@@ -10,6 +10,7 @@
 
 import { db } from '@ai/db';
 import { TParticipantMetadata } from '@ai/types/data';
+import { LinkMetadata } from '@ai/types/definitions';
 import { RequestMethod, UniversalResponse } from '@ai/types/requests/other.type';
 import { clsx, type ClassValue } from 'clsx';
 import { Participant } from 'livekit-client';
@@ -36,19 +37,12 @@ export async function getLanguage() {
 
 export async function makeRequest<TResponse>(uri: string, form: FormData | undefined = undefined, method: RequestMethod = 'GET', header?: HeadersInit): Promise<UniversalResponse<TResponse>> {
 
-    let _uri = uri
-    const mode = process.env.NEXT_PUBLIC_APP_MODE
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const dev_options: RequestInit = mode && mode === 'development' ? {
-        mode: 'cors',
-        credentials: 'include',
-    } : {}
+    let _uri = uri.startsWith('http') ? uri : `${window.location.origin}${uri}`
     let options: RequestInit | undefined = {
-        // ...dev_options,
         headers: header,
     }
 
-    if (method === 'GET') {
+    if (method === 'GET' && form && Object.keys(form.entries()).length > 0) {
         const data: { [key: string]: string } = {}
         if (form)
             for (const [key, value] of form.entries()) {
@@ -57,8 +51,11 @@ export async function makeRequest<TResponse>(uri: string, form: FormData | undef
         _uri += '?' + new URLSearchParams(data)
     } else {
         options = {
-            method,
-            body: form
+            ...options,
+            ... {
+                method,
+                body: form,
+            }
         }
     }
 
@@ -126,12 +123,16 @@ export const getParticipantMetadata = (participant: Participant): TParticipantMe
     }
 }
 
-export function generateMeetCode<T>(customData?: T): string {
+export function generateMeetCode<T>(customData?: LinkMetadata<T>): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
     for (let i = 0; i < 6; i++) {
         code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    if (customData) return serializeData({ code, customData });
-    return serializeData({ code, customData: undefined });
+    if (!customData) customData = {
+        participants: [],
+        mode: 'private',
+    } as LinkMetadata<T>;
+
+    return serializeData({ code, customData });
 }

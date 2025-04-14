@@ -33,10 +33,10 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@ui/dropdown-menu"
-import { useLocalParticipant, useRemoteParticipants } from "@livekit/components-react";
+import { useLocalParticipant, useRemoteParticipants, VideoTrack } from "@livekit/components-react";
+import { Track } from "livekit-client";
 
 export default function VideoScreen({ className }: { className?: string; }) {
-    const videoRef = React.useRef<HTMLVideoElement>(null);
     const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
     const { localParticipant } = useLocalParticipant()
     const remoteParticipants = useRemoteParticipants()
@@ -61,9 +61,9 @@ export default function VideoScreen({ className }: { className?: string; }) {
                     <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="more-btn size-10 rounded-full">
-                                <MoreVertical />
-                            </Button>
+                                {/* <Button variant="ghost" className="more-btn size-10 rounded-full">
+                                    <MoreVertical />
+                                </Button> */}
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56">
                                 <DropdownMenuGroup>
@@ -91,12 +91,16 @@ export default function VideoScreen({ className }: { className?: string; }) {
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
-                    <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        className={cn(className, 'w-full h-full z-0 object-cover bg-slate-600')}
-                    />
+                    {localParticipant && localParticipant.isCameraEnabled && (
+                        <VideoTrack
+                            trackRef={{
+                                participant: localParticipant,
+                                source: Track.Source.Camera,
+                                publication: localParticipant.getTrackPublication(Track.Source.Camera)!
+                            }}
+                            className="w-full h-full absolute object-cover"
+                        />
+                    )}
                 </div>
             }
             <div className="other-screen">

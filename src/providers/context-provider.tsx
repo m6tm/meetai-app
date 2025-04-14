@@ -19,6 +19,7 @@ import { initializeLanguage } from "@ai/lib/utils";
 import { EventEmitter } from "events"
 import { useUserStore } from "@ai/app/stores/user.store";
 import { signOutNow } from "@ai/actions/auth.action";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export default function ContextProvider({ children }: { children: React.ReactNode; }) {
     const event = new EventEmitter();
@@ -71,10 +72,13 @@ export default function ContextProvider({ children }: { children: React.ReactNod
         logOut,
         event,
     }
+    const queryClient = new QueryClient()
     
     return (
         <AppContext.Provider value={context}>
-            {children}
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
         </AppContext.Provider>
     )
 }

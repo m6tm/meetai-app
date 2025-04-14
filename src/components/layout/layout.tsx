@@ -20,15 +20,14 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@ai/components/ui/dialog";
-import { useState, useEffect, useActionState, useRef } from "react";
-import { cn } from "@ai/lib/utils";
+import { useState, useActionState, useRef } from "react";
+import { cn, generateMeetCode } from "@ai/lib/utils";
 import { Label } from "@ai/components/ui/label";
 import { Copy, Loader2 } from "lucide-react";
 import { useToast } from "@ai/hooks/use-toast";
 import React from "react";
 import { useUserStore } from "@ai/app/stores/user.store";
 import { useRouter } from "@ai/i18n/routing";
-import { signIn } from "@ai/actions/auth.action";
 import Header from "@ai/components/layout/header";
 import { createInvitation, CreateInvitationResponse } from "@ai/actions/meet.action";
 import { defaultStateAction } from "@ai/types/definitions";
@@ -58,14 +57,6 @@ export default function AppLayout() {
         return state.meetCode ? `${process.env.NEXT_PUBLIC_URL_ORIGIN}/meet/${state.meetCode}` : "";
     };
 
-    useEffect(() => {
-        async function checkUser() {
-            await signIn(user?.email, user?.displayName);
-            router.push('/');
-        }
-        if (user) checkUser()
-    }, [router, user]);
-
     const addEmail = () => {
         if (emails.trim() !== "" && !invitedEmails.includes(emails.trim())) {
             setInvitedEmails([...invitedEmails, emails.trim()]);
@@ -83,6 +74,16 @@ export default function AppLayout() {
             toast({
                 title: "Copied!",
                 description: "Invitation link copied to clipboard.",
+            });
+        }
+    };
+
+    const copyCodeToClipboard = async () => {
+        if (state.meetCode) {
+            await navigator.clipboard.writeText(state.meetCode);
+            toast({
+                title: "Copied!",
+                description: "Invitation code copied to clipboard.",
             });
         }
     };
@@ -122,6 +123,11 @@ export default function AppLayout() {
         }
     }
 
+    const handleInstantMeeting = () => {
+        const meetGetCode = generateMeetCode();
+        router.push(`/meet/${meetGetCode}`);
+    }
+
     return (
         <>
             <main className="flex flex-col relative items-center justify-center min-h-screen p-4 md:p-8 w-full overflow-x-hidden">
@@ -132,7 +138,7 @@ export default function AppLayout() {
                     <h1 className="text-4xl font-bold mb-4">MeetAi</h1>
                     <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">Connect with anyone, anywhere, instantly.</p>
                     <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:space-x-4 justify-center">
-                        <Button>Start Instant Meeting</Button>
+                        <Button onClick={handleInstantMeeting}>Start Instant Meeting</Button>
                         {
                             user && (
                                 <Dialog open={open} onOpenChange={handleDialogChange}>
@@ -250,12 +256,17 @@ export default function AppLayout() {
                                                     <div className="grid gap-2">
                                                         <Label htmlFor="inviteLink">Invitation Link</Label>
                                                         <input type="hidden" name="state" value="reset" />
-                                                        <Input
-                                                            id="inviteLink"
-                                                            className="cursor-not-allowed"
-                                                            value={getLink()}
-                                                            disabled
-                                                        />
+                                                        <div className="flex gap-2">
+                                                            <Input
+                                                                id="inviteLink"
+                                                                className="cursor-not-allowed"
+                                                                value={getLink()}
+                                                                disabled
+                                                            />
+                                                            <Button onClick={copyCodeToClipboard} type="button">
+                                                                <Copy /> Code
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                     <Button onClick={copyToClipboard} type="button">
                                                         <Copy /> Copy Link
@@ -280,12 +291,14 @@ export default function AppLayout() {
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[425px]">
-                                <DialogHeader>
-                                    <DialogTitle>Join Meeting with Code</DialogTitle>
-                                    <DialogDescription>
-                                        Enter the meeting code to join the meeting.
-                                    </DialogDescription>
-                                </DialogHeader>
+                                <div className="">
+                                    <DialogHeader>
+                                        <DialogTitle>Join Meeting with Code</DialogTitle>
+                                        <DialogDescription>
+                                            Enter the meeting code to join the meeting.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                </div>
 
                                 <div className="grid gap-4 py-4">
                                     <Label htmlFor="meetingCode">

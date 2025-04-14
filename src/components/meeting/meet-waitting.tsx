@@ -16,12 +16,14 @@ import { Button } from "@ai/components/ui/button"
 import { Mic, MicOff, Video, VideoOff } from "lucide-react"
 import { db } from "@ai/db"
 import { useRouter } from "@ai/i18n/routing"
-import { getParticipantMetadata } from "@ai/lib/utils"
+import { getParticipantMetadata, serializeData } from "@ai/lib/utils"
+import { TParticipantMetadata } from "@ai/types/data"
 
 type WaitPageProps = {
     setReady: (ready: boolean) => void
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function WaitPage({ setReady }: WaitPageProps) {
     const { user } = useUserStore()
     const router = useRouter()
@@ -30,6 +32,8 @@ export default function WaitPage({ setReady }: WaitPageProps) {
     const remoteParticipants = useRemoteParticipants()
     const isCameraOn = localParticipant.isCameraEnabled
     const isMicOn = localParticipant.isMicrophoneEnabled
+    const [participantName, setParticipantName] = React.useState<string>("")
+    const localParticipantMetadata = getParticipantMetadata(localParticipant)
 
     const initialize = useCallback(async () => {
         const preferences = await db.preferences.orderBy('id').first()
@@ -55,8 +59,6 @@ export default function WaitPage({ setReady }: WaitPageProps) {
             await localParticipant.setCameraEnabled(false)
             await localParticipant.setMicrophoneEnabled(false)
         }
-
-        console.log(getParticipantMetadata(localParticipant));
     }, [localParticipant]);
 
     useEffect(() => {
@@ -76,6 +78,25 @@ export default function WaitPage({ setReady }: WaitPageProps) {
     }
 
     const handleCancelCall = () => router.push('/')
+
+    const handleParitipantNameChange = (name: string) => {
+        setParticipantName(name)
+    }
+
+    const handleJoinMeeting = () => {
+        if (
+            (!user || !user.displayName) &&
+            participantName.length === 0 ||
+            !localParticipantMetadata
+        ) return
+        if (participantName.length > 0) localParticipant.setName(participantName)
+        const metadata: TParticipantMetadata = {
+            ...localParticipantMetadata,
+            joined: true,
+        }
+        localParticipant.setMetadata(serializeData<TParticipantMetadata>(metadata))
+        setReady(true)
+    }
     
     return (
         <div className="flex z-20 flex-col lg:flex-row items-center fixed top-0 left-0 justify-center h-full w-full p-4 bg-white">
@@ -121,12 +142,20 @@ export default function WaitPage({ setReady }: WaitPageProps) {
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Your Name
+                            {
+                                localParticipantMetadata && (
+                                    <div className="inline ms-2">
+                                        {localParticipantMetadata.joined ? <span>Joined</span> : <span>Not Joined</span>}
+                                    </div>
+                                )
+                            }
                         </label>
                         <input 
                             type="text"
                             disabled={!!user}
-                            defaultValue={user?.displayName ?? undefined}
+                            defaultValue={user?.displayName ?? participantName}
                             className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            onChange={e => handleParitipantNameChange(e.target.value)}
                             placeholder="Enter your name"
                         />
                     </div>
@@ -150,8 +179,9 @@ export default function WaitPage({ setReady }: WaitPageProps) {
                     </div>
 
                     <Button 
-                        onClick={() => setReady(true)}
-                        className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors"
+                        onClick={handleJoinMeeting}
+                        disabled={!user && participantName.length === 0}
+                        className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors disabled:cursor-not-allowed"
                     >
                         Join Meeting
                     </Button>

@@ -17,3 +17,8 @@ export type LanguageType = 'en' | 'fr'
 export type defaultStateAction = {
     message?: string
 }
+
+export type LinkMetadata<T> = {
+    participants: string[]
+    mode: 'public' | 'private'
+} & T
