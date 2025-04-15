@@ -19,6 +19,8 @@ import { useMeetPanelStore } from "@ai/app/stores/meet.stote";
 import { format } from "date-fns";
 import { useLocalParticipant } from "@livekit/components-react";
 import { db } from "@ai/db";
+import { useParticipantAttributeMetadata } from "@ai/hooks/useParticipantAttribute";
+import { TParticipantMetadata } from "@ai/types/data";
 
 export default function ControlPanel() {
     const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useMeetPanelStore()
@@ -26,6 +28,7 @@ export default function ControlPanel() {
     const currentDate = format(new Date(), 'dd/MM/yyyy')
     const hourRef = useRef<HTMLSpanElement | null>(null)
     const { localParticipant } = useLocalParticipant()
+    const { metadata, setMetadata } = useParticipantAttributeMetadata(localParticipant)
 
     useEffect(() => {
         const updateTime = () => {
@@ -59,6 +62,17 @@ export default function ControlPanel() {
             }
         }
     }
+
+    const handUpDown = () => {
+        if (!metadata) return
+        const newMetadata = {
+            ...metadata,
+            upHand: (metadata.upHand === 'yes' ? 'no' : 'yes') as TParticipantMetadata['upHand'],
+        }
+        
+        setMetadata(newMetadata);
+    }
+    console.log(metadata);
 
     return (
         <div className="control-bar z-10 relative">
@@ -107,7 +121,10 @@ export default function ControlPanel() {
                 <Button className="other-control-primary">
                     <MonitorUp />
                 </Button>
-                <Button className="other-control-primary">
+                <Button
+                    className={cn("other-control-primary", { "!bg-orange-600": metadata && metadata.upHand === 'yes' })}
+                    onClick={handUpDown}
+                >
                     <Hand />
                 </Button>
                 <Button className="other-control-secondary" onClick={() => router.push('/fr')}>

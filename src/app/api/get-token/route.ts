@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
         role: role ? (role as TMeetRole) : 'participant' as TMeetRole,
         joined: 'no',
         pinned: 'no',
+        upHand: 'no',
     });
 
     const token = new AccessToken(apiKey, apiSecret, {

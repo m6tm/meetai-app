@@ -20,7 +20,7 @@ import {
 } from "@ui/avatar"
 import '@styles/video-screen.css'
 import 'swiper/css';
-import { MicOff, MoreVertical, Pin } from "lucide-react";
+import { Hand, MicOff, MoreVertical, Pin } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -164,62 +164,80 @@ export default function VideoScreen({ className }: { className?: string; }) {
                     className="h-full"
                 >
                     {
-                        remoteParticipants.filter(user => {
+                        remoteParticipants
+                        .filter(user => {
                             const metadata = deserializeData<TParticipantMetadata>(user.attributes.metadata)
                             if (metadata && metadata.joined === 'yes') return true
                             return false
-                        }).map((user) => (
-                            <SwiperSlide key={user.sid} className="screen-child relative">
-                                <div className="absolute top-2 right-2 flex items-center space-x-2 text-white z-20">
-                                    {
-                                        isPinned(user.sid) && (
-                                            <Pin />
-                                        )
-                                    }
-                                    {!user.isMicrophoneEnabled && <MicOff />}
-                                </div>
-                                <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full">
-                                    <Avatar className="size-24">
-                                        {/* <AvatarImage src={user.avatar} alt={`Logo de ${user.name}`} /> */}
-                                        <AvatarFallback className="uppercase">{ shortDisplayUserName(user.name ?? "Anonyme") }</AvatarFallback>
-                                    </Avatar>
-                                </div>
-                                <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="more-btn size-10 rounded-full hover:bg-slate-600/30 text-white">
-                                                <MoreVertical />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-56">
-                                            <DropdownMenuGroup>
-                                                <DropdownMenuItem
-                                                    className="cursor-pointer"
-                                                    onClick={() => togglePin(user.sid)}>
-                                                    {
-                                                        isPinned(user.sid) ? "Retirer de l'écran" : "Epingler à l'écran"
-                                                    }
+                        })
+                        .sort((a, b) => {
+                            const metadataA = deserializeData<TParticipantMetadata>(a.attributes.metadata);
+                            const metadataB = deserializeData<TParticipantMetadata>(b.attributes.metadata);
+                            // Sort raised hands first
+                            if (metadataA?.upHand === 'yes' && metadataB?.upHand !== 'yes') return -1;
+                            if (metadataA?.upHand !== 'yes' && metadataB?.upHand === 'yes') return 1;
+                            return 0;
+                        })
+                        .map((user) => {
+                            const userMetadata = deserializeData<TParticipantMetadata>(user.attributes.metadata);
+                            return (
+                                <SwiperSlide key={user.sid} className="screen-child relative">
+                                    <div className="absolute top-2 right-2 flex items-center space-x-2 text-white z-20">
+                                        {
+                                            isPinned(user.sid) && (
+                                                <Pin />
+                                            )
+                                        }
+                                        {!user.isMicrophoneEnabled && <MicOff />}
+                                        {
+                                            userMetadata && userMetadata.upHand === 'yes' && (
+                                                <Hand />
+                                            )
+                                        }
+                                    </div>
+                                    <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full">
+                                        <Avatar className="size-24">
+                                            {/* <AvatarImage src={user.avatar} alt={`Logo de ${user.name}`} /> */}
+                                            <AvatarFallback className="uppercase">{ shortDisplayUserName(user.name ?? "Anonyme") }</AvatarFallback>
+                                        </Avatar>
+                                    </div>
+                                    <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="more-btn size-10 rounded-full hover:bg-slate-600/30 text-white">
+                                                    <MoreVertical />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent className="w-56">
+                                                <DropdownMenuGroup>
+                                                    <DropdownMenuItem
+                                                        className="cursor-pointer"
+                                                        onClick={() => togglePin(user.sid)}>
+                                                        {
+                                                            isPinned(user.sid) ? "Retirer de l'écran" : "Epingler à l'écran"
+                                                        }
+                                                        </DropdownMenuItem>
+                                                    <DropdownMenuItem className="cursor-pointer">
+                                                        Retirer de la réunion
+                                                        <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
                                                     </DropdownMenuItem>
-                                                <DropdownMenuItem className="cursor-pointer">
-                                                    Retirer de la réunion
-                                                    <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
-                                                </DropdownMenuItem>
-                                            </DropdownMenuGroup>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                                {user && user.isCameraEnabled && (
-                                    <VideoTrack
-                                        trackRef={{
-                                            participant: user,
-                                            source: Track.Source.Camera,
-                                            publication: user.getTrackPublication(Track.Source.Camera)!
-                                        }}
-                                        className={cn("w-full h-full z-10 object-cover absolute", className)}
-                                    />
-                                )}
-                            </SwiperSlide>
-                        ))
+                                                </DropdownMenuGroup>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                    {user && user.isCameraEnabled && (
+                                        <VideoTrack
+                                            trackRef={{
+                                                participant: user,
+                                                source: Track.Source.Camera,
+                                                publication: user.getTrackPublication(Track.Source.Camera)!
+                                            }}
+                                            className={cn("w-full h-full z-10 object-cover absolute", className)}
+                                        />
+                                    )}
+                                </SwiperSlide>
+                            )
+                        })
                     }
                 </Swiper>
             </div>

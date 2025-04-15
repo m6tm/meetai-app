@@ -34,5 +34,6 @@ export type TMeetRole = "admin" | "moderator" | "guest";
 export type TParticipantMetadata = {
     joined: 'yes' | 'no'
     pinned: 'no' | 'yes'
+    upHand: 'no' | 'yes'
     role: TMeetRole
 }
