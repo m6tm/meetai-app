@@ -22,6 +22,7 @@ import {
 } from "@ui/accordion"
 import ParticipantItem from "./participant-item";
 import { useMeetPanelStore } from "@ai/app/stores/meet.stote";
+import { useRemoteParticipants } from "@livekit/components-react";
 
 const PARTICIPANTS = [
     {
@@ -40,6 +41,8 @@ const PARTICIPANTS = [
 
 export default function Participant() {
     const { setMeetPanel, meetPanel } = useMeetPanelStore()
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const remoteParticipants = useRemoteParticipants()
     
     return meetPanel === MEET_PANEL_TYPE.USERS && (
         <div className="absolute z-10 bg-white w-[350px] rounded-lg space-y-4 bottom-24 right-4 p-5 full-height">

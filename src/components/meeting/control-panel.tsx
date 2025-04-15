@@ -72,7 +72,6 @@ export default function ControlPanel() {
         
         setMetadata(newMetadata);
     }
-    console.log(metadata);
 
     return (
         <div className="control-bar z-10 relative">

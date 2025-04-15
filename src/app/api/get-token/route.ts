@@ -11,6 +11,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { AccessToken, TrackSource } from 'livekit-server-sdk';
 import { TParticipantMetadata, TMeetRole } from "@ai/types/data";
 import { serializeData } from "@ai/lib/utils";
+import { getSession } from "@ai/lib/session";
+import { getPrisma } from "@ai/adapters/db";
 
 const apiKey = process.env.LIVEKIT_KEY;
 const apiSecret = process.env.LIVEKIT_SECRET;
@@ -21,9 +23,10 @@ if (!apiKey || !apiSecret) {
 
 export async function POST(request: NextRequest) {
     const formData = await request.formData()
+    const session = await getSession('session');
     const room_name = formData.get('room_name')
     const participant_name = formData.get('participant_name')
-    const role = formData.get('role')
+    let role: TMeetRole = "guest"
 
     if (!room_name || !participant_name) {
         return NextResponse.json({
@@ -35,8 +38,41 @@ export async function POST(request: NextRequest) {
         })
     }
 
+    if (session) {
+        const prisma = getPrisma()
+        const user = await prisma.user.findUnique({
+            where: {
+                email: session.userId
+            }
+        })
+
+        if (user) {
+            const meetRole = await prisma.guestMeeting.findFirst({
+                where: {
+                    OR: [
+                        {
+                            user: {
+                                email: user.email
+                            }
+                        },
+                        {
+                            guest: {
+                                email: user.email
+                            }
+                        }
+                    ]
+                },
+                select: {
+                    role: true
+                }
+            })
+
+            if (meetRole) role = meetRole.role
+        }
+    }
+
     const metadata = serializeData<TParticipantMetadata>({
-        role: role ? (role as TMeetRole) : 'participant' as TMeetRole,
+        role,
         joined: 'no',
         pinned: 'no',
         upHand: 'no',
