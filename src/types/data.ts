@@ -32,6 +32,6 @@ export type TTestimonialCollection = Array<TTestimonial>;
 export type TMeetRole = "admin" | "moderator" | "guest";
 
 export type TParticipantMetadata = {
-    joined: boolean
+    joined: 'yes' | 'no'
     role: TMeetRole
 }

@@ -286,7 +286,7 @@ export default function AppLayout() {
                         }
                         <Dialog open={meetingCodeOpen} onOpenChange={setMeetingCodeOpen}>
                             <DialogTrigger asChild>
-                                <Button variant="secondary" disabled={!user} className={!user ? 'disabled:cursor-not-allowed' : ''}>
+                                <Button variant="secondary" className={!user ? 'disabled:cursor-not-allowed' : ''}>
                                     Enter meeting code
                                 </Button>
                             </DialogTrigger>

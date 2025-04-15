@@ -9,11 +9,9 @@
  */
 
 import { db } from '@ai/db';
-import { TParticipantMetadata } from '@ai/types/data';
 import { LinkMetadata } from '@ai/types/definitions';
 import { RequestMethod, UniversalResponse } from '@ai/types/requests/other.type';
 import { clsx, type ClassValue } from 'clsx';
-import { Participant } from 'livekit-client';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -108,19 +106,6 @@ export const deserializeData = <T>(data: string) => {
     const cleanedData = decodedData.replace(SECRET_BKEY, '');
     const parsedData = JSON.parse(cleanedData);
     return parsedData as T;
-}
-
-export const getParticipantMetadata = (participant: Participant): TParticipantMetadata | undefined => {
-    const metadata = participant.metadata;
-    if (!metadata) return undefined;
-
-    try {
-        const parsedMetadata = deserializeData<TParticipantMetadata>(metadata);
-        return parsedMetadata;
-    } catch (error) {
-        console.error('Error parsing metadata:', error);
-        return undefined;
-    }
 }
 
 export function generateMeetCode<T>(customData?: LinkMetadata<T>): string {

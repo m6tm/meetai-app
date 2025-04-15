@@ -16,8 +16,8 @@ import { Button } from "@ai/components/ui/button"
 import { Mic, MicOff, Video, VideoOff } from "lucide-react"
 import { db } from "@ai/db"
 import { useRouter } from "@ai/i18n/routing"
-import { getParticipantMetadata, serializeData } from "@ai/lib/utils"
 import { TParticipantMetadata } from "@ai/types/data"
+import { useParticipantAttributeMetadata } from "@ai/hooks/useParticipantAttribute"
 
 type WaitPageProps = {
     setReady: (ready: boolean) => void
@@ -33,7 +33,7 @@ export default function WaitPage({ setReady }: WaitPageProps) {
     const isCameraOn = localParticipant.isCameraEnabled
     const isMicOn = localParticipant.isMicrophoneEnabled
     const [participantName, setParticipantName] = React.useState<string>("")
-    const localParticipantMetadata = getParticipantMetadata(localParticipant)
+    const { metadata, setMetadata } = useParticipantAttributeMetadata(localParticipant)
 
     const initialize = useCallback(async () => {
         const preferences = await db.preferences.orderBy('id').first()
@@ -87,14 +87,14 @@ export default function WaitPage({ setReady }: WaitPageProps) {
         if (
             (!user || !user.displayName) &&
             participantName.length === 0 ||
-            !localParticipantMetadata
+            !metadata
         ) return
         if (participantName.length > 0) localParticipant.setName(participantName)
-        const metadata: TParticipantMetadata = {
-            ...localParticipantMetadata,
-            joined: true,
+        const _metadata: TParticipantMetadata = {
+            ...metadata,
+            joined: 'yes',
         }
-        localParticipant.setMetadata(serializeData<TParticipantMetadata>(metadata))
+        setMetadata(_metadata)
         setReady(true)
     }
     
@@ -143,10 +143,8 @@ export default function WaitPage({ setReady }: WaitPageProps) {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Your Name
                             {
-                                localParticipantMetadata && (
-                                    <div className="inline ms-2">
-                                        {localParticipantMetadata.joined ? <span>Joined</span> : <span>Not Joined</span>}
-                                    </div>
+                                metadata && (
+                                    <span>{ metadata.joined === 'yes' ? ' Joined' : ' Not Joined' }</span>
                                 )
                             }
                         </label>
