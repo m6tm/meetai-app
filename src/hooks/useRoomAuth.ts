@@ -21,6 +21,7 @@ export const useRoomToken = () => {
         const formData = new FormData();
         formData.append('room_name', room_name);
         formData.append('participant_name', participant_name);
+        console.log('Fetching token for room:', room_name, 'and participant:', participant_name);
 
         const response = await makeRequest<TokenResponse>('/api/get-token', formData, 'POST');
         if (response.data) setToken(response.data.token);

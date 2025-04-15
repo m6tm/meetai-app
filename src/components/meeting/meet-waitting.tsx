@@ -142,11 +142,6 @@ export default function WaitPage({ setReady }: WaitPageProps) {
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Your Name
-                            {
-                                metadata && (
-                                    <span>{ metadata.joined === 'yes' ? ' Joined' : ' Not Joined' }</span>
-                                )
-                            }
                         </label>
                         <input 
                             type="text"
@@ -166,7 +161,7 @@ export default function WaitPage({ setReady }: WaitPageProps) {
                             {
                                 remoteParticipants.map(participant => (
                                     <div key={participant.sid} className="py-2 px-3 bg-white rounded mb-2">
-                                        John Doe
+                                        { participant.name }
                                     </div>
                                 ))
                             }

@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     const metadata = serializeData<TParticipantMetadata>({
         role: role ? (role as TMeetRole) : 'participant' as TMeetRole,
         joined: 'no',
+        pinned: 'no',
     });
 
     const token = new AccessToken(apiKey, apiSecret, {

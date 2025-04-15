@@ -9,7 +9,7 @@
  */
 "use client";
 import { cn, shortDisplayUserName } from "@ai/lib/utils";
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from '@ui/button'
 import { Swiper, SwiperSlide } from 'swiper/react';
 import {
@@ -40,6 +40,7 @@ export default function VideoScreen({ className }: { className?: string; }) {
     const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
     const { localParticipant } = useLocalParticipant()
     const remoteParticipants = useRemoteParticipants()
+    const [participantsPinned, setParticipantsPinned] = React.useState<Record<string, boolean>>({});
 
     function fullScreen() {
         if (!mainVideoScreenRef.current) return
@@ -48,6 +49,46 @@ export default function VideoScreen({ className }: { className?: string; }) {
         });
     }
 
+    function getPinnedParticipant() {
+        const pinnedParticipant = Object.keys(participantsPinned).find(key => participantsPinned[key]);
+        return remoteParticipants.find(user => user.sid === pinnedParticipant);
+    }
+
+    function togglePin(participantSid: string) {
+        setParticipantsPinned(prev => {
+            const isCurrentlyPinned = prev[participantSid];
+            // Reset all pins and only set the selected one if it wasn't already pinned
+            const newPinned: Record<string, boolean> = {};
+            Object.keys(prev).forEach(sid => {
+                newPinned[sid] = false;
+            });
+            if (!isCurrentlyPinned) {
+                newPinned[participantSid] = true;
+            }
+            return newPinned;
+        });
+    }
+
+    function isPinned(participantSid: string) {
+        return !!participantsPinned[participantSid];
+    }
+
+    function hasPinnedParticipants() {
+        return Object.keys(participantsPinned).some(key => participantsPinned[key]);
+    }
+
+    useEffect(() => {
+        const pinnedParticipants: Record<string, boolean> = {}
+        remoteParticipants.forEach(user => {
+            pinnedParticipants[user.sid] = false
+        })
+
+        const hasChanges = Object.keys(pinnedParticipants).length !== Object.keys(participantsPinned).length
+        if (hasChanges) setParticipantsPinned(pinnedParticipants)
+    }, [participantsPinned, remoteParticipants])
+
+    const pinnedParticipant = getPinnedParticipant();
+
     return (
         <div className="w-full h-full relative z-0">
             {
@@ -55,7 +96,7 @@ export default function VideoScreen({ className }: { className?: string; }) {
                     <div ref={mainVideoScreenRef} className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full bg-slate-600">
                         <Avatar className="size-36 flex justify-center items-center uppercase bg-muted">
                             {/* <AvatarImage src={localParticipant.avatar} alt={`Logo de ${localParticipant.name}`} /> */}
-                            <AvatarFallback className="uppercase">{ shortDisplayUserName(localParticipant.name ?? "Vide") }</AvatarFallback>
+                            <AvatarFallback className="uppercase">{ shortDisplayUserName(localParticipant.name ?? "Anonyme") }</AvatarFallback>
                         </Avatar>
                     </div>
                     <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
@@ -91,12 +132,22 @@ export default function VideoScreen({ className }: { className?: string; }) {
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
-                    {localParticipant && localParticipant.isCameraEnabled && (
+                    {!hasPinnedParticipants() && localParticipant && localParticipant.isCameraEnabled && (
                         <VideoTrack
                             trackRef={{
                                 participant: localParticipant,
                                 source: Track.Source.Camera,
                                 publication: localParticipant.getTrackPublication(Track.Source.Camera)!
+                            }}
+                            className="w-full h-full absolute object-cover"
+                        />
+                    )}
+                    {hasPinnedParticipants() && pinnedParticipant && pinnedParticipant.isCameraEnabled && (
+                        <VideoTrack
+                            trackRef={{
+                                participant: pinnedParticipant,
+                                source: Track.Source.Camera,
+                                publication: pinnedParticipant.getTrackPublication(Track.Source.Camera)!
                             }}
                             className="w-full h-full absolute object-cover"
                         />
@@ -112,16 +163,20 @@ export default function VideoScreen({ className }: { className?: string; }) {
                     className="h-full"
                 >
                     {
-                        [...remoteParticipants, localParticipant].map((user) => (
+                        remoteParticipants.map((user) => (
                             <SwiperSlide key={user.sid} className="screen-child relative">
-                                <div className="absolute top-2 right-2 flex items-center space-x-2 text-white">
-                                    <Pin />
+                                <div className="absolute top-2 right-2 flex items-center space-x-2 text-white z-20">
+                                    {
+                                        isPinned(user.sid) && (
+                                            <Pin />
+                                        )
+                                    }
                                     {!user.isMicrophoneEnabled && <MicOff />}
                                 </div>
                                 <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full">
                                     <Avatar className="size-24">
                                         {/* <AvatarImage src={user.avatar} alt={`Logo de ${user.name}`} /> */}
-                                        <AvatarFallback className="uppercase">{ shortDisplayUserName(user.name ?? "Video") }</AvatarFallback>
+                                        <AvatarFallback className="uppercase">{ shortDisplayUserName(user.name ?? "Anonyme") }</AvatarFallback>
                                     </Avatar>
                                 </div>
                                 <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
@@ -133,18 +188,13 @@ export default function VideoScreen({ className }: { className?: string; }) {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-56">
                                             <DropdownMenuGroup>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger className="cursor-pointer">
-                                                        <Pin />
-                                                        Epingler à l&apos;écran
-                                                    </DropdownMenuSubTrigger>
-                                                    <DropdownMenuPortal>
-                                                        <DropdownMenuSubContent>
-                                                            <DropdownMenuItem className="cursor-pointer">Pour moi uniquement</DropdownMenuItem>
-                                                            <DropdownMenuItem className="cursor-pointer">Pour tous les participants</DropdownMenuItem>
-                                                        </DropdownMenuSubContent>
-                                                    </DropdownMenuPortal>
-                                                </DropdownMenuSub>
+                                                <DropdownMenuItem
+                                                    className="cursor-pointer"
+                                                    onClick={() => togglePin(user.sid)}>
+                                                    {
+                                                        isPinned(user.sid) ? "Retirer de l'écran" : "Epingler à l'écran"
+                                                    }
+                                                    </DropdownMenuItem>
                                                 <DropdownMenuItem className="cursor-pointer">
                                                     Retirer de la réunion
                                                     <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
@@ -153,11 +203,16 @@ export default function VideoScreen({ className }: { className?: string; }) {
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
-                                <video
-                                    autoPlay
-                                    playsInline
-                                    className={cn(className, 'w-full h-full z-10 object-cover absolute')}
-                                />
+                                {user && user.isCameraEnabled && (
+                                    <VideoTrack
+                                        trackRef={{
+                                            participant: user,
+                                            source: Track.Source.Camera,
+                                            publication: user.getTrackPublication(Track.Source.Camera)!
+                                        }}
+                                        className={cn("w-full h-full z-10 object-cover absolute", className)}
+                                    />
+                                )}
                             </SwiperSlide>
                         ))
                     }
