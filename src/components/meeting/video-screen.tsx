@@ -8,7 +8,7 @@
  * the prior written permission of Meet ai LLC.
  */
 "use client";
-import { cn, shortDisplayUserName } from "@ai/lib/utils";
+import { cn, deserializeData, shortDisplayUserName } from "@ai/lib/utils";
 import React, { useEffect } from "react";
 import { Button } from '@ui/button'
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -35,6 +35,7 @@ import {
 } from "@ui/dropdown-menu"
 import { useLocalParticipant, useRemoteParticipants, VideoTrack } from "@livekit/components-react";
 import { Track } from "livekit-client";
+import { TParticipantMetadata } from "@ai/types/data";
 
 export default function VideoScreen({ className }: { className?: string; }) {
     const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
@@ -163,7 +164,11 @@ export default function VideoScreen({ className }: { className?: string; }) {
                     className="h-full"
                 >
                     {
-                        remoteParticipants.map((user) => (
+                        remoteParticipants.filter(user => {
+                            const metadata = deserializeData<TParticipantMetadata>(user.attributes.metadata)
+                            if (metadata && metadata.joined === 'yes') return true
+                            return false
+                        }).map((user) => (
                             <SwiperSlide key={user.sid} className="screen-child relative">
                                 <div className="absolute top-2 right-2 flex items-center space-x-2 text-white z-20">
                                     {
