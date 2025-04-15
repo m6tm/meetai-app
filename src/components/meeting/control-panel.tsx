@@ -21,7 +21,7 @@ import { useLocalParticipant } from "@livekit/components-react";
 import { db } from "@ai/db";
 
 export default function ControlPanel() {
-    const { setMeetPanel, meetPanel, mediaControl } = useMeetPanelStore()
+    const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useMeetPanelStore()
     const router = useRouter()
     const currentDate = format(new Date(), 'dd/MM/yyyy')
     const hourRef = useRef<HTMLSpanElement | null>(null)
@@ -68,9 +68,10 @@ export default function ControlPanel() {
                 <span>{ currentDate }</span>
             </div>
             <div className="flex space-x-4">
-                <div className="media-control">
+                    <div className="media-control">
                     <Button
-                        className="bg-transparent hover:bg-transparent">
+                        className="bg-transparent hover:bg-transparent"
+                        onClick={() => mediaControl !== MEDIA_CONTROL_TYPE.AUDIO ? setMediaControl(MEDIA_CONTROL_TYPE.AUDIO) : setMediaControl(MEDIA_CONTROL_TYPE.NONE)}>
                         {
                             mediaControl === MEDIA_CONTROL_TYPE.AUDIO ? (
                                 <ChevronDown />
@@ -87,7 +88,8 @@ export default function ControlPanel() {
                 </div>
                 <div className="media-control">
                     <Button
-                        className="bg-transparent hover:bg-transparent">
+                        className="bg-transparent hover:bg-transparent"
+                        onClick={() => mediaControl !== MEDIA_CONTROL_TYPE.VIDEO ? setMediaControl(MEDIA_CONTROL_TYPE.VIDEO) : setMediaControl(MEDIA_CONTROL_TYPE.NONE)}>
                         {
                             mediaControl === MEDIA_CONTROL_TYPE.VIDEO ? (
                                 <ChevronDown />
