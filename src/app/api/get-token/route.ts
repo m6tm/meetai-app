@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     const room_name = formData.get('room_name')
     const participant_name = formData.get('participant_name')
     let role: TMeetRole = "guest"
+    let avatar = "https://picsum.photos/id/11/100/100";
 
     if (!room_name || !participant_name) {
         return NextResponse.json({
@@ -63,11 +64,17 @@ export async function POST(request: NextRequest) {
                     ]
                 },
                 select: {
-                    role: true
+                    role: true,
+                    user: {
+                        select: {
+                            avatar: true,
+                        }
+                    }
                 }
             })
 
             if (meetRole) role = meetRole.role
+            if (meetRole && meetRole.user) avatar = meetRole.user.avatar
         }
     }
 
@@ -76,6 +83,7 @@ export async function POST(request: NextRequest) {
         joined: 'no',
         pinned: 'no',
         upHand: 'no',
+        avatar,
     });
 
     const token = new AccessToken(apiKey, apiSecret, {

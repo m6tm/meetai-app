@@ -14,7 +14,7 @@ import { ThemeToggle } from "@ai/components/theme-toggle";
 import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@ai/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@ai/components/ui/avatar";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { signIn } from "@ai/actions/auth.action";
 import { useRouter } from "@ai/i18n/routing";
 import AppContext from "@ai/context";
@@ -22,8 +22,6 @@ import { useUserStore } from "@ai/app/stores/user.store";
 
 export default function Header() {
     const { user, responded } = useUserStore();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [meetingCode, setMeetingCode] = useState<string>("");
     const { googleSignIn, logOut } = useContext(AppContext)
     const router = useRouter()
     
@@ -45,14 +43,12 @@ export default function Header() {
         }
     
         useEffect(() => {
-            // Generate a unique meeting code when the component mounts
-            setMeetingCode("anycode");
             async function checkUser() {
-                await signIn(user?.email, user?.displayName)
+                await signIn(user?.email, user?.displayName, user?.photoURL)
                 router.push('/')
             }
-            if (user) checkUser()
-        }, [router, setMeetingCode, user]);
+            if (user && responded) checkUser()
+        }, [user, router, responded]);
 
     return (
         <div className="absolute top-0 left-0 w-full flex justify-between items-center p-4 md:p-8">

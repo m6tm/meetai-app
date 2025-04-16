@@ -36,12 +36,14 @@ import {
 import { useLocalParticipant, useRemoteParticipants, VideoTrack } from "@livekit/components-react";
 import { Track } from "livekit-client";
 import { TParticipantMetadata } from "@ai/types/data";
+import { useParticipantAttributeMetadata } from "@ai/hooks/useParticipantAttribute";
 
 export default function VideoScreen({ className }: { className?: string; }) {
     const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
     const { localParticipant } = useLocalParticipant()
     const remoteParticipants = useRemoteParticipants()
     const [participantsPinned, setParticipantsPinned] = React.useState<Record<string, boolean>>({});
+    const { metadata } = useParticipantAttributeMetadata(localParticipant)
 
     function fullScreen() {
         if (!mainVideoScreenRef.current) return
@@ -96,7 +98,7 @@ export default function VideoScreen({ className }: { className?: string; }) {
                 <div className="main-screen">
                     <div ref={mainVideoScreenRef} className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full bg-slate-600">
                         <Avatar className="size-36 flex justify-center items-center uppercase bg-muted">
-                            {/* <AvatarImage src={localParticipant.avatar} alt={`Logo de ${localParticipant.name}`} /> */}
+                            <AvatarImage src={metadata!.avatar} alt={`Logo de ${localParticipant.name}`} />
                             <AvatarFallback className="uppercase">{ shortDisplayUserName(localParticipant.name ?? "Anonyme") }</AvatarFallback>
                         </Avatar>
                     </div>
@@ -197,7 +199,7 @@ export default function VideoScreen({ className }: { className?: string; }) {
                                     </div>
                                     <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full">
                                         <Avatar className="size-24">
-                                            {/* <AvatarImage src={user.avatar} alt={`Logo de ${user.name}`} /> */}
+                                            <AvatarImage src={userMetadata.avatar} alt={`Logo de ${user.name}`} />
                                             <AvatarFallback className="uppercase">{ shortDisplayUserName(user.name ?? "Anonyme") }</AvatarFallback>
                                         </Avatar>
                                     </div>

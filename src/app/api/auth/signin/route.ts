@@ -18,8 +18,9 @@ import { createSession } from "@ai/lib/session";
 export async function POST(req: NextRequest) {
     const form = await req.formData()
     const email = form.get('email')?.toString()
-    const name = form.get('name')?.toString() ?? ''
-    const nickname = form.get('nickname')
+    const name = form.get('name')?.toString() ?? faker.person.lastName()
+    const nickname = faker.person.middleName()
+    const avatar = form.get('avatar')?.toString() ?? "https://picsum.photos/id/11/100/100"
 
     if (typeof email !== 'string') {
         return NextResponse.json({
@@ -64,6 +65,7 @@ export async function POST(req: NextRequest) {
             data: {
                 email,
                 name,
+                avatar,
                 nickname: nickname ? nickname.toString() : faker.person.middleName(),
                 subscription: {
                     create: {

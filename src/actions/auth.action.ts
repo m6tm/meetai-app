@@ -11,11 +11,12 @@
 import { makeRequest } from "@ai/lib/utils"
 import { faker } from "@faker-js/faker"
 
-export async function signIn(email?: string | null, displayName?: string | null) {
+export async function signIn(email?: string | null, displayName?: string | null, avatar?: string | null) {
     if (!email) return null
     const form = new FormData()
     form.append('email', email)
     form.append('name', displayName ?? faker.person.firstName())
+    if (avatar) form.append('avatar', avatar)
     return makeRequest('/api/auth/signin', form, 'POST')
 }
 

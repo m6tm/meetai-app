@@ -35,5 +35,6 @@ export type TParticipantMetadata = {
     joined: 'yes' | 'no'
     pinned: 'no' | 'yes'
     upHand: 'no' | 'yes'
+    avatar: string
     role: TMeetRole
 }
