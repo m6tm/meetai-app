@@ -11,8 +11,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { AccessToken, TrackSource } from 'livekit-server-sdk';
 import { TParticipantMetadata, TMeetRole } from "@ai/types/data";
 import { serializeData } from "@ai/lib/utils";
-import { getSession } from "@ai/lib/session";
 import { getPrisma } from "@ai/adapters/db";
+import { getSession } from "@ai/lib/session";
 
 const apiKey = process.env.LIVEKIT_KEY;
 const apiSecret = process.env.LIVEKIT_SECRET;
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
             })
 
             if (meetRole) role = meetRole.role
-            if (meetRole && meetRole.user) avatar = meetRole.user.avatar
+            avatar = user.avatar
         }
     }
 
