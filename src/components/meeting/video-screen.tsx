@@ -33,13 +33,15 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@ui/dropdown-menu"
-import { useLocalParticipant, useRemoteParticipants, VideoTrack } from "@livekit/components-react";
-import { Track } from "livekit-client";
+import { useLocalParticipant, useRemoteParticipants, useRoomInfo, VideoTrack } from "@livekit/components-react";
+import { RemoteParticipant, Track } from "livekit-client";
 import { TParticipantMetadata } from "@ai/types/data";
 import { useParticipantAttributeMetadata } from "@ai/hooks/useParticipantAttribute";
+import { removeParticipantPost } from "@ai/actions/meet.action";
 
 export default function VideoScreen({ className }: { className?: string; }) {
     const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
+    const room = useRoomInfo()
     const { localParticipant } = useLocalParticipant()
     const remoteParticipants = useRemoteParticipants()
     const [participantsPinned, setParticipantsPinned] = React.useState<Record<string, boolean>>({});
@@ -78,6 +80,19 @@ export default function VideoScreen({ className }: { className?: string; }) {
 
     function hasPinnedParticipants() {
         return Object.keys(participantsPinned).some(key => participantsPinned[key]);
+    }
+
+    async function rejectRemoteParticipant(participant: RemoteParticipant) {
+        if (!metadata) return
+        const role = metadata.role;
+        const code = room.name;
+        const participantIdentity = participant.identity;
+        const formData = new FormData()
+        formData.append('code', code)
+        formData.append('role', role)
+        formData.append('participant_identity', participantIdentity)
+        const response = await removeParticipantPost(formData)
+        console.log(response)
     }
 
     useEffect(() => {
@@ -222,11 +237,17 @@ export default function VideoScreen({ className }: { className?: string; }) {
                                                         {
                                                             isPinned(user.sid) ? "Retirer de l'écran" : "Epingler à l'écran"
                                                         }
-                                                        </DropdownMenuItem>
-                                                    <DropdownMenuItem className="cursor-pointer">
-                                                        Retirer de la réunion
-                                                        <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
                                                     </DropdownMenuItem>
+                                                    {
+                                                        metadata && (metadata.role === 'moderator' || metadata.role === 'admin') && (
+                                                            <DropdownMenuItem
+                                                                className="cursor-pointer"
+                                                                onClick={() => rejectRemoteParticipant(user)}>
+                                                                Retirer de la réunion
+                                                                <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
+                                                            </DropdownMenuItem>
+                                                        )
+                                                    }
                                                 </DropdownMenuGroup>
                                             </DropdownMenuContent>
                                         </DropdownMenu>

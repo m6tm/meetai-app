@@ -15,6 +15,8 @@ import { generateMeetCode, makeRequest } from "@ai/lib/utils";
 import { defaultStateAction } from "@ai/types/definitions";
 import { GuestMeeting } from "@prisma/client";
 import { z } from "zod"
+import { MeetRole } from "@ai/enums/meet-panel";
+import { RoomServiceClient } from "livekit-server-sdk";
 
 export type CreateInvitationResponse = {
     message: string;
@@ -117,9 +119,115 @@ export async function createInvitation(state: defaultStateAction, form: FormData
     };
 }
 
+const removeParticipantValidator = z.object({
+    code: z.string(),
+    role: z.enum([MeetRole.ADMIN, MeetRole.MODERATOR]),
+    participant_identity: z.string(),
+});
+
+export async function removeParticipantPost(form: FormData) {
+    const apiKey = process.env.LIVEKIT_KEY;
+    const apiSecret = process.env.LIVEKIT_SECRET;
+    const apiHost = process.env.NEXT_PUBLIC_LIVEKIT_WEBSOCKET_URL;
+
+    const passed = removeParticipantValidator.safeParse({
+        code: form.get('code'),
+        role: form.get('role'),
+        participant_identity: form.get('participant_identity'),
+    });
+    if (!passed.success) {
+        return {
+            error: passed.error.issues[0].message,
+            code: 400,
+            data: null
+        }
+    }
+    const { code, participant_identity } = passed.data;
+
+    const svc = new RoomServiceClient(
+        apiHost!,
+        apiKey,
+        apiSecret
+    );
+
+    try {
+        await svc.removeParticipant(code, participant_identity);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+        return {
+            error: 'Failed to remove participant',
+            data: null,
+            code: 500
+        };
+    }
+
+    return {
+        error: null,
+        data: null,
+        code: 200
+    }
+}
+
 export async function getMyMeetings() {
     return await makeRequest<GuestMeeting[] | null>('/api/meet/my-meetings', undefined, 'GET', {
         "Content-type": "application/json",
         "Accept": "application/json",
     });
+}
+
+const saveInstantMeetingValidator = z.object({
+    code: z.string(),
+});
+
+export async function saveInstantMeeting(form: FormData) {
+    const passed = saveInstantMeetingValidator.safeParse({
+        code: form.get('code'),
+    });
+    if (!passed.success) {
+        return {
+            error: passed.error.issues[0].message,
+            code: 400,
+            data: null
+        }
+    }
+    const { code } = passed.data;
+
+    const session = await getSession('session')
+    if (!session) {
+        return {
+            error: 'User not authenticated',
+            code: 401,
+            data: null
+        }
+    }
+
+    const prisma = getPrisma()
+
+    const user = await prisma.user.findUnique({
+        where: {
+            email: session.userId
+        }
+    });
+
+    const meeting = await prisma.meeting.create({
+        data: {
+            code: code,
+            startDate: new Date(),
+        }
+    });
+
+    const guestMeeting = await prisma.guestMeeting.create({
+        data: {
+            meeting_id: meeting.id,
+            role: "moderator",
+            updatedAt: new Date(),
+            user_id: user!.id,
+        }
+    });
+
+    return {
+        error: null,
+        data: guestMeeting,
+        code: 200
+    };
 }

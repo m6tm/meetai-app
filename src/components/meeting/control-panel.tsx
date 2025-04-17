@@ -11,20 +11,22 @@
 import React, { useEffect, useRef } from "react";
 import { Button } from "@ui/button"
 import { ChevronDown, ChevronUp, Hand, Info, MessageSquare, Mic, MicOff, MonitorUp, PhoneOff, Users, Video, VideoOff } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
 import { cn } from "@ai/lib/utils";
 import ControlPanelMediaAddon from "./control-panel-media-addon";
 import { useMeetPanelStore } from "@ai/app/stores/meet.stote";
 import { format } from "date-fns";
-import { useLocalParticipant } from "@livekit/components-react";
+import { useLocalParticipant, useRoomContext } from "@livekit/components-react";
 import { db } from "@ai/db";
 import { useParticipantAttributeMetadata } from "@ai/hooks/useParticipantAttribute";
 import { TParticipantMetadata } from "@ai/types/data";
+import { RoomEvent } from "livekit-client";
+import { useRouter } from "@ai/i18n/routing";
 
 export default function ControlPanel() {
     const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useMeetPanelStore()
     const router = useRouter()
+    const room = useRoomContext()
     const currentDate = format(new Date(), 'dd/MM/yyyy')
     const hourRef = useRef<HTMLSpanElement | null>(null)
     const { localParticipant } = useLocalParticipant()
@@ -43,6 +45,13 @@ export default function ControlPanel() {
 
         return () => clearInterval(intervalId)
     }, [])
+
+    room.on(RoomEvent.Disconnected, () => {
+        console.log('Disconnected from room')
+        quitMeet()
+    })
+
+    const quitMeet = () => router.push('/')
 
     const handleMediaControl = async (type: MEDIA_CONTROL_TYPE) => {
         if (type === MEDIA_CONTROL_TYPE.AUDIO) {
@@ -69,7 +78,7 @@ export default function ControlPanel() {
             ...metadata,
             upHand: (metadata.upHand === 'yes' ? 'no' : 'yes') as TParticipantMetadata['upHand'],
         }
-        
+
         setMetadata(newMetadata);
     }
 
@@ -78,10 +87,10 @@ export default function ControlPanel() {
             <ControlPanelMediaAddon />
             <div className="text-white">
                 <span ref={hourRef}></span>&nbsp;|&nbsp;
-                <span>{ currentDate }</span>
+                <span>{currentDate}</span>
             </div>
             <div className="flex space-x-4">
-                    <div className="media-control">
+                <div className="media-control">
                     <Button
                         className="bg-transparent hover:bg-transparent"
                         onClick={() => mediaControl !== MEDIA_CONTROL_TYPE.AUDIO ? setMediaControl(MEDIA_CONTROL_TYPE.AUDIO) : setMediaControl(MEDIA_CONTROL_TYPE.NONE)}>
@@ -126,7 +135,7 @@ export default function ControlPanel() {
                 >
                     <Hand />
                 </Button>
-                <Button className="other-control-secondary" onClick={() => router.push('/fr')}>
+                <Button className="other-control-secondary" onClick={quitMeet}>
                     <PhoneOff />
                 </Button>
             </div>

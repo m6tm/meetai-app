@@ -35,7 +35,7 @@ export async function getLanguage() {
 
 export async function makeRequest<TResponse>(uri: string, form: FormData | undefined = undefined, method: RequestMethod = 'GET', header?: HeadersInit): Promise<UniversalResponse<TResponse>> {
 
-    let _uri = uri.startsWith('http') ? uri : `${window.location.origin}${uri}`
+    let _uri = uri
     let options: RequestInit | undefined = {
         headers: header,
     }

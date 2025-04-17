@@ -29,7 +29,7 @@ import React from "react";
 import { useUserStore } from "@ai/app/stores/user.store";
 import { useRouter } from "@ai/i18n/routing";
 import Header from "@ai/components/layout/header";
-import { createInvitation, CreateInvitationResponse } from "@ai/actions/meet.action";
+import { createInvitation, CreateInvitationResponse, saveInstantMeeting } from "@ai/actions/meet.action";
 import { defaultStateAction } from "@ai/types/definitions";
 import { subDays } from "date-fns";
 
@@ -52,6 +52,7 @@ export default function AppLayout() {
     const router = useRouter();
     const [state, formAction, pending] = useActionState(createInvitation, initialActionState);
     const resetBtnRef = useRef<HTMLButtonElement>(null);
+    const [meetCreating, setMeetCreating] = useState(false);
 
     const getLink = () => {
         return state.meetCode ? `${process.env.NEXT_PUBLIC_URL_ORIGIN}/meet/${state.meetCode}` : "";
@@ -123,8 +124,15 @@ export default function AppLayout() {
         }
     }
 
-    const handleInstantMeeting = () => {
+    const handleInstantMeeting = async () => {
+        setMeetCreating(true);
         const meetGetCode = generateMeetCode();
+        if (user) {
+            const form = new FormData();
+            form.append('code', meetGetCode);
+            const response = await saveInstantMeeting(form);
+            console.log(response)
+        }
         router.push(`/meet/${meetGetCode}`);
     }
 
@@ -138,7 +146,16 @@ export default function AppLayout() {
                     <h1 className="text-4xl font-bold mb-4">MeetAi</h1>
                     <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">Connect with anyone, anywhere, instantly.</p>
                     <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:space-x-4 justify-center">
-                        <Button onClick={handleInstantMeeting}>Start Instant Meeting</Button>
+                        <Button onClick={handleInstantMeeting} disabled={meetCreating}>
+                            {meetCreating ? (
+                                <>
+                                    Creating...
+                                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                                </>
+                            ) : (
+                                "Start Instant Meeting"
+                            )}
+                        </Button>
                         {
                             user && (
                                 <Dialog open={open} onOpenChange={handleDialogChange}>

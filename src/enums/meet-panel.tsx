@@ -20,3 +20,9 @@ export enum MEDIA_CONTROL_TYPE {
     VIDEO = 0,
     AUDIO = 1,
 }
+
+export enum MeetRole {
+    ADMIN = "admin",
+    MODERATOR = "moderator",
+    GUEST = "guest",
+}

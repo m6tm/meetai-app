@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
     token.addGrant({
         roomJoin: true,
         room: room_name as string,
+        roomAdmin: role === 'admin' || role === 'moderator',
         canPublish: true,
         canPublishData: true,
         canSubscribe: true,
