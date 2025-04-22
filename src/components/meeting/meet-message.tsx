@@ -19,13 +19,21 @@ import '@styles/messages.css';
 import { cn } from '@ai/lib/utils';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useMeetPanelStore } from '@ai/app/stores/meet.stote';
-import { useChat } from '@livekit/components-react';
+import { useChat, useLocalParticipant } from '@livekit/components-react';
+import { LocalParticipant, RemoteParticipant } from 'livekit-client';
 
 export default function MeetMessage() {
     const { setMeetPanel, meetPanel, autoriseMessage, setAutoriseMessage } = useMeetPanelStore();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { chatMessages, send, isSending } = useChat();
+    const { localParticipant } = useLocalParticipant();
     const [message, setMessage] = React.useState<string>('');
+
+    const handleSubmit = () => {
+        const msg = message;
+        if (msg.trim().length === 0) return;
+        send(msg);
+        setMessage('');
+    };
 
     return (
         meetPanel === MEET_PANEL_TYPE.MESSAGES && (
@@ -48,26 +56,21 @@ export default function MeetMessage() {
                         onCheckedChange={() => setAutoriseMessage(!autoriseMessage)}
                     />
                 </div>
-                <div className="messages">
-                    <div className="message-section">
+                <div className="flex flex-col flex-grow">
+                    <div className="flex-grow message-section">
                         <ul>
-                            {/* {
-                            chatMessages.map((message) => (
-                                <li key={message.timestamp} className={cn("flex flex-col mb-4", message.isAuthor ? 'items-end' : 'items-start')}>
-                                    <div className={cn("max-w-[80%] rounded-lg px-4 py-2", 
-                                        message.isAuthor ? 'bg-gradient-to-br from-blue-400 to-blue-600 text-white' : 'bg-gradient-to-br from-gray-100 to-gray-300')}>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="font-medium text-sm">{message.author}</span>
-                                            <span className="text-xs opacity-70">{message.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                        </div>
-                                        <div className="text-sm">{message.message}</div>
-                                    </div>
-                                </li>
-                            ))
-                        } */}
+                            {chatMessages.map((message) => (
+                                <MessageItem
+                                    key={message.timestamp}
+                                    message={message.message}
+                                    from={message.from}
+                                    localParticipant={localParticipant}
+                                    timestamp={message.timestamp}
+                                />
+                            ))}
                         </ul>
                     </div>
-                    <div className={cn('input-section')}>
+                    <div className="input-section mt-1">
                         <TextareaAutosize
                             className="w-full"
                             placeholder="Votre message ..."
@@ -78,7 +81,7 @@ export default function MeetMessage() {
                             variant={'ghost'}
                             disabled={isSending}
                             className="size-10 rounded-full"
-                            onClick={() => send(message)}
+                            onClick={handleSubmit}
                         >
                             <SendHorizonal />
                         </Button>
@@ -86,5 +89,38 @@ export default function MeetMessage() {
                 </div>
             </div>
         )
+    );
+}
+
+type MessageItemProps = {
+    message: string;
+    from: RemoteParticipant | LocalParticipant;
+    attachedFiles?: File;
+    localParticipant: LocalParticipant;
+    timestamp: number;
+};
+
+function MessageItem({ message, from, timestamp }: MessageItemProps) {
+    const isAuthor = from.isLocal;
+    const date = new Date(timestamp);
+    return (
+        <li key={timestamp} className={cn('flex flex-col mb-4', isAuthor ? 'items-end' : 'items-start')}>
+            <div
+                className={cn(
+                    'max-w-[80%] rounded-lg px-4 py-2',
+                    isAuthor
+                        ? 'bg-gradient-to-br from-blue-400 to-blue-600 text-white'
+                        : 'bg-gradient-to-br from-gray-100 to-gray-300',
+                )}
+            >
+                <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-sm">{from.name || from.identity}</span>
+                    <span className="text-xs opacity-70">
+                        {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                </div>
+                <div className="text-sm">{message}</div>
+            </div>
+        </li>
     );
 }
