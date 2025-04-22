@@ -8,58 +8,62 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import { getPrisma } from "@ai/adapters/db"
-import { TypePlan } from "@prisma/client"
-import { NextRequest, NextResponse } from "next/server"
+import { getPrisma } from '@ai/adapters/db';
+import { TypePlan } from '@prisma/client';
+import { NextRequest, NextResponse } from 'next/server';
 import { faker } from '@faker-js/faker';
-import { createSession } from "@ai/lib/session";
-
+import { createSession } from '@ai/lib/session';
+import { DEFAULT_AVATAR } from '@ai/utils/constants';
 
 export async function POST(req: NextRequest) {
-    const form = await req.formData()
-    const email = form.get('email')?.toString()
-    const name = form.get('name')?.toString() ?? faker.person.lastName()
-    const nickname = faker.person.middleName()
-    const avatar = form.get('avatar')?.toString() ?? "https://picsum.photos/id/11/100/100"
+    const form = await req.formData();
+    const email = form.get('email')?.toString();
+    const name = form.get('name')?.toString() ?? faker.person.lastName();
+    const nickname = faker.person.middleName();
+    const avatar = form.get('avatar')?.toString() ?? DEFAULT_AVATAR;
 
     if (typeof email !== 'string') {
-        return NextResponse.json({
-            error: 'The email is required',
-            data: null,
-            code: 400
-        }, {
-            status: 400
-        })
+        return NextResponse.json(
+            {
+                error: 'The email is required',
+                data: null,
+                code: 400,
+            },
+            {
+                status: 400,
+            },
+        );
     }
 
-    const prisma = getPrisma()
-    const user_exist = (await prisma.user.findUnique({
+    const prisma = getPrisma();
+    const user_exist = await prisma.user.findUnique({
         where: {
-            email
-        }
-    }))
+            email,
+        },
+    });
 
     if (user_exist) {
-        await createSession(user_exist.email, 'session', '/')
+        await createSession(user_exist.email, 'session', '/');
         return NextResponse.json({
             error: 'User already exists',
             data: null,
-            code: 200
-        })
+            code: 200,
+        });
     }
 
     try {
         let basicPlan = await prisma.plan.findFirst({
-            where: { type: TypePlan.BASIC }
-        })
+            where: { type: TypePlan.BASIC },
+        });
 
-        if (!basicPlan) basicPlan = await prisma.plan.create({
-            data: {
-                name: "Basic",
-                price: 0,
-                type: TypePlan.BASIC
-            }
-        })
+        if (!basicPlan)
+            basicPlan = await prisma.plan.create({
+                data: {
+                    name: 'Basic',
+                    price: 0,
+                    type: TypePlan.BASIC,
+                },
+            });
 
         const user = await prisma.user.create({
             data: {
@@ -71,29 +75,32 @@ export async function POST(req: NextRequest) {
                     create: {
                         plan: {
                             connect: {
-                                id: basicPlan.id
-                            }
-                        }
-                    }
-                }
-            }
-        })
-        await createSession(user.email, 'session', '/')
+                                id: basicPlan.id,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        await createSession(user.email, 'session', '/');
 
         return NextResponse.json({
             error: null,
             data: user,
-            code: 200
-        })
+            code: 200,
+        });
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-        return NextResponse.json({
-            error: 'Something went wrong' + ' ' + (error as Error).message,
-            data: null,
-            code: 500
-        }, {
-            status: 500
-        })
+        return NextResponse.json(
+            {
+                error: 'Something went wrong' + ' ' + (error as Error).message,
+                data: null,
+                code: 500,
+            },
+            {
+                status: 500,
+            },
+        );
     }
 }

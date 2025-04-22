@@ -73,42 +73,46 @@ const TESTIMONIALS: TTestimonialCollection = [
 ];
 
 const PEER_CONFIG = {
-    iceServers: [{
-        url: 'turn:numb.viagenie.ca',
-        credential: 'muazkh',
-        username: 'webrtc@live.com'
-    },
-    {
-        url: 'turn:192.158.29.39:3478?transport=udp',
-        credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-        username: '28224511:1379330808'
-    },
-    {
-        url: 'turn:192.158.29.39:3478?transport=tcp',
-        credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-        username: '28224511:1379330808'
-    },
-    {
-        url: 'turn:turn.bistri.com:80',
-        credential: 'homeo',
-        username: 'homeo'
-    },
-    {
-        url: 'turn:turn.anyfirewall.com:443?transport=tcp',
-        credential: 'webrtc',
-        username: 'webrtc'
-    },
-    {
-        urls: [
-            "turn:13.250.13.83:3478?transport=udp"
-        ],
-        username: "YzYNCouZM1mhqhmseWk6",
-        credential: "YzYNCouZM1mhqhmseWk6"
-    }
-    ]
-}
+    iceServers: [
+        {
+            url: 'turn:numb.viagenie.ca',
+            credential: 'muazkh',
+            username: 'webrtc@live.com',
+        },
+        {
+            url: 'turn:192.158.29.39:3478?transport=udp',
+            credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+            username: '28224511:1379330808',
+        },
+        {
+            url: 'turn:192.158.29.39:3478?transport=tcp',
+            credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+            username: '28224511:1379330808',
+        },
+        {
+            url: 'turn:turn.bistri.com:80',
+            credential: 'homeo',
+            username: 'homeo',
+        },
+        {
+            url: 'turn:turn.anyfirewall.com:443?transport=tcp',
+            credential: 'webrtc',
+            username: 'webrtc',
+        },
+        {
+            urls: ['turn:13.250.13.83:3478?transport=udp'],
+            username: 'YzYNCouZM1mhqhmseWk6',
+            credential: 'YzYNCouZM1mhqhmseWk6',
+        },
+    ],
+};
 
-const CONSTRAINS = (audio_mode: boolean, video_mode: boolean, call_id: string, facing_mode: 'user' | 'environment' = 'user') => ({
+const CONSTRAINS = (
+    audio_mode: boolean,
+    video_mode: boolean,
+    call_id: string,
+    facing_mode: 'user' | 'environment' = 'user',
+) => ({
     audio: audio_mode,
     video: video_mode,
     groupId: call_id,
@@ -117,10 +121,9 @@ const CONSTRAINS = (audio_mode: boolean, video_mode: boolean, call_id: string, f
     facingMode: { exact: facing_mode },
     width: { min: 640, ideal: 1280 },
     height: { min: 480, ideal: 720 },
-    advanced: [
-        { width: 1920, height: 1280 },
-        { aspectRatio: 1.333 }
-    ]
-})
+    advanced: [{ width: 1920, height: 1280 }, { aspectRatio: 1.333 }],
+});
 
-export { SERVICES, TESTIMONIALS, PEER_CONFIG, CONSTRAINS };
+const DEFAULT_AVATAR = 'https://picsum.photos/id/11/100/100';
+
+export { SERVICES, TESTIMONIALS, PEER_CONFIG, CONSTRAINS, DEFAULT_AVATAR };
