@@ -29,7 +29,7 @@ import { cn } from '@ai/lib/utils';
 import ControlPanelMediaAddon from './control-panel-media-addon';
 import { useMeetPanelStore } from '@ai/app/stores/meet.stote';
 import { format } from 'date-fns';
-import { useLocalParticipant, useRemoteParticipants, useRoomContext } from '@livekit/components-react';
+import { useChat, useLocalParticipant, useRemoteParticipants, useRoomContext } from '@livekit/components-react';
 import { db } from '@ai/db';
 import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
 import { TParticipantMetadata } from '@ai/types/data';
@@ -39,6 +39,7 @@ import { useRouter } from '@ai/i18n/routing';
 export default function ControlPanel() {
     const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useMeetPanelStore();
     const router = useRouter();
+    const { chatMessages } = useChat();
     const room = useRoomContext();
     const currentDate = format(new Date(), 'dd/MM/yyyy');
     const hourRef = useRef<HTMLSpanElement | null>(null);
@@ -183,7 +184,11 @@ export default function ControlPanel() {
                             : setMeetPanel(MEET_PANEL_TYPE.MESSAGES)
                     }
                 >
-                    <div className="badge">3</div>
+                    {
+                        chatMessages.length > 0 && (
+                            <div className="badge">{chatMessages.length}</div>
+                        )
+                    }
                     <MessageSquare />
                 </Button>
             </div>

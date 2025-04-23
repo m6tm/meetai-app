@@ -12,9 +12,11 @@ import React from "react";
 import { Button } from '@ui/button'
 import { UserPlus, X } from "lucide-react";
 import CopyElement from "@ai/components/meeting/_ui/copy-btn";
+import { useUserStore } from "@ai/app/stores/user.store";
 
 export default function MeetDataFirst({ code }: { code: string }) {
     const [closed, setClosed] = React.useState<boolean>(false)
+    const { user } = useUserStore()
     return !closed ? (
         <div className="absolute z-10 bg-white size-[350px] rounded-lg space-y-4 bottom-24 left-4 p-5">
             <div className="flex items-center justify-between">
@@ -29,7 +31,7 @@ export default function MeetDataFirst({ code }: { code: string }) {
             </Button>
             <p>Ou partagez ce lien avec les personnes que vous shouhaitez inviter à la réunion</p>
             <CopyElement {...{ code }} />
-            <span>Vous êtes connecté entant que <code>adresse@exemple.com</code></span>
+            <span>Vous êtes connecté entant { user && user.email ? `que ${user.email}` : 'qu\'Invité' }</span>
         </div>
     ) : (
         <div className=""></div>

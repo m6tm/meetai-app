@@ -14,6 +14,7 @@ import { serializeData } from '@ai/lib/utils';
 import { getPrisma } from '@ai/adapters/db';
 import { getSession } from '@ai/lib/session';
 import { DEFAULT_AVATAR } from '@ai/utils/constants';
+import { faker } from '@faker-js/faker';
 
 const apiKey = process.env.LIVEKIT_KEY;
 const apiSecret = process.env.LIVEKIT_SECRET;
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
     });
 
     const token = new AccessToken(apiKey, apiSecret, {
-        identity: participant_name as string,
+        identity: faker.string.uuid(),
         name: participant_name as string,
         attributes: {
             metadata: metadata,

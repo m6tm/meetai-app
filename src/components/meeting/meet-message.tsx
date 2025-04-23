@@ -16,23 +16,41 @@ import { SendHorizonal, X } from 'lucide-react';
 import { MEET_PANEL_TYPE } from '@ai/enums/meet-panel';
 import { Switch } from '@ui/switch';
 import '@styles/messages.css';
-import { cn } from '@ai/lib/utils';
+import { cn, deserializeData, serializeData } from '@ai/lib/utils';
 import TextareaAutosize from 'react-textarea-autosize';
 import { useMeetPanelStore } from '@ai/app/stores/meet.stote';
 import { useChat, useLocalParticipant } from '@livekit/components-react';
 import { LocalParticipant, RemoteParticipant } from 'livekit-client';
+import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
 
 export default function MeetMessage() {
-    const { setMeetPanel, meetPanel, autoriseMessage, setAutoriseMessage } = useMeetPanelStore();
+    const { setMeetPanel, meetPanel } = useMeetPanelStore();
     const { chatMessages, send, isSending } = useChat();
     const { localParticipant } = useLocalParticipant();
     const [message, setMessage] = React.useState<string>('');
+    const messageZoneRef = React.useRef<HTMLDivElement | null>(null);
+    const { metadata } = useParticipantAttributeMetadata(localParticipant);
+    const isAdmin = metadata?.role === 'admin' || metadata?.role === 'moderator';
 
     const handleSubmit = () => {
         const msg = message;
         if (msg.trim().length === 0) return;
-        send(msg);
+        send(serializeData(msg));
         setMessage('');
+    };
+
+    const handleScrollToBottom = () => {
+        if (messageZoneRef.current) {
+            messageZoneRef.current.scrollTop = messageZoneRef.current.scrollHeight;
+        }
+    };
+
+    React.useEffect(() => {
+        handleScrollToBottom();
+    }, [chatMessages]);
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && e.ctrlKey) handleSubmit();
     };
 
     return (
@@ -48,16 +66,14 @@ export default function MeetMessage() {
                         <X />
                     </Button>
                 </div>
-                <div className="flex items-center space-x-2">
-                    <Label htmlFor="autorise-message">Autoriser tous les participants à envoyer des messages</Label>
-                    <Switch
-                        id="autorise-message"
-                        checked={autoriseMessage}
-                        onCheckedChange={() => setAutoriseMessage(!autoriseMessage)}
-                    />
-                </div>
-                <div className="flex flex-col flex-grow">
-                    <div className="flex-grow message-section">
+                {
+                    isAdmin && (
+                        <MessageAuthorisation />
+                    )
+                }
+                <div className="flex flex-col flex-grow overflow-y-hidden">
+                    <div className="message-section w-full overflow-y-auto" 
+                         ref={messageZoneRef}>
                         <ul>
                             {chatMessages.map((message) => (
                                 <MessageItem
@@ -70,25 +86,44 @@ export default function MeetMessage() {
                             ))}
                         </ul>
                     </div>
-                    <div className="input-section mt-1">
-                        <TextareaAutosize
-                            className="w-full"
-                            placeholder="Votre message ..."
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                        />
-                        <Button
-                            variant={'ghost'}
-                            disabled={isSending}
-                            className="size-10 rounded-full"
-                            onClick={handleSubmit}
-                        >
-                            <SendHorizonal />
-                        </Button>
-                    </div>
+                    {
+                        metadata?.canMessage === 'yes' && (
+                            <div className="input-section mt-1">
+                                <TextareaAutosize
+                                    className="w-full"
+                                    placeholder="Votre message ..."
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                />
+                                <Button
+                                    variant={'ghost'}
+                                    disabled={isSending}
+                                    className="size-10 rounded-full"
+                                    onClick={handleSubmit}
+                                >
+                                    <SendHorizonal />
+                                </Button>
+                            </div>
+                        )
+                    }
                 </div>
             </div>
         )
+    );
+}
+
+function MessageAuthorisation() {
+    const { autoriseMessage, setAutoriseMessage } = useMeetPanelStore();
+    return (
+        <div className="flex items-center space-x-2">
+            <Label htmlFor="autorise-message">Autoriser tous les participants à envoyer des messages</Label>
+            <Switch
+                id="autorise-message"
+                checked={autoriseMessage}
+                onCheckedChange={() => setAutoriseMessage(!autoriseMessage)}
+            />
+        </div>
     );
 }
 
@@ -114,12 +149,12 @@ function MessageItem({ message, from, timestamp }: MessageItemProps) {
                 )}
             >
                 <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-sm">{from.name || from.identity}</span>
+                    <span className="font-medium text-sm">{from.name}</span>
                     <span className="text-xs opacity-70">
                         {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                 </div>
-                <div className="text-sm">{message}</div>
+                <div className="text-sm">{deserializeData<string>(message)}</div>
             </div>
         </li>
     );

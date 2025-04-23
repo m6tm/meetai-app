@@ -85,12 +85,12 @@ export default function WaitPage({ setReady }: WaitPageProps) {
 
     const handleJoinMeeting = () => {
         if (((!user || !user.displayName) && participantName.length === 0) || !metadata) return;
-        if (participantName.length > 0) localParticipant.setName(participantName);
         const _metadata: TParticipantMetadata = {
             ...metadata,
             joined: 'yes',
         };
         setMetadata(_metadata);
+        if (participantName.length > 0) localParticipant.setName(participantName);
         setReady(true);
     };
 
