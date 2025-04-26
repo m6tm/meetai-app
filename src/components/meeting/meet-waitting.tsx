@@ -18,6 +18,7 @@ import { db } from '@ai/db';
 import { useRouter } from '@ai/i18n/routing';
 import { TParticipantMetadata } from '@ai/types/data';
 import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
+import { deserializeData } from '@ai/lib/utils';
 
 type WaitPageProps = {
     setReady: (ready: boolean) => void;
@@ -150,11 +151,18 @@ export default function WaitPage({ setReady }: WaitPageProps) {
                     <div className="mb-6">
                         <h3 className="text-sm font-medium text-gray-700 mb-2">Participants</h3>
                         <div className="max-h-40 overflow-y-auto bg-gray-50 rounded-md p-2">
-                            {remoteParticipants.map((participant) => (
-                                <div key={participant.sid} className="py-2 px-3 bg-white rounded mb-2">
-                                    {participant.name}
-                                </div>
-                            ))}
+                            {remoteParticipants
+                                .filter((participant) => {
+                                    const userMetadata = deserializeData<TParticipantMetadata>(
+                                        participant.attributes.metadata,
+                                    );
+                                    return userMetadata.joined === 'yes';
+                                })
+                                .map((participant) => (
+                                    <div key={participant.sid} className="py-2 px-3 bg-white rounded mb-2">
+                                        {participant.name}
+                                    </div>
+                                ))}
                             {remoteParticipants.length === 0 && <span>Not participant</span>}
                         </div>
                     </div>
