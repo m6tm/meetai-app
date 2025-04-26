@@ -11,7 +11,7 @@
 import { useUserStore } from '@ai/app/stores/user.store';
 import { useLocalParticipant, useRemoteParticipants, useRoomContext, VideoTrack } from '@livekit/components-react';
 import { ConnectionState, Track } from 'livekit-client';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from '@ai/components/ui/button';
 import { Mic, MicOff, Video, VideoOff } from 'lucide-react';
 import { db } from '@ai/db';
@@ -35,6 +35,7 @@ export default function WaitPage({ setReady }: WaitPageProps) {
     const isMicOn = localParticipant.isMicrophoneEnabled;
     const [participantName, setParticipantName] = React.useState<string>('');
     const { metadata, setMetadata } = useParticipantAttributeMetadata(localParticipant);
+    const [pendingAction, setPendingAction] = useState(false);
 
     const initialize = useCallback(async () => {
         const preferences = await db.preferences.orderBy('id').first();
@@ -78,13 +79,19 @@ export default function WaitPage({ setReady }: WaitPageProps) {
         await db.preferences.update(preferences!.id, { video: !isCameraOn });
     };
 
-    const handleCancelCall = () => router.push('/');
+    const handleCancelCall = () => {
+        if (pendingAction) return;
+        setPendingAction(true);
+        router.push('/');
+    };
 
     const handleParitipantNameChange = (name: string) => {
         setParticipantName(name);
     };
 
     const handleJoinMeeting = () => {
+        if (pendingAction) return;
+        setPendingAction(true);
         if (((!user || !user.displayName) && participantName.length === 0) || !metadata) return;
         const _metadata: TParticipantMetadata = {
             ...metadata,
@@ -169,14 +176,15 @@ export default function WaitPage({ setReady }: WaitPageProps) {
 
                     <Button
                         onClick={handleJoinMeeting}
-                        disabled={!user && participantName.length === 0}
+                        disabled={(!user && participantName.length === 0) || pendingAction}
                         className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors disabled:cursor-not-allowed"
                     >
                         Join Meeting
                     </Button>
                     <Button
                         onClick={handleCancelCall}
-                        className="w-full mt-4 py-3 px-4 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-md transition-colors"
+                        disabled={pendingAction}
+                        className="w-full mt-4 py-3 px-4 bg-orange-600 hover:bg-orange-700 disabled:cursor-not-allowed text-white font-medium rounded-md transition-colors"
                     >
                         Cancel Call
                     </Button>
