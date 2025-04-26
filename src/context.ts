@@ -8,21 +8,15 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import { createContext } from "react";
-import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from "@enums/meet-panel";
-import { TAppContext } from "./types/context";
+import { createContext } from 'react';
+import { TAppContext } from './types/context';
+import EventEmitter from 'events';
 
 const AppContext = createContext<TAppContext>({
-    meetPanel: MEET_PANEL_TYPE.NONE,
-    setMeetPanel: () => { },
-    autoriseMessage: true,
-    setAutoriseMessage: () => { },
-    mediaControl: MEDIA_CONTROL_TYPE.NONE,
-    setMediaControl: () => { },
-    user: null,
-    googleSignIn: async () => { },
-    githubSignIn: async () => { },
-    logOut: async () => { },
-})
+    event: new EventEmitter(),
+    googleSignIn: async () => {},
+    githubSignIn: async () => {},
+    logOut: async () => {},
+});
 
-export default AppContext
+export default AppContext;

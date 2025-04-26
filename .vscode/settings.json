@@ -4,5 +4,7 @@
     "i18n-ally.sourceLanguage": "fr",
     "i18n-ally.keystyle": "nested",
     "WillLuke.nextjs.addTypesOnSave": true,
-    "WillLuke.nextjs.hasPrompted": true
+    "WillLuke.nextjs.hasPrompted": true,
+    "IDX.aI.enableInlineCompletion": true,
+    "IDX.aI.enableCodebaseIndexing": true
 }

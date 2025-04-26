@@ -20,7 +20,5 @@ export async function generateMetadata() {
 }
 
 export default async function Home() {
-    return (
-        <AppLayout />
-    );
+    return <AppLayout />;
 }

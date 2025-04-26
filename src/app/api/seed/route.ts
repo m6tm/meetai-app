@@ -12,47 +12,50 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { NextResponse } from 'next/server';
 import { TypePlan } from '@prisma/client';
 import { getPrisma } from '@ai/adapters/db';
+import { DEFAULT_AVATAR } from '@ai/utils/constants';
+import { faker } from '@faker-js/faker';
 
 export async function POST() {
     const prisma = getPrisma();
-    const has_test_user = (await prisma.user.findFirst()) !== null
-    if (has_test_user) return NextResponse.json({
-        error: 'The seed has already been run',
-        data: null,
-        code: 400
-    })
+    const has_test_user = (await prisma.user.findFirst()) !== null;
+    if (has_test_user)
+        return NextResponse.json({
+            error: 'The seed has already been run',
+            data: null,
+            code: 400,
+        });
 
     const plans = [
         {
             name: 'Basic',
             price: new Decimal(0),
-            type: TypePlan.BASIC
+            type: TypePlan.BASIC,
         },
         {
             name: 'Most popular',
             price: new Decimal(49.99),
-            type: TypePlan.SILVER
+            type: TypePlan.SILVER,
         },
         {
             name: 'Recommended',
             price: new Decimal(99.99),
-            type: TypePlan.GOLDEN
+            type: TypePlan.GOLDEN,
         },
-    ]
+    ];
 
     for (const plan of plans) {
         await prisma.plan.upsert({
             where: { name: plan.name },
             update: {
                 price: plan.price,
-                type: plan.type
+                type: plan.type,
             },
             create: {
                 name: plan.name,
                 price: plan.price,
-                type: plan.type
-            }
-        })
+                type: plan.type,
+            },
+        });
     }
 
     const user = await prisma.user.upsert({
@@ -60,13 +63,15 @@ export async function POST() {
         update: {},
         create: {
             name: 'Test User',
-            email: 'test@test.com'
-        }
-    })
+            email: 'test@test.com',
+            avatar: DEFAULT_AVATAR,
+            nickname: faker.person.middleName(),
+        },
+    });
 
     const basicPlan = await prisma.plan.findUnique({
-        where: { name: 'Basic' }
-    })
+        where: { name: 'Basic' },
+    });
 
     if (basicPlan) {
         await prisma.subscription.create({
@@ -74,14 +79,14 @@ export async function POST() {
                 user_id: user.id,
                 plan_id: basicPlan.id,
                 endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-            }
-        })
+            },
+        });
     }
 
     return NextResponse.json({
         error: null,
         data: 'Seed completed',
-        code: 200
+        code: 200,
     });
 }
 
@@ -91,15 +96,15 @@ export async function GET() {
         include: {
             subscription: {
                 include: {
-                    plan: true
-                }
-            }
-        }
-    })
-    const plans = await prisma.plan.findMany()
+                    plan: true,
+                },
+            },
+        },
+    });
+    const plans = await prisma.plan.findMany();
     return NextResponse.json({
         error: null,
         data: { users, plans },
-        code: 200
+        code: 200,
     });
 }
