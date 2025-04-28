@@ -20,6 +20,11 @@ import {
     MicOff,
     MonitorUp,
     PhoneOff,
+    Signal,
+    SignalHigh,
+    SignalLow,
+    SignalMedium,
+    SignalZero,
     Users,
     Video,
     VideoOff,
@@ -99,27 +104,32 @@ export default function ControlPanel() {
             case ConnectionQuality.Excellent:
                 return {
                     name: 'excellent',
-                    color: 'bg-green-500',
+                    color: 'text-green-500',
+                    icon: <Signal />,
                 };
             case ConnectionQuality.Good:
                 return {
                     name: 'good',
-                    color: 'bg-blue-500',
+                    color: 'text-blue-500',
+                    icon: <SignalHigh />,
                 };
             case ConnectionQuality.Poor:
                 return {
                     name: 'poor',
-                    color: 'bg-yellow-500',
+                    color: 'text-yellow-500',
+                    icon: <SignalMedium />,
                 };
             case ConnectionQuality.Lost:
                 return {
                     name: 'lost',
-                    color: 'bg-red-500',
+                    color: 'text-red-500',
+                    icon: <SignalLow />,
                 };
             case ConnectionQuality.Unknown:
                 return {
                     name: 'unknown',
-                    color: 'bg-gray-500',
+                    color: 'text-gray-500',
+                    icon: <SignalZero />,
                 };
         }
     };
@@ -140,9 +150,9 @@ export default function ControlPanel() {
             <div className="text-white flex items-center space-x-3">
                 <span ref={hourRef}></span>
                 <span>{currentDate}</span>
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-2">
                     <span>{getNetworkQualityClass().name}</span>
-                    <span className={cn(getNetworkQualityClass().color, 'size-3 mt-1 block rounded-full')}></span>
+                    <span className={cn(getNetworkQualityClass().color)}>{getNetworkQualityClass().icon}</span>
                 </div>
             </div>
             <div className="flex space-x-4">
