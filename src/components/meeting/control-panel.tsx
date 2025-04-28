@@ -29,11 +29,17 @@ import { cn, deserializeData } from '@ai/lib/utils';
 import ControlPanelMediaAddon from './control-panel-media-addon';
 import { useMeetPanelStore } from '@ai/stores/meet.stote';
 import { format } from 'date-fns';
-import { useChat, useLocalParticipant, useRemoteParticipants, useRoomContext } from '@livekit/components-react';
+import {
+    useChat,
+    useConnectionQualityIndicator,
+    useLocalParticipant,
+    useRemoteParticipants,
+    useRoomContext,
+} from '@livekit/components-react';
 import { db } from '@ai/db';
 import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
 import { TParticipantMetadata } from '@ai/types/data';
-import { RoomEvent } from 'livekit-client';
+import { ConnectionQuality, RoomEvent } from 'livekit-client';
 import { useRouter } from '@ai/i18n/routing';
 
 export default function ControlPanel() {
@@ -46,6 +52,7 @@ export default function ControlPanel() {
     const { localParticipant } = useLocalParticipant();
     const remoteParticipants = useRemoteParticipants();
     const { metadata, setMetadata } = useParticipantAttributeMetadata(localParticipant);
+    const { quality } = useConnectionQualityIndicator({ participant: localParticipant });
 
     useEffect(() => {
         const updateTime = () => {
@@ -87,6 +94,36 @@ export default function ControlPanel() {
         }
     };
 
+    const getNetworkQualityClass = () => {
+        switch (quality) {
+            case ConnectionQuality.Excellent:
+                return {
+                    name: 'excellent',
+                    color: 'bg-green-500',
+                };
+            case ConnectionQuality.Good:
+                return {
+                    name: 'good',
+                    color: 'bg-blue-500',
+                };
+            case ConnectionQuality.Poor:
+                return {
+                    name: 'poor',
+                    color: 'bg-yellow-500',
+                };
+            case ConnectionQuality.Lost:
+                return {
+                    name: 'lost',
+                    color: 'bg-red-500',
+                };
+            case ConnectionQuality.Unknown:
+                return {
+                    name: 'unknown',
+                    color: 'bg-gray-500',
+                };
+        }
+    };
+
     const handUpDown = () => {
         if (!metadata) return;
         const newMetadata = {
@@ -100,9 +137,13 @@ export default function ControlPanel() {
     return (
         <div className="control-bar z-10 relative">
             <ControlPanelMediaAddon />
-            <div className="text-white">
-                <span ref={hourRef}></span>&nbsp;|&nbsp;
+            <div className="text-white flex items-center space-x-3">
+                <span ref={hourRef}></span>
                 <span>{currentDate}</span>
+                <div className="flex items-center space-x-1">
+                    <span>{getNetworkQualityClass().name}</span>
+                    <span className={cn(getNetworkQualityClass().color, 'size-3 mt-1 block rounded-full')}></span>
+                </div>
             </div>
             <div className="flex space-x-4">
                 <div className="media-control">
@@ -173,12 +214,14 @@ export default function ControlPanel() {
                             : setMeetPanel(MEET_PANEL_TYPE.USERS)
                     }
                 >
-                    <div className="badge">{
-                        [localParticipant, ...remoteParticipants].filter(user => {
-                            const userMetadata = deserializeData<TParticipantMetadata>(user.attributes.metadata)
-                            return userMetadata.joined === 'yes'
-                        }).length
-                    }</div>
+                    <div className="badge">
+                        {
+                            [localParticipant, ...remoteParticipants].filter((user) => {
+                                const userMetadata = deserializeData<TParticipantMetadata>(user.attributes.metadata);
+                                return userMetadata.joined === 'yes';
+                            }).length
+                        }
+                    </div>
                     <Users />
                 </Button>
                 <Button
@@ -189,11 +232,7 @@ export default function ControlPanel() {
                             : setMeetPanel(MEET_PANEL_TYPE.MESSAGES)
                     }
                 >
-                    {
-                        chatMessages.length > 0 && (
-                            <div className="badge">{chatMessages.length}</div>
-                        )
-                    }
+                    {chatMessages.length > 0 && <div className="badge">{chatMessages.length}</div>}
                     <MessageSquare />
                 </Button>
             </div>

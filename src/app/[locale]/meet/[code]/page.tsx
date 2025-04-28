@@ -8,14 +8,19 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import React from "react";
-import '@styles/meet.css'
-import BeginMeet from "@ai/components/meeting/begin-meet";
+import React from 'react';
+import '@styles/meet.css';
+import BeginMeet from '@ai/components/meeting/begin-meet';
+
+export async function generateMetadata() {
+    return {
+        title: 'Meet ai LLC - Réunion',
+        description: 'Meet ai LLC - Appels vidéo et visioconferences pour tous',
+    };
+}
 
 export default async function Meeting({ params }: { params: Promise<{ code: string }> }) {
-    const code = (await params).code
-    
-    return (
-        <BeginMeet code={code} />
-    )
+    const code = (await params).code;
+
+    return <BeginMeet code={code} />;
 }
