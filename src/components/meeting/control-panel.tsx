@@ -25,9 +25,9 @@ import {
     VideoOff,
 } from 'lucide-react';
 import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from '@ai/enums/meet-panel';
-import { cn } from '@ai/lib/utils';
+import { cn, deserializeData } from '@ai/lib/utils';
 import ControlPanelMediaAddon from './control-panel-media-addon';
-import { useMeetPanelStore } from '@ai/app/stores/meet.stote';
+import { useMeetPanelStore } from '@ai/stores/meet.stote';
 import { format } from 'date-fns';
 import { useChat, useLocalParticipant, useRemoteParticipants, useRoomContext } from '@livekit/components-react';
 import { db } from '@ai/db';
@@ -173,7 +173,12 @@ export default function ControlPanel() {
                             : setMeetPanel(MEET_PANEL_TYPE.USERS)
                     }
                 >
-                    <div className="badge">{[localParticipant, ...remoteParticipants].length}</div>
+                    <div className="badge">{
+                        [localParticipant, ...remoteParticipants].filter(user => {
+                            const userMetadata = deserializeData<TParticipantMetadata>(user.attributes.metadata)
+                            return userMetadata.joined === 'yes'
+                        }).length
+                    }</div>
                     <Users />
                 </Button>
                 <Button

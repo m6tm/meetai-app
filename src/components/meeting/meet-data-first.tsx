@@ -12,7 +12,7 @@ import React from "react";
 import { Button } from '@ui/button'
 import { UserPlus, X } from "lucide-react";
 import CopyElement from "@ai/components/meeting/_ui/copy-btn";
-import { useUserStore } from "@ai/app/stores/user.store";
+import { useUserStore } from "@ai/stores/user.store";
 
 export default function MeetDataFirst({ code }: { code: string }) {
     const [closed, setClosed] = React.useState<boolean>(false)

@@ -14,7 +14,7 @@ import { Button } from '@ui/button'
 import { UserPlus, X } from "lucide-react";
 import CopyElement from "@ai/components/meeting/_ui/copy-btn";
 import { MEET_PANEL_TYPE } from "@ai/enums/meet-panel";
-import { useMeetPanelStore } from "@ai/app/stores/meet.stote";
+import { useMeetPanelStore } from "@ai/stores/meet.stote";
 
 export default function MeetDataInfo({ code }: { code: string }) {
     const { setMeetPanel, meetPanel } = useMeetPanelStore()

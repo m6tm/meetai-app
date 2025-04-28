@@ -18,7 +18,7 @@ import { Switch } from '@ui/switch';
 import '@styles/messages.css';
 import { cn, deserializeData, serializeData } from '@ai/lib/utils';
 import TextareaAutosize from 'react-textarea-autosize';
-import { useMeetPanelStore } from '@ai/app/stores/meet.stote';
+import { useMeetPanelStore } from '@ai/stores/meet.stote';
 import { useChat, useLocalParticipant } from '@livekit/components-react';
 import { LocalParticipant, RemoteParticipant } from 'livekit-client';
 import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';

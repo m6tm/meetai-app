@@ -16,14 +16,19 @@ import { MEET_PANEL_TYPE } from '@ai/enums/meet-panel';
 import { Input } from '@ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@ui/accordion';
 import ParticipantItem from './participant-item';
-import { useMeetPanelStore } from '@ai/app/stores/meet.stote';
+import { useMeetPanelStore } from '@ai/stores/meet.stote';
 import { useLocalParticipant, useRemoteParticipants } from '@livekit/components-react';
+import { deserializeData } from '@ai/lib/utils';
+import { TParticipantMetadata } from '@ai/types/data';
 
 export default function Participant() {
     const { setMeetPanel, meetPanel } = useMeetPanelStore();
     const { localParticipant } = useLocalParticipant();
     const remoteParticipants = useRemoteParticipants();
-    const participants = [localParticipant, ...remoteParticipants];
+    const participants = [localParticipant, ...remoteParticipants].filter(user => {
+        const userMetadata = deserializeData<TParticipantMetadata>(user.attributes.metadata)
+        return userMetadata.joined === 'yes'
+    });
 
     return (
         meetPanel === MEET_PANEL_TYPE.USERS && (

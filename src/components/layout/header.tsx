@@ -23,7 +23,7 @@ import { useContext, useEffect } from 'react';
 import { newSignin } from '@ai/actions/auth.action';
 import { useRouter } from '@ai/i18n/routing';
 import AppContext from '@ai/context';
-import { useUserStore } from '@ai/app/stores/user.store';
+import { useUserStore } from '@ai/stores/user.store';
 import { DEFAULT_AVATAR } from '@ai/utils/constants';
 
 export default function Header() {

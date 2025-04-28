@@ -26,7 +26,7 @@ import { Label } from '@ai/components/ui/label';
 import { Copy, Loader2 } from 'lucide-react';
 import { useToast } from '@ai/hooks/use-toast';
 import React from 'react';
-import { useUserStore } from '@ai/app/stores/user.store';
+import { useUserStore } from '@ai/stores/user.store';
 import { useRouter } from '@ai/i18n/routing';
 import Header from '@ai/components/layout/header';
 import { createInvitation, CreateInvitationResponse, saveInstantMeeting } from '@ai/actions/meet.action';

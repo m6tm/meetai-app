@@ -8,7 +8,7 @@
  * the prior written permission of Meet ai LLC.
  */
 'use client';
-import { useUserStore } from '@ai/app/stores/user.store';
+import { useUserStore } from '@ai/stores/user.store';
 import { useLocalParticipant, useRemoteParticipants, useRoomContext, VideoTrack } from '@livekit/components-react';
 import { ConnectionState, Track } from 'livekit-client';
 import React, { useCallback, useEffect, useState } from 'react';
