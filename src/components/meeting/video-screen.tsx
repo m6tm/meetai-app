@@ -33,7 +33,7 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@ui/dropdown-menu';
-import { useLocalParticipant, useRemoteParticipants, useRoomInfo, VideoTrack } from '@livekit/components-react';
+import { useLocalParticipant, useRemoteParticipants, useRoomInfo, VideoTrack, AudioTrack } from '@livekit/components-react';
 import { RemoteParticipant, Track } from 'livekit-client';
 import { TParticipantMetadata } from '@ai/types/data';
 import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
@@ -267,6 +267,16 @@ export default function VideoScreen({ className }: { className?: string }) {
                                                 publication: user.getTrackPublication(Track.Source.Camera)!,
                                             }}
                                             className={cn('w-full h-full z-10 object-cover absolute', className)}
+                                        />
+                                    )}
+                                    {user && user.isMicrophoneEnabled && (
+                                        <AudioTrack
+                                            trackRef={{
+                                                participant: user,
+                                                source: Track.Source.Microphone,
+                                                publication: user.getTrackPublication(Track.Source.Microphone)!,
+                                            }}
+                                            className='hidden'
                                         />
                                     )}
                                 </SwiperSlide>
