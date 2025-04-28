@@ -24,20 +24,33 @@
         # Open editors for the following files by default, if they exist:
         default.openFiles = [
           # Cover all the variations of language, src-dir, router (app/pages)
-          "pages/index.tsx" "pages/index.js"
-          "src/pages/index.tsx" "src/pages/index.js"
-          "app/page.tsx" "app/page.js"
-          "src/app/page.tsx" "src/app/page.js"
+          "[locale]/pages/index.tsx"
+          "[locale]/pages/index.js"
+          "src/[locale]/pages/index.tsx"
+          "src/[locale]/pages/index.js"
+          "[locale]/app/page.tsx"
+          "[locale]/app/page.js"
+          "src/[locale]/app/page.tsx"
+          "src/[locale]/app/page.js"
+          "[locale]/page.tsx"
         ];
       };
-      # To run something each time the workspace is (re)started, use the `onStart` hook
     };
     # Enable previews and customize configuration
     previews = {
       enable = true;
       previews = {
         web = {
-          command = ["npm" "run" "dev" "--" "--port" "$PORT" "--hostname" "0.0.0.0"];
+          command = [
+            "npm"
+            "run"
+            "dev"
+            "--"
+            "--port"
+            "$PORT"
+            "--hostname"
+            "0.0.0.0"
+          ];
           manager = "web";
         };
       };
