@@ -1,3 +1,6 @@
 {
+    "firebase_hosting": {
+        "deploymentHostingUrl": "https://meetai-41ada.web.app"
+    },
     "gemini_api": {}
 }

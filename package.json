@@ -8,7 +8,8 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "eslint": "eslint {public,src}/**/*.{js,jsx,ts,tsx} --fix",
+        "eslint": "eslint eslint --no-error-on-unmatched-pattern {public,src}/**/*.{js,jsx,ts,tsx}",
+        "eslint-fix": "eslint eslint --no-error-on-unmatched-pattern {public,src}/**/*.{js,jsx,ts,tsx} --fix",
         "prepare": "husky"
     },
     "lint-staged": {
@@ -22,7 +23,7 @@
         ]
     },
     "dependencies": {
-        "@livekit/components-react": "^2.8.1",
+        "@livekit/components-react": "^2.9.3",
         "@livekit/components-styles": "^1.1.4",
         "@prisma/client": "^6.2.1",
         "@radix-ui/react-accordion": "^1.2.2",
@@ -54,10 +55,10 @@
         "lucide-react": "^0.454.0",
         "next": "^15.2.3",
         "next-intl": "^3.26.3",
-        "next-themes": "^0.3.0",
-        "react": "19.0.0-rc-02c0e824-20241028",
-        "react-day-picker": "8.10.1",
-        "react-dom": "19.0.0-rc-02c0e824-20241028",
+        "next-themes": "^0.4.6",
+        "react": "19.0.0",
+        "react-day-picker": "9.6.7",
+        "react-dom": "19.0.0",
         "react-hook-form": "^7.53.1",
         "react-textarea-autosize": "^8.5.6",
         "recharts": "^2.13.3",
