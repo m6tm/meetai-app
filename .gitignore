@@ -10,6 +10,7 @@
 !.yarn/releases
 !.yarn/versions
 .firebase
+src/meetai-41ada.json
 
 # testing
 /coverage
