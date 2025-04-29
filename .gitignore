@@ -10,7 +10,6 @@
 !.yarn/releases
 !.yarn/versions
 .firebase
-src/meetai-41ada.json
 
 # testing
 /coverage
@@ -41,4 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-certificates
+src/meetai-41ada.json
