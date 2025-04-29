@@ -23,6 +23,7 @@
         ]
     },
     "dependencies": {
+        "@google-cloud/storage": "^7.16.0",
         "@livekit/components-react": "^2.9.3",
         "@livekit/components-styles": "^1.1.4",
         "@prisma/client": "^6.2.1",

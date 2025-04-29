@@ -17,6 +17,21 @@ import { GuestMeeting } from '@prisma/client';
 import { z } from 'zod';
 import { MeetRole } from '@ai/enums/meet-panel';
 import { EgressClient, EncodedFileOutput, EncodedFileType, GCPUpload, RoomServiceClient } from 'livekit-server-sdk';
+import cred from '@ai/meetai-41ada.json';
+
+export type TCredentials = {
+    type: string;
+    project_id: string;
+    private_key_id: string;
+    private_key: string;
+    client_email: string;
+    client_id: string;
+    auth_uri: string;
+    token_uri: string;
+    auth_provider_x509_cert_url: string;
+    client_x509_cert_url: string;
+    universe_domain: string;
+};
 
 export type CreateInvitationResponse = {
     message: string;
@@ -247,7 +262,7 @@ export async function startRecoding(formData: FormData) {
     const apiKey = process.env.LIVEKIT_KEY;
     const apiSecret = process.env.LIVEKIT_SECRET;
     const apiHost = process.env.NEXT_PUBLIC_LIVEKIT_WEBSOCKET_URL;
-    const credentials = require('@ai/meetai-41ada.json');
+    const credentials: TCredentials = cred;
     const egressClient = new EgressClient(apiHost!, apiKey, apiSecret);
 
     try {
@@ -258,7 +273,7 @@ export async function startRecoding(formData: FormData) {
                 output: {
                     case: 'gcp',
                     value: new GCPUpload({
-                        credentials,
+                        credentials: JSON.stringify(credentials),
                         bucket: 'meetai_bucket',
                     }),
                 },
@@ -311,6 +326,7 @@ export async function stopRecoding(formData: FormData) {
                 code: 200,
                 data: {
                     egressId: egressInfo.egressId,
+                    filePath: egressInfo.fileResults,
                 },
             };
         } else {

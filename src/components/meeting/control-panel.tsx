@@ -8,11 +8,12 @@
  * the prior written permission of Meet ai LLC.
  */
 'use client';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@ui/button';
 import {
     ChevronDown,
     ChevronUp,
+    CircleStop,
     Hand,
     Info,
     MessageSquare,
@@ -20,6 +21,7 @@ import {
     MicOff,
     MonitorUp,
     PhoneOff,
+    Play,
     Signal,
     SignalHigh,
     SignalLow,
@@ -40,12 +42,14 @@ import {
     useLocalParticipant,
     useRemoteParticipants,
     useRoomContext,
+    useRoomInfo,
 } from '@livekit/components-react';
 import { db } from '@ai/db';
 import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
 import { TParticipantMetadata } from '@ai/types/data';
 import { ConnectionQuality, RoomEvent } from 'livekit-client';
 import { useRouter } from '@ai/i18n/routing';
+import { startRecoding, stopRecoding } from '@ai/actions/meet.action';
 
 export default function ControlPanel() {
     const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useMeetPanelStore();
@@ -58,6 +62,9 @@ export default function ControlPanel() {
     const remoteParticipants = useRemoteParticipants();
     const { metadata, setMetadata } = useParticipantAttributeMetadata(localParticipant);
     const { quality } = useConnectionQualityIndicator({ participant: localParticipant });
+    const roomInfo = useRoomInfo();
+    const [isRecording, setIsRecording] = useState(false);
+    const [egressId, setEgressId] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         const updateTime = () => {
@@ -74,7 +81,6 @@ export default function ControlPanel() {
     }, []);
 
     room.on(RoomEvent.Disconnected, () => {
-        console.log('Disconnected from room');
         quitMeet();
     });
 
@@ -144,6 +150,34 @@ export default function ControlPanel() {
         setMetadata(newMetadata);
     };
 
+    const handleRecordToggle = async () => {
+        const is_recording = isRecording;
+        const { name: roomName } = roomInfo;
+        const form = new FormData();
+        if (is_recording && egressId) {
+            form.append('roomName', roomName);
+            form.append('egressId', egressId);
+            const response = await stopRecoding(form);
+            if (response.code === 200) {
+                setIsRecording(!isRecording);
+                setEgressId(undefined);
+                console.log('stoper succès');
+            }
+            console.log('stoper le meet', response);
+        }
+        if (!is_recording) {
+            form.append('roomName', roomName);
+            form.append('egressId', 'roomName');
+            const response = await startRecoding(form);
+            if (response.code == 200 && response.data) {
+                setEgressId(response.data.egressId);
+                setIsRecording(!isRecording);
+                console.log('démarrage succès');
+            }
+            console.log('démarrer le meet', response);
+        }
+    };
+
     return (
         <div className="control-bar z-10 relative">
             <ControlPanelMediaAddon />
@@ -200,6 +234,12 @@ export default function ControlPanel() {
                     onClick={handUpDown}
                 >
                     <Hand />
+                </Button>
+                <Button
+                    className={cn('other-control-primary', { '!bg-orange-600': isRecording })}
+                    onClick={handleRecordToggle}
+                >
+                    {isRecording ? <CircleStop /> : <Play />}
                 </Button>
                 <Button className="other-control-secondary" onClick={quitMeet}>
                     <PhoneOff />

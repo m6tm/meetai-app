@@ -33,7 +33,13 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@ui/dropdown-menu';
-import { useLocalParticipant, useRemoteParticipants, useRoomInfo, VideoTrack, AudioTrack } from '@livekit/components-react';
+import {
+    useLocalParticipant,
+    useRemoteParticipants,
+    useRoomInfo,
+    VideoTrack,
+    AudioTrack,
+} from '@livekit/components-react';
 import { RemoteParticipant, Track } from 'livekit-client';
 import { TParticipantMetadata } from '@ai/types/data';
 import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
@@ -41,7 +47,7 @@ import { removeParticipantPost } from '@ai/actions/meet.action';
 
 export default function VideoScreen({ className }: { className?: string }) {
     const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
-    const room = useRoomInfo();
+    const roomInfo = useRoomInfo();
     const { localParticipant } = useLocalParticipant();
     const remoteParticipants = useRemoteParticipants();
     const [participantsPinned, setParticipantsPinned] = React.useState<Record<string, boolean>>({});
@@ -85,7 +91,7 @@ export default function VideoScreen({ className }: { className?: string }) {
     async function rejectRemoteParticipant(participant: RemoteParticipant) {
         if (!metadata) return;
         const role = metadata.role;
-        const code = room.name;
+        const code = roomInfo.name;
         const participantIdentity = participant.identity;
         const formData = new FormData();
         formData.append('code', code);
@@ -276,7 +282,7 @@ export default function VideoScreen({ className }: { className?: string }) {
                                                 source: Track.Source.Microphone,
                                                 publication: user.getTrackPublication(Track.Source.Microphone)!,
                                             }}
-                                            className='hidden'
+                                            className="hidden"
                                         />
                                     )}
                                 </SwiperSlide>
