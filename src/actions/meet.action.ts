@@ -16,7 +16,7 @@ import { defaultStateAction } from '@ai/types/definitions';
 import { GuestMeeting } from '@prisma/client';
 import { z } from 'zod';
 import { MeetRole } from '@ai/enums/meet-panel';
-import { EgressClient, EncodedFileOutput, EncodedFileType, RoomServiceClient } from 'livekit-server-sdk';
+import { EgressClient, EncodedFileOutput, EncodedFileType, GCPUpload, RoomServiceClient } from 'livekit-server-sdk';
 
 export type CreateInvitationResponse = {
     message: string;
@@ -247,6 +247,7 @@ export async function startRecoding(formData: FormData) {
     const apiKey = process.env.LIVEKIT_KEY;
     const apiSecret = process.env.LIVEKIT_SECRET;
     const apiHost = process.env.NEXT_PUBLIC_LIVEKIT_WEBSOCKET_URL;
+    const credentials = require('@ai/meetai-41ada.json');
     const egressClient = new EgressClient(apiHost!, apiKey, apiSecret);
 
     try {
@@ -255,8 +256,11 @@ export async function startRecoding(formData: FormData) {
                 filepath: `recordings/${roomName}-${Date.now()}.mp4`,
                 fileType: EncodedFileType.MP4,
                 output: {
-                    case: 's3',
-                    value: null as never,
+                    case: 'gcp',
+                    value: new GCPUpload({
+                        credentials,
+                        bucket: 'meetai_bucket',
+                    }),
                 },
             }),
         });
