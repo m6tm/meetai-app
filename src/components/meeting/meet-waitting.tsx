@@ -102,6 +102,10 @@ export default function WaitPage({ setReady }: WaitPageProps) {
         setReady(true);
     };
 
+    const joinedParticipants = remoteParticipants.filter((participant) => {
+        const userMetadata = deserializeData<TParticipantMetadata>(participant.attributes.metadata);
+        return userMetadata.joined === 'yes';
+    });
     return (
         <div className="flex z-20 flex-col lg:flex-row items-center fixed top-0 left-0 justify-center h-full w-full p-4 bg-white">
             {/* Left Panel - Camera/Mic Settings */}
@@ -158,19 +162,12 @@ export default function WaitPage({ setReady }: WaitPageProps) {
                     <div className="mb-6">
                         <h3 className="text-sm font-medium text-gray-700 mb-2">Participants</h3>
                         <div className="max-h-40 overflow-y-auto bg-gray-50 rounded-md p-2">
-                            {remoteParticipants
-                                .filter((participant) => {
-                                    const userMetadata = deserializeData<TParticipantMetadata>(
-                                        participant.attributes.metadata,
-                                    );
-                                    return userMetadata.joined === 'yes';
-                                })
-                                .map((participant) => (
-                                    <div key={participant.sid} className="py-2 px-3 bg-white rounded mb-2">
-                                        {participant.name}
-                                    </div>
-                                ))}
-                            {remoteParticipants.length === 0 && <span>Not participant</span>}
+                            {joinedParticipants.map((participant) => (
+                                <div key={participant.sid} className="py-2 px-3 bg-white rounded mb-2">
+                                    {participant.name}
+                                </div>
+                            ))}
+                            {joinedParticipants.length === 0 && <span>Not participant</span>}
                         </div>
                     </div>
 

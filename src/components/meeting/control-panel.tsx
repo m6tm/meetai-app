@@ -16,6 +16,7 @@ import {
     CircleStop,
     Hand,
     Info,
+    Loader2,
     MessageSquare,
     Mic,
     MicOff,
@@ -39,6 +40,7 @@ import { format } from 'date-fns';
 import {
     useChat,
     useConnectionQualityIndicator,
+    useIsRecording,
     useLocalParticipant,
     useRemoteParticipants,
     useRoomContext,
@@ -63,8 +65,9 @@ export default function ControlPanel() {
     const { metadata, setMetadata } = useParticipantAttributeMetadata(localParticipant);
     const { quality } = useConnectionQualityIndicator({ participant: localParticipant });
     const roomInfo = useRoomInfo();
-    const [isRecording, setIsRecording] = useState(false);
+    const [changingRecodingState, setChangingRecodingState] = useState(false);
     const [egressId, setEgressId] = useState<string | undefined>(undefined);
+    const isRecording = useIsRecording(room);
 
     useEffect(() => {
         const updateTime = () => {
@@ -151,6 +154,8 @@ export default function ControlPanel() {
     };
 
     const handleRecordToggle = async () => {
+        if (changingRecodingState) return;
+        setChangingRecodingState(true);
         const is_recording = isRecording;
         const { name: roomName } = roomInfo;
         const form = new FormData();
@@ -159,7 +164,6 @@ export default function ControlPanel() {
             form.append('egressId', egressId);
             const response = await stopRecoding(form);
             if (response.code === 200) {
-                setIsRecording(!isRecording);
                 setEgressId(undefined);
                 console.log('stoper succès');
             }
@@ -171,11 +175,11 @@ export default function ControlPanel() {
             const response = await startRecoding(form);
             if (response.code == 200 && response.data) {
                 setEgressId(response.data.egressId);
-                setIsRecording(!isRecording);
                 console.log('démarrage succès');
             }
             console.log('démarrer le meet', response);
         }
+        setChangingRecodingState(false);
     };
 
     return (
@@ -237,9 +241,12 @@ export default function ControlPanel() {
                 </Button>
                 <Button
                     className={cn('other-control-primary', { '!bg-orange-600': isRecording })}
+                    disabled={changingRecodingState}
                     onClick={handleRecordToggle}
                 >
-                    {isRecording ? <CircleStop /> : <Play />}
+                    {isRecording && !changingRecodingState && <CircleStop />}
+                    {!isRecording && !changingRecodingState && <Play />}
+                    {changingRecodingState && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
                 </Button>
                 <Button className="other-control-secondary" onClick={quitMeet}>
                     <PhoneOff />
