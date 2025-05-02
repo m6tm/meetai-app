@@ -29,12 +29,13 @@ export type TTestimonial = {
 
 export type TTestimonialCollection = Array<TTestimonial>;
 
-export type TMeetRole = "admin" | "moderator" | "guest";
+export type TMeetRole = 'admin' | 'moderator' | 'guest';
 
 export type TParticipantMetadata = {
-    joined: 'yes' | 'no'
-    pinned: 'no' | 'yes'
-    upHand: 'no' | 'yes'
-    avatar: string
-    role: TMeetRole
-}
+    joined: 'yes' | 'no';
+    pinned: 'no' | 'yes';
+    upHand: 'no' | 'yes';
+    canMessage: 'no' | 'yes';
+    avatar: string;
+    role: TMeetRole;
+};

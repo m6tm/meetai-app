@@ -8,14 +8,9 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import { deleteSession } from "@ai/lib/session";
-import { NextResponse } from "next/server";
+import { Storage } from '@google-cloud/storage';
 
-export async function POST() {
-    await deleteSession('session')
-    return NextResponse.json({
-        error: null,
-        data: null,
-        code: 200
-    });
-}
+// Création du client Storage
+export const storage = new Storage({
+    keyFilename: './src/meetai-41ada.json',
+});

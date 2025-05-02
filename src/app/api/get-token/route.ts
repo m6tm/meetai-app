@@ -7,12 +7,14 @@
  * distributed, or transmitted in any form or by any means without
  * the prior written permission of Meet ai LLC.
  */
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from 'next/server';
 import { AccessToken, TrackSource } from 'livekit-server-sdk';
-import { TParticipantMetadata, TMeetRole } from "@ai/types/data";
-import { serializeData } from "@ai/lib/utils";
-import { getPrisma } from "@ai/adapters/db";
-import { getSession } from "@ai/lib/session";
+import { TParticipantMetadata, TMeetRole } from '@ai/types/data';
+import { serializeData } from '@ai/lib/utils';
+import { getPrisma } from '@ai/adapters/db';
+import { getSession } from '@ai/lib/session';
+import { DEFAULT_AVATAR } from '@ai/utils/constants';
+import { faker } from '@faker-js/faker';
 
 const apiKey = process.env.LIVEKIT_KEY;
 const apiSecret = process.env.LIVEKIT_SECRET;
@@ -22,30 +24,33 @@ if (!apiKey || !apiSecret) {
 }
 
 export async function POST(request: NextRequest) {
-    const formData = await request.formData()
+    const formData = await request.formData();
     const session = await getSession('session');
-    const room_name = formData.get('room_name')
-    const participant_name = formData.get('participant_name')
-    let role: TMeetRole = "guest"
-    let avatar = "https://picsum.photos/id/11/100/100";
+    const room_name = formData.get('room_name');
+    const participant_name = formData.get('participant_name');
+    let role: TMeetRole = 'guest';
+    let avatar = DEFAULT_AVATAR;
 
     if (!room_name || !participant_name) {
-        return NextResponse.json({
-            error: 'room_name or participant_name are required',
-            data: null,
-            code: 400
-        }, {
-            status: 400
-        })
+        return NextResponse.json(
+            {
+                error: 'room_name or participant_name are required',
+                data: null,
+                code: 400,
+            },
+            {
+                status: 400,
+            },
+        );
     }
 
     if (session) {
-        const prisma = getPrisma()
+        const prisma = getPrisma();
         const user = await prisma.user.findUnique({
             where: {
-                email: session.userId
-            }
-        })
+                email: session.userId,
+            },
+        });
 
         if (user) {
             const meetRole = await prisma.guestMeeting.findFirst({
@@ -53,28 +58,28 @@ export async function POST(request: NextRequest) {
                     OR: [
                         {
                             user: {
-                                email: user.email
-                            }
+                                email: user.email,
+                            },
                         },
                         {
                             guest: {
-                                email: user.email
-                            }
-                        }
-                    ]
+                                email: user.email,
+                            },
+                        },
+                    ],
                 },
                 select: {
                     role: true,
                     user: {
                         select: {
                             avatar: true,
-                        }
-                    }
-                }
-            })
+                        },
+                    },
+                },
+            });
 
-            if (meetRole) role = meetRole.role
-            avatar = user.avatar
+            if (meetRole) role = meetRole.role;
+            avatar = user.avatar;
         }
     }
 
@@ -83,11 +88,12 @@ export async function POST(request: NextRequest) {
         joined: 'no',
         pinned: 'no',
         upHand: 'no',
+        canMessage: 'yes',
         avatar,
     });
 
     const token = new AccessToken(apiKey, apiSecret, {
-        identity: participant_name as string,
+        identity: faker.string.uuid(),
         name: participant_name as string,
         attributes: {
             metadata: metadata,
@@ -101,7 +107,12 @@ export async function POST(request: NextRequest) {
         canPublish: true,
         canPublishData: true,
         canSubscribe: true,
-        canPublishSources: [TrackSource.CAMERA, TrackSource.MICROPHONE, TrackSource.SCREEN_SHARE, TrackSource.SCREEN_SHARE_AUDIO],
+        canPublishSources: [
+            TrackSource.CAMERA,
+            TrackSource.MICROPHONE,
+            TrackSource.SCREEN_SHARE,
+            TrackSource.SCREEN_SHARE_AUDIO,
+        ],
         canUpdateOwnMetadata: true,
     });
 
@@ -110,6 +121,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
         error: null,
         data: { token: jwt },
-        code: 200
-    })
+        code: 200,
+    });
 }

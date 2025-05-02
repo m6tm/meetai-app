@@ -1,11 +1,20 @@
+/**
+ * Proprietary and Confidential
+ * Copyright (c) 2024 Meet ai LLC. All rights reserved.
+ *
+ * This software and its documentation are the exclusive property of
+ * Meet ai LLC. No part of this software may be reproduced,
+ * distributed, or transmitted in any form or by any means without
+ * the prior written permission of Meet ai LLC.
+ */
 "use client"
 
 import * as React from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { DayPicker } from "react-day-picker"
 
 import { cn } from "@ai/lib/utils"
 import { buttonVariants } from "@ai/components/ui/button"
-import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
@@ -60,13 +69,13 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ className, ...props }) => (
-          <ChevronLeftIcon className={cn("h-4 w-4", className)} {...props} />
+        IconLeft: ({ className, ...props }: { className?: string } & React.ComponentProps<typeof ChevronLeft>) => (
+          <ChevronLeft className={cn("h-4 w-4", className)} {...props} />
         ),
-        IconRight: ({ className, ...props }) => (
-          <ChevronRightIcon className={cn("h-4 w-4", className)} {...props} />
+        IconRight: ({ className, ...props }: { className?: string } & React.ComponentProps<typeof ChevronRight>) => (
+          <ChevronRight className={cn("h-4 w-4", className)} {...props} />
         ),
-      }}
+      } as never}
       {...props}
     />
   )

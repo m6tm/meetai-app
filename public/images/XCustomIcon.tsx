@@ -8,8 +8,6 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import { SVGProps } from 'react';
-
 export default function XCustomIcon({ color, size }: { color?: string; size?: number }) {
     if (!color) {
         color = '#000000';

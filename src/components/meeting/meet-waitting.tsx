@@ -8,16 +8,17 @@
  * the prior written permission of Meet ai LLC.
  */
 'use client';
-import { useUserStore } from '@ai/app/stores/user.store';
+import { useUserStore } from '@ai/stores/user.store';
 import { useLocalParticipant, useRemoteParticipants, useRoomContext, VideoTrack } from '@livekit/components-react';
 import { ConnectionState, Track } from 'livekit-client';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from '@ai/components/ui/button';
 import { Mic, MicOff, Video, VideoOff } from 'lucide-react';
 import { db } from '@ai/db';
 import { useRouter } from '@ai/i18n/routing';
 import { TParticipantMetadata } from '@ai/types/data';
 import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
+import { deserializeData } from '@ai/lib/utils';
 
 type WaitPageProps = {
     setReady: (ready: boolean) => void;
@@ -34,6 +35,7 @@ export default function WaitPage({ setReady }: WaitPageProps) {
     const isMicOn = localParticipant.isMicrophoneEnabled;
     const [participantName, setParticipantName] = React.useState<string>('');
     const { metadata, setMetadata } = useParticipantAttributeMetadata(localParticipant);
+    const [pendingAction, setPendingAction] = useState(false);
 
     const initialize = useCallback(async () => {
         const preferences = await db.preferences.orderBy('id').first();
@@ -77,20 +79,26 @@ export default function WaitPage({ setReady }: WaitPageProps) {
         await db.preferences.update(preferences!.id, { video: !isCameraOn });
     };
 
-    const handleCancelCall = () => router.push('/');
+    const handleCancelCall = () => {
+        if (pendingAction) return;
+        setPendingAction(true);
+        router.push('/');
+    };
 
     const handleParitipantNameChange = (name: string) => {
         setParticipantName(name);
     };
 
     const handleJoinMeeting = () => {
+        if (pendingAction) return;
+        setPendingAction(true);
         if (((!user || !user.displayName) && participantName.length === 0) || !metadata) return;
-        if (participantName.length > 0) localParticipant.setName(participantName);
         const _metadata: TParticipantMetadata = {
             ...metadata,
             joined: 'yes',
         };
         setMetadata(_metadata);
+        if (participantName.length > 0) localParticipant.setName(participantName);
         setReady(true);
     };
 
@@ -150,25 +158,33 @@ export default function WaitPage({ setReady }: WaitPageProps) {
                     <div className="mb-6">
                         <h3 className="text-sm font-medium text-gray-700 mb-2">Participants</h3>
                         <div className="max-h-40 overflow-y-auto bg-gray-50 rounded-md p-2">
-                            {remoteParticipants.map((participant) => (
-                                <div key={participant.sid} className="py-2 px-3 bg-white rounded mb-2">
-                                    {participant.name}
-                                </div>
-                            ))}
+                            {remoteParticipants
+                                .filter((participant) => {
+                                    const userMetadata = deserializeData<TParticipantMetadata>(
+                                        participant.attributes.metadata,
+                                    );
+                                    return userMetadata.joined === 'yes';
+                                })
+                                .map((participant) => (
+                                    <div key={participant.sid} className="py-2 px-3 bg-white rounded mb-2">
+                                        {participant.name}
+                                    </div>
+                                ))}
                             {remoteParticipants.length === 0 && <span>Not participant</span>}
                         </div>
                     </div>
 
                     <Button
                         onClick={handleJoinMeeting}
-                        disabled={!user && participantName.length === 0}
+                        disabled={(!user && participantName.length === 0) || pendingAction}
                         className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors disabled:cursor-not-allowed"
                     >
                         Join Meeting
                     </Button>
                     <Button
                         onClick={handleCancelCall}
-                        className="w-full mt-4 py-3 px-4 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-md transition-colors"
+                        disabled={pendingAction}
+                        className="w-full mt-4 py-3 px-4 bg-orange-600 hover:bg-orange-700 disabled:cursor-not-allowed text-white font-medium rounded-md transition-colors"
                     >
                         Cancel Call
                     </Button>

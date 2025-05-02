@@ -16,7 +16,7 @@ import MeetMessage from "@ai/components/meeting/meet-message";
 import VideoScreen from "@ai/components/meeting/video-screen";
 import { LiveKitRoom } from '@livekit/components-react';
 import { useRoomToken } from "@ai/hooks/useRoomAuth";
-import { useUserStore } from "@ai/app/stores/user.store";
+import { useUserStore } from "@ai/stores/user.store";
 import { useEffect, useState } from "react";
 import { randomUserName, sleep } from "@ai/lib/utils";
 import WaitPage from "./meet-waitting";
@@ -53,16 +53,19 @@ function BeginMeet({ code }: { code: string }) {
         >
             <div className="flex flex-col h-screen w-full bg-neutral-800 relative select-none">
                 {
-                    !ready && (
+                    !ready ? (
                         <WaitPage setReady={setReady} />
+                    ) : (
+                        <>
+                            <VideoScreen />
+                            <ControlPanel />
+                            <MeetDataFirst {...{ code }} />
+                            <MeetDataInfo {...{ code }} />
+                            <Participant />
+                            <MeetMessage />
+                        </>
                     )
                 }
-                <VideoScreen />
-                <ControlPanel />
-                <MeetDataFirst {...{ code }} />
-                <MeetDataInfo {...{ code }} />
-                <Participant />
-                <MeetMessage />
             </div>
         </LiveKitRoom>
     )

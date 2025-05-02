@@ -7,6 +7,7 @@
  * distributed, or transmitted in any form or by any means without
  * the prior written permission of Meet ai LLC.
  */
+'use server';
 
 import React from 'react';
 import '@styles/animations.css';
@@ -20,7 +21,5 @@ export async function generateMetadata() {
 }
 
 export default async function Home() {
-    return (
-        <AppLayout />
-    );
+    return <AppLayout />;
 }

@@ -7,20 +7,20 @@
  * distributed, or transmitted in any form or by any means without
  * the prior written permission of Meet ai LLC.
  */
-"use client";
-import { cn, deserializeData, shortDisplayUserName } from "@ai/lib/utils";
-import React, { useEffect } from "react";
-import { Button } from '@ui/button'
+'use client';
+import { cn, deserializeData, shortDisplayUserName } from '@ai/lib/utils';
+import React, { useEffect } from 'react';
+import { Button } from '@ui/button';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import {
     Avatar,
     AvatarFallback,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     AvatarImage,
-} from "@ui/avatar"
-import '@styles/video-screen.css'
+} from '@ui/avatar';
+import '@styles/video-screen.css';
 import 'swiper/css';
-import { Hand, MicOff, MoreVertical, Pin } from "lucide-react";
+import { Hand, MicOff, MoreVertical, Pin } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -32,39 +32,45 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
-} from "@ui/dropdown-menu"
-import { useLocalParticipant, useRemoteParticipants, useRoomInfo, VideoTrack } from "@livekit/components-react";
-import { RemoteParticipant, Track } from "livekit-client";
-import { TParticipantMetadata } from "@ai/types/data";
-import { useParticipantAttributeMetadata } from "@ai/hooks/useParticipantAttribute";
-import { removeParticipantPost } from "@ai/actions/meet.action";
+} from '@ui/dropdown-menu';
+import {
+    useLocalParticipant,
+    useRemoteParticipants,
+    useRoomInfo,
+    VideoTrack,
+    AudioTrack,
+} from '@livekit/components-react';
+import { RemoteParticipant, Track } from 'livekit-client';
+import { TParticipantMetadata } from '@ai/types/data';
+import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
+import { removeParticipantPost } from '@ai/actions/meet.action';
 
-export default function VideoScreen({ className }: { className?: string; }) {
+export default function VideoScreen({ className }: { className?: string }) {
     const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
-    const room = useRoomInfo()
-    const { localParticipant } = useLocalParticipant()
-    const remoteParticipants = useRemoteParticipants()
+    const roomInfo = useRoomInfo();
+    const { localParticipant } = useLocalParticipant();
+    const remoteParticipants = useRemoteParticipants();
     const [participantsPinned, setParticipantsPinned] = React.useState<Record<string, boolean>>({});
-    const { metadata } = useParticipantAttributeMetadata(localParticipant)
+    const { metadata } = useParticipantAttributeMetadata(localParticipant);
 
     function fullScreen() {
-        if (!mainVideoScreenRef.current) return
+        if (!mainVideoScreenRef.current) return;
         mainVideoScreenRef.current.requestFullscreen({
             navigationUI: 'auto',
         });
     }
 
     function getPinnedParticipant() {
-        const pinnedParticipant = Object.keys(participantsPinned).find(key => participantsPinned[key]);
-        return remoteParticipants.find(user => user.sid === pinnedParticipant);
+        const pinnedParticipant = Object.keys(participantsPinned).find((key) => participantsPinned[key]);
+        return remoteParticipants.find((user) => user.sid === pinnedParticipant);
     }
 
     function togglePin(participantSid: string) {
-        setParticipantsPinned(prev => {
+        setParticipantsPinned((prev) => {
             const isCurrentlyPinned = prev[participantSid];
             // Reset all pins and only set the selected one if it wasn't already pinned
             const newPinned: Record<string, boolean> = {};
-            Object.keys(prev).forEach(sid => {
+            Object.keys(prev).forEach((sid) => {
                 newPinned[sid] = false;
             });
             if (!isCurrentlyPinned) {
@@ -79,31 +85,30 @@ export default function VideoScreen({ className }: { className?: string; }) {
     }
 
     function hasPinnedParticipants() {
-        return Object.keys(participantsPinned).some(key => participantsPinned[key]);
+        return Object.keys(participantsPinned).some((key) => participantsPinned[key]);
     }
 
     async function rejectRemoteParticipant(participant: RemoteParticipant) {
-        if (!metadata) return
+        if (!metadata) return;
         const role = metadata.role;
-        const code = room.name;
+        const code = roomInfo.name;
         const participantIdentity = participant.identity;
-        const formData = new FormData()
-        formData.append('code', code)
-        formData.append('role', role)
-        formData.append('participant_identity', participantIdentity)
-        const response = await removeParticipantPost(formData)
-        console.log(response)
+        const formData = new FormData();
+        formData.append('code', code);
+        formData.append('role', role);
+        formData.append('participant_identity', participantIdentity);
+        await removeParticipantPost(formData);
     }
 
     useEffect(() => {
-        const pinnedParticipants: Record<string, boolean> = {}
-        remoteParticipants.forEach(user => {
-            pinnedParticipants[user.sid] = false
-        })
+        const pinnedParticipants: Record<string, boolean> = {};
+        remoteParticipants.forEach((user) => {
+            pinnedParticipants[user.sid] = false;
+        });
 
-        const hasChanges = Object.keys(pinnedParticipants).length !== Object.keys(participantsPinned).length
-        if (hasChanges) setParticipantsPinned(pinnedParticipants)
-    }, [participantsPinned, remoteParticipants])
+        const hasChanges = Object.keys(pinnedParticipants).length !== Object.keys(participantsPinned).length;
+        if (hasChanges) setParticipantsPinned(pinnedParticipants);
+    }, [participantsPinned, remoteParticipants]);
 
     const pinnedParticipant = getPinnedParticipant();
 
@@ -111,12 +116,15 @@ export default function VideoScreen({ className }: { className?: string; }) {
         <div className="w-full h-full relative z-0">
             {
                 <div className="main-screen">
-                    <div ref={mainVideoScreenRef} className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full bg-slate-600">
+                    <div
+                        ref={mainVideoScreenRef}
+                        className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full bg-slate-600"
+                    >
                         <Avatar className="size-36 flex justify-center items-center uppercase bg-muted">
-                            {
-                                metadata && <AvatarImage src={metadata.avatar} alt={`Logo de ${localParticipant.name}`} />
-                            }
-                            <AvatarFallback className="uppercase">{ shortDisplayUserName(localParticipant.name ?? "Anonyme") }</AvatarFallback>
+                            {metadata && <AvatarImage src={metadata.avatar} alt={`Logo de ${localParticipant.name}`} />}
+                            <AvatarFallback className="uppercase">
+                                {shortDisplayUserName(localParticipant.name ?? 'Anonyme')}
+                            </AvatarFallback>
                         </Avatar>
                     </div>
                     <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
@@ -135,8 +143,12 @@ export default function VideoScreen({ className }: { className?: string; }) {
                                         </DropdownMenuSubTrigger>
                                         <DropdownMenuPortal>
                                             <DropdownMenuSubContent>
-                                                <DropdownMenuItem className="cursor-pointer">Pour moi uniquement</DropdownMenuItem>
-                                                <DropdownMenuItem className="cursor-pointer">Pour tous les participants</DropdownMenuItem>
+                                                <DropdownMenuItem className="cursor-pointer">
+                                                    Pour moi uniquement
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem className="cursor-pointer">
+                                                    Pour tous les participants
+                                                </DropdownMenuItem>
                                             </DropdownMenuSubContent>
                                         </DropdownMenuPortal>
                                     </DropdownMenuSub>
@@ -157,7 +169,7 @@ export default function VideoScreen({ className }: { className?: string; }) {
                             trackRef={{
                                 participant: localParticipant,
                                 source: Track.Source.Camera,
-                                publication: localParticipant.getTrackPublication(Track.Source.Camera)!
+                                publication: localParticipant.getTrackPublication(Track.Source.Camera)!,
                             }}
                             className="w-full h-full absolute object-cover"
                         />
@@ -167,7 +179,7 @@ export default function VideoScreen({ className }: { className?: string; }) {
                             trackRef={{
                                 participant: pinnedParticipant,
                                 source: Track.Source.Camera,
-                                publication: pinnedParticipant.getTrackPublication(Track.Source.Camera)!
+                                publication: pinnedParticipant.getTrackPublication(Track.Source.Camera)!,
                             }}
                             className="w-full h-full absolute object-cover"
                         />
@@ -182,12 +194,11 @@ export default function VideoScreen({ className }: { className?: string; }) {
                     // onSwiper={(swiper) => console.log(swiper)}
                     className="h-full"
                 >
-                    {
-                        remoteParticipants
-                        .filter(user => {
-                            const metadata = deserializeData<TParticipantMetadata>(user.attributes.metadata)
-                            if (metadata && metadata.joined === 'yes') return true
-                            return false
+                    {remoteParticipants
+                        .filter((user) => {
+                            const metadata = deserializeData<TParticipantMetadata>(user.attributes.metadata);
+                            if (metadata && metadata.joined === 'yes') return true;
+                            return false;
                         })
                         .sort((a, b) => {
                             const metadataA = deserializeData<TParticipantMetadata>(a.attributes.metadata);
@@ -202,30 +213,30 @@ export default function VideoScreen({ className }: { className?: string; }) {
                             return (
                                 <SwiperSlide key={user.sid} className="screen-child relative">
                                     <div className="absolute top-2 right-2 flex items-center space-x-2 text-white z-20">
-                                        {
-                                            isPinned(user.sid) && (
-                                                <Pin />
-                                            )
-                                        }
+                                        {isPinned(user.sid) && <Pin />}
                                         {!user.isMicrophoneEnabled && <MicOff />}
-                                        {
-                                            userMetadata && userMetadata.upHand === 'yes' && (
-                                                <Hand />
-                                            )
-                                        }
+                                        {userMetadata && userMetadata.upHand === 'yes' && <Hand />}
                                     </div>
                                     <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full">
                                         <Avatar className="size-24">
-                                            {
-                                                userMetadata && <AvatarImage src={userMetadata.avatar} alt={`Logo de ${localParticipant.name}`} />
-                                            }
-                                            <AvatarFallback className="uppercase">{ shortDisplayUserName(user.name ?? "Anonyme") }</AvatarFallback>
+                                            {userMetadata && (
+                                                <AvatarImage
+                                                    src={userMetadata.avatar}
+                                                    alt={`Logo de ${localParticipant.name}`}
+                                                />
+                                            )}
+                                            <AvatarFallback className="uppercase">
+                                                {shortDisplayUserName(user.name ?? 'Anonyme')}
+                                            </AvatarFallback>
                                         </Avatar>
                                     </div>
                                     <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="more-btn size-10 rounded-full hover:bg-slate-600/30 text-white">
+                                                <Button
+                                                    variant="ghost"
+                                                    className="more-btn size-10 rounded-full hover:bg-slate-600/30 text-white"
+                                                >
                                                     <MoreVertical />
                                                 </Button>
                                             </DropdownMenuTrigger>
@@ -233,21 +244,23 @@ export default function VideoScreen({ className }: { className?: string; }) {
                                                 <DropdownMenuGroup>
                                                     <DropdownMenuItem
                                                         className="cursor-pointer"
-                                                        onClick={() => togglePin(user.sid)}>
-                                                        {
-                                                            isPinned(user.sid) ? "Retirer de l'écran" : "Epingler à l'écran"
-                                                        }
+                                                        onClick={() => togglePin(user.sid)}
+                                                    >
+                                                        {isPinned(user.sid)
+                                                            ? "Retirer de l'écran"
+                                                            : "Epingler à l'écran"}
                                                     </DropdownMenuItem>
-                                                    {
-                                                        metadata && (metadata.role === 'moderator' || metadata.role === 'admin') && (
+                                                    {metadata &&
+                                                        (metadata.role === 'moderator' ||
+                                                            metadata.role === 'admin') && (
                                                             <DropdownMenuItem
                                                                 className="cursor-pointer"
-                                                                onClick={() => rejectRemoteParticipant(user)}>
+                                                                onClick={() => rejectRemoteParticipant(user)}
+                                                            >
                                                                 Retirer de la réunion
                                                                 <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
                                                             </DropdownMenuItem>
-                                                        )
-                                                    }
+                                                        )}
                                                 </DropdownMenuGroup>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -257,15 +270,24 @@ export default function VideoScreen({ className }: { className?: string; }) {
                                             trackRef={{
                                                 participant: user,
                                                 source: Track.Source.Camera,
-                                                publication: user.getTrackPublication(Track.Source.Camera)!
+                                                publication: user.getTrackPublication(Track.Source.Camera)!,
                                             }}
-                                            className={cn("w-full h-full z-10 object-cover absolute", className)}
+                                            className={cn('w-full h-full z-10 object-cover absolute', className)}
+                                        />
+                                    )}
+                                    {user && user.isMicrophoneEnabled && (
+                                        <AudioTrack
+                                            trackRef={{
+                                                participant: user,
+                                                source: Track.Source.Microphone,
+                                                publication: user.getTrackPublication(Track.Source.Microphone)!,
+                                            }}
+                                            className="hidden"
                                         />
                                     )}
                                 </SwiperSlide>
-                            )
-                        })
-                    }
+                            );
+                        })}
                 </Swiper>
             </div>
         </div>

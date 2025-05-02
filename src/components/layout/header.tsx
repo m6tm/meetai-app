@@ -8,47 +8,55 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import LanguageSwitcher from "@ai/components/LanguageSwitcher";
-import { Button } from "@ai/components/ui/button";
-import { ThemeToggle } from "@ai/components/theme-toggle";
-import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@ai/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@ai/components/ui/avatar";
-import { useContext, useEffect } from "react";
-import { signIn } from "@ai/actions/auth.action";
-import { useRouter } from "@ai/i18n/routing";
-import AppContext from "@ai/context";
-import { useUserStore } from "@ai/app/stores/user.store";
+import LanguageSwitcher from '@ai/components/LanguageSwitcher';
+import { Button } from '@ai/components/ui/button';
+import { ThemeToggle } from '@ai/components/theme-toggle';
+import { DropdownMenu } from '@radix-ui/react-dropdown-menu';
+import {
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@ai/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@ai/components/ui/avatar';
+import { useContext, useEffect } from 'react';
+import { newSignin } from '@ai/actions/auth.action';
+import { useRouter } from '@ai/i18n/routing';
+import AppContext from '@ai/context';
+import { useUserStore } from '@ai/stores/user.store';
+import { DEFAULT_AVATAR } from '@ai/utils/constants';
 
 export default function Header() {
     const { user, responded } = useUserStore();
-    const { googleSignIn, logOut } = useContext(AppContext)
-    const router = useRouter()
-    
-        const handleGoogleSignIn = async () => {
-            try {
-                await googleSignIn()
-            } catch (error) {
-                console.error(error);
-            }
+    const { googleSignIn, logOut } = useContext(AppContext);
+    const router = useRouter();
+
+    const handleGoogleSignIn = async () => {
+        try {
+            await googleSignIn();
+        } catch (error) {
+            console.error(error);
         }
-        
-        const handleLogout = async () => {
-            try {
-                await logOut()
-                
-            } catch (error) {
-                console.error(error);
-            }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logOut();
+        } catch (error) {
+            console.error(error);
         }
-    
-        useEffect(() => {
-            async function checkUser() {
-                await signIn(user?.email, user?.displayName, user?.photoURL)
-                router.push('/')
-            }
-            if (user && responded) checkUser()
-        }, [user, router, responded]);
+    };
+
+    useEffect(() => {
+        async function checkUser() {
+            const form = new FormData
+            if (user && user.email) form.append('email', user.email)
+            if (user && user.displayName) form.append('name', user.displayName)
+            if (user && user.photoURL) form.append('avatar', user.photoURL)
+            await newSignin(form)
+        }
+        if (user && responded) checkUser();
+    }, [user, router, responded]);
 
     return (
         <div className="absolute top-0 left-0 w-full flex justify-between items-center p-4 md:p-8">
@@ -62,15 +70,21 @@ export default function Header() {
                 <ThemeToggle />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-transparent outline-none focus:outline-none">
+                        <Button
+                            variant="ghost"
+                            className="h-8 w-8 p-0 hover:bg-transparent outline-none focus:outline-none"
+                        >
                             {user && responded ? (
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src={user.photoURL || "https://picsum.photos/id/11/100/100"} alt={user.displayName || "User Avatar"} />
+                                    <AvatarImage
+                                        src={user.photoURL || DEFAULT_AVATAR}
+                                        alt={user.displayName || 'User Avatar'}
+                                    />
                                     <AvatarFallback>{user.displayName?.charAt(0).toUpperCase() || 'CN'}</AvatarFallback>
                                 </Avatar>
                             ) : (
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src="https://picsum.photos/id/11/100/100" alt="User Avatar" />
+                                    <AvatarImage src={DEFAULT_AVATAR} alt="User Avatar" />
                                     <AvatarFallback>CN</AvatarFallback>
                                 </Avatar>
                             )}
@@ -79,12 +93,8 @@ export default function Header() {
                     <DropdownMenuContent align="end">
                         {user ? (
                             <>
-                                <DropdownMenuItem disabled>
-                                    {user.displayName}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem disabled>
-                                    Pricing Tier: Free
-                                </DropdownMenuItem>
+                                <DropdownMenuItem disabled>{user.displayName}</DropdownMenuItem>
+                                <DropdownMenuItem disabled>Pricing Tier: Free</DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
                                     Log out
@@ -99,5 +109,5 @@ export default function Header() {
                 </DropdownMenu>
             </nav>
         </div>
-    )
+    );
 }

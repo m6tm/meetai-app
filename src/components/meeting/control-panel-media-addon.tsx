@@ -19,7 +19,7 @@ import {
     DropdownMenuTrigger,
 } from "@ui/dropdown-menu"
 import '@styles/control-panel.css'
-import { useMeetPanelStore } from "@ai/app/stores/meet.stote";
+import { useMeetPanelStore } from "@ai/stores/meet.stote";
 import { useMediaDeviceSelect } from "@livekit/components-react";
 
 export default function ControlPanelMediaAddon() {
