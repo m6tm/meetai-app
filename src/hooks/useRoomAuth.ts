@@ -7,12 +7,8 @@
  * distributed, or transmitted in any form or by any means without
  * the prior written permission of Meet ai LLC.
  */
-import { makeRequest } from "@ai/lib/utils";
-import { useCallback, useState } from "react";
-
-type TokenResponse = {
-    token: string;
-};
+import { generateToken } from '@ai/actions/meet.action';
+import { useCallback, useState } from 'react';
 
 export const useRoomToken = () => {
     const [token, setToken] = useState<string | null>(null);
@@ -21,10 +17,9 @@ export const useRoomToken = () => {
         const formData = new FormData();
         formData.append('room_name', room_name);
         formData.append('participant_name', participant_name);
-
-        const response = await makeRequest<TokenResponse>('/api/get-token', formData, 'POST');
+        const response = await generateToken(formData);
         if (response.data) setToken(response.data.token);
     }, []);
 
     return { token, fetchToken };
-}
+};

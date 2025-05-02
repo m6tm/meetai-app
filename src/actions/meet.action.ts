@@ -11,13 +11,24 @@
 
 import { getPrisma } from '@ai/adapters/db';
 import { getSession } from '@ai/lib/session';
-import { generateMeetCode, makeRequest } from '@ai/lib/utils';
+import { generateMeetCode, makeRequest, serializeData } from '@ai/lib/utils';
 import { defaultStateAction } from '@ai/types/definitions';
 import { GuestMeeting } from '@prisma/client';
 import { z } from 'zod';
 import { MeetRole } from '@ai/enums/meet-panel';
-import { EgressClient, EncodedFileOutput, EncodedFileType, GCPUpload, RoomServiceClient } from 'livekit-server-sdk';
+import {
+    AccessToken,
+    EgressClient,
+    EncodedFileOutput,
+    EncodedFileType,
+    GCPUpload,
+    RoomServiceClient,
+    TrackSource,
+} from 'livekit-server-sdk';
 import cred from '@ai/meetai-41ada.json';
+import { DEFAULT_AVATAR } from '@ai/utils/constants';
+import { TMeetRole, TParticipantMetadata } from '@ai/types/data';
+import { faker } from '@faker-js/faker';
 
 export type TCredentials = {
     type: string;
@@ -244,6 +255,109 @@ export async function saveInstantMeeting(form: FormData) {
     };
 }
 
+const generateTokenValidator = z.object({
+    room_name: z.string(),
+    participant_name: z.string(),
+});
+
+export async function generateToken(form: FormData) {
+    const validated = generateTokenValidator.safeParse(Object.fromEntries(form.entries()));
+    if (!validated.success) {
+        return {
+            error: validated.error.issues[0].message,
+            code: 400,
+            data: null,
+        };
+    }
+
+    const { room_name, participant_name } = validated.data;
+    const session = await getSession('session');
+    let role: TMeetRole = 'guest';
+    let avatar = DEFAULT_AVATAR;
+
+    if (session) {
+        const prisma = getPrisma();
+        const user = await prisma.user.findUnique({
+            where: {
+                email: session.userId,
+            },
+        });
+
+        if (user) {
+            const meetRole = await prisma.guestMeeting.findFirst({
+                where: {
+                    OR: [
+                        {
+                            user: {
+                                email: user.email,
+                            },
+                        },
+                        {
+                            guest: {
+                                email: user.email,
+                            },
+                        },
+                    ],
+                },
+                select: {
+                    role: true,
+                    user: {
+                        select: {
+                            avatar: true,
+                        },
+                    },
+                },
+            });
+
+            if (meetRole) role = meetRole.role;
+            avatar = user.avatar;
+        }
+    }
+
+    const metadata = serializeData<TParticipantMetadata>({
+        role,
+        joined: 'no',
+        pinned: 'no',
+        upHand: 'no',
+        canMessage: 'yes',
+        avatar,
+    });
+    const apiKey = process.env.LIVEKIT_KEY;
+    const apiSecret = process.env.LIVEKIT_SECRET;
+
+    const token = new AccessToken(apiKey, apiSecret, {
+        identity: faker.string.uuid(),
+        name: participant_name as string,
+        attributes: {
+            metadata: metadata,
+        },
+    });
+
+    token.addGrant({
+        roomJoin: true,
+        room: room_name as string,
+        roomAdmin: role === 'admin' || role === 'moderator',
+        canPublish: true,
+        canPublishData: true,
+        canSubscribe: true,
+        canPublishSources: [
+            TrackSource.CAMERA,
+            TrackSource.MICROPHONE,
+            TrackSource.SCREEN_SHARE,
+            TrackSource.SCREEN_SHARE_AUDIO,
+        ],
+        canUpdateOwnMetadata: true,
+    });
+
+    const jwt = await token.toJwt();
+
+    return {
+        error: null,
+        code: 200,
+        data: { token: jwt },
+    };
+}
+
 const startMeetRecorderValidator = z.object({
     roomName: z.string(),
 });
@@ -266,7 +380,7 @@ export async function startRecoding(formData: FormData) {
     const egressClient = new EgressClient(apiHost!, apiKey, apiSecret);
 
     try {
-        const egressInfo = await egressClient.startRoomCompositeEgress(roomName, {
+        const { egressId } = await egressClient.startRoomCompositeEgress(roomName, {
             file: new EncodedFileOutput({
                 filepath: `recordings/${roomName}-${Date.now()}.mp4`,
                 fileType: EncodedFileType.MP4,
@@ -282,9 +396,7 @@ export async function startRecoding(formData: FormData) {
         return {
             error: null,
             code: 200,
-            data: {
-                egressId: egressInfo.egressId,
-            },
+            data: { egressId },
         };
     } catch (error) {
         return {
@@ -326,7 +438,10 @@ export async function stopRecoding(formData: FormData) {
                 code: 200,
                 data: {
                     egressId: egressInfo.egressId,
-                    filePath: egressInfo.fileResults,
+                    filePaths: egressInfo.fileResults.map((file) => ({
+                        filename: file.filename,
+                        filepath: file.location,
+                    })),
                 },
             };
         } else {
@@ -337,6 +452,42 @@ export async function stopRecoding(formData: FormData) {
             };
         }
     } catch (error) {
+        return {
+            error: (error as Error).message,
+            code: 500,
+            data: null,
+        };
+    }
+}
+
+export async function listeRecording() {
+    try {
+        const apiKey = process.env.LIVEKIT_KEY;
+        const apiSecret = process.env.LIVEKIT_SECRET;
+        const apiHost = process.env.NEXT_PUBLIC_LIVEKIT_WEBSOCKET_URL;
+        const egressClient = new EgressClient(apiHost!, apiKey, apiSecret);
+
+        const recordings = await egressClient.listEgress();
+
+        // Convert complex objects to plain objects
+        const plainRecordings = recordings.map((recording) => ({
+            egressId: recording.egressId,
+            roomId: recording.roomId,
+            roomName: recording.roomName,
+            status: recording.status,
+            fileResults: recording.fileResults.map((file) => ({
+                filename: file.filename,
+                filepath: file.location,
+            })),
+        }));
+
+        return {
+            error: null,
+            code: 200,
+            data: plainRecordings,
+        };
+    } catch (error) {
+        console.error('Failed to list recordings:', error);
         return {
             error: (error as Error).message,
             code: 500,
