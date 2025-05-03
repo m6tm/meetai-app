@@ -31,6 +31,7 @@ import {
     Users,
     Video,
     VideoOff,
+    MonitorOff,
 } from 'lucide-react';
 import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from '@ai/enums/meet-panel';
 import { cn, deserializeData } from '@ai/lib/utils';
@@ -68,6 +69,7 @@ export default function ControlPanel() {
     const [changingRecodingState, setChangingRecodingState] = useState(false);
     const [egressId, setEgressId] = useState<string | undefined>(undefined);
     const isRecording = useIsRecording(room);
+    const [changingScreenShareState, setChangingScreenShareState] = useState(false);
 
     useEffect(() => {
         const updateTime = () => {
@@ -112,6 +114,24 @@ export default function ControlPanel() {
                 preferences.video = !response.isMuted;
                 await db.preferences.put(preferences);
             }
+        }
+    };
+
+    const handleScreenShare = async () => {
+        if (changingScreenShareState) return;
+
+        setChangingScreenShareState(true);
+
+        try {
+            if (localParticipant.isScreenShareEnabled) {
+                await localParticipant.setScreenShareEnabled(false);
+            } else {
+                await localParticipant.setScreenShareEnabled(true);
+            }
+        } catch (error) {
+            console.error("Erreur lors du partage d'écran:", error);
+        } finally {
+            setChangingScreenShareState(false);
         }
     };
 
@@ -240,8 +260,11 @@ export default function ControlPanel() {
                         {localParticipant.isCameraEnabled ? <Video /> : <VideoOff />}
                     </Button>
                 </div>
-                <Button className="other-control-primary">
-                    <MonitorUp />
+                <Button
+                    className={cn('other-control-primary', { '!bg-orange-600': localParticipant.isScreenShareEnabled })}
+                    onClick={handleScreenShare}
+                >
+                    {localParticipant.isScreenShareEnabled ? <MonitorOff /> : <MonitorUp />}
                 </Button>
                 <Button
                     className={cn('other-control-primary', { '!bg-orange-600': metadata && metadata.upHand === 'yes' })}

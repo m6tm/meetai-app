@@ -20,7 +20,7 @@ import {
 } from '@ui/avatar';
 import '@styles/video-screen.css';
 import 'swiper/css';
-import { Hand, MicOff, MoreVertical, Pin } from 'lucide-react';
+import { Hand, MicOff, MoreVertical, Pin, Monitor } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -52,6 +52,13 @@ export default function VideoScreen({ className }: { className?: string }) {
     const remoteParticipants = useRemoteParticipants();
     const [participantsPinned, setParticipantsPinned] = React.useState<Record<string, boolean>>({});
     const { metadata } = useParticipantAttributeMetadata(localParticipant);
+    const [activeScreenShares, setActiveScreenShares] = React.useState<
+        Array<{
+            participant: RemoteParticipant | null;
+            isLocal: boolean;
+            sid: string;
+        }>
+    >([]);
 
     function fullScreen() {
         if (!mainVideoScreenRef.current) return;
@@ -99,6 +106,34 @@ export default function VideoScreen({ className }: { className?: string }) {
         formData.append('participant_identity', participantIdentity);
         await removeParticipantPost(formData);
     }
+
+    // Check for screen shares among local and remote participants
+    useEffect(() => {
+        const newActiveScreenShares = [];
+
+        // Check if local participant is sharing screen
+        if (localParticipant && localParticipant.isScreenShareEnabled) {
+            newActiveScreenShares.push({
+                participant: null,
+                isLocal: true,
+                sid: `local-${localParticipant.sid}`,
+            });
+        }
+
+        // Check all remote participants who are sharing screens
+        remoteParticipants.forEach((user) => {
+            if (user.isScreenShareEnabled) {
+                newActiveScreenShares.push({
+                    participant: user,
+                    isLocal: false,
+                    sid: user.sid,
+                });
+            }
+        });
+
+        // Update state with all active screen shares
+        setActiveScreenShares(newActiveScreenShares);
+    }, [localParticipant, remoteParticipants]);
 
     useEffect(() => {
         const pinnedParticipants: Record<string, boolean> = {};
@@ -194,6 +229,86 @@ export default function VideoScreen({ className }: { className?: string }) {
                     // onSwiper={(swiper) => console.log(swiper)}
                     className="h-full"
                 >
+                    {/* Screen Share Displays */}
+                    {activeScreenShares.map((screenShare) => (
+                        <SwiperSlide
+                            key={`screen-share-${screenShare.sid}`}
+                            className="screen-child relative screen-share-slide bg-black"
+                        >
+                            <div className="absolute top-2 right-2 flex items-center space-x-2 text-white z-20">
+                                <Monitor />
+                                <span className="text-xs">
+                                    {screenShare.isLocal
+                                        ? 'Votre écran'
+                                        : `Écran de ${screenShare.participant?.name ?? 'Anonyme'}`}
+                                </span>
+                            </div>
+
+                            {screenShare.isLocal ? (
+                                <VideoTrack
+                                    trackRef={{
+                                        participant: localParticipant,
+                                        source: Track.Source.ScreenShare,
+                                        publication: localParticipant.getTrackPublication(Track.Source.ScreenShare)!,
+                                    }}
+                                    className="w-full h-full z-10 object-cover absolute"
+                                />
+                            ) : (
+                                <VideoTrack
+                                    trackRef={{
+                                        participant: screenShare.participant!,
+                                        source: Track.Source.ScreenShare,
+                                        publication: screenShare.participant!.getTrackPublication(
+                                            Track.Source.ScreenShare,
+                                        )!,
+                                    }}
+                                    className="w-full h-full z-10 object-cover absolute"
+                                />
+                            )}
+
+                            {screenShare.isLocal ? null : (
+                                <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                className="more-btn size-10 rounded-full hover:bg-slate-600/30 text-white"
+                                            >
+                                                <MoreVertical />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-56">
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuItem
+                                                    className="cursor-pointer"
+                                                    onClick={() => togglePin(screenShare.sid)}
+                                                >
+                                                    {isPinned(screenShare.sid)
+                                                        ? "Retirer de l'écran"
+                                                        : "Epingler à l'écran"}
+                                                </DropdownMenuItem>
+                                                {metadata &&
+                                                    (metadata.role === 'moderator' || metadata.role === 'admin') &&
+                                                    screenShare.participant && (
+                                                        <DropdownMenuItem
+                                                            className="cursor-pointer"
+                                                            onClick={() =>
+                                                                rejectRemoteParticipant(screenShare.participant!)
+                                                            }
+                                                        >
+                                                            Retirer de la réunion
+                                                            <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
+                                                        </DropdownMenuItem>
+                                                    )}
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            )}
+                        </SwiperSlide>
+                    ))}
+
+                    {/* Remote Participants */}
                     {remoteParticipants
                         .filter((user) => {
                             const metadata = deserializeData<TParticipantMetadata>(user.attributes.metadata);
@@ -216,6 +331,7 @@ export default function VideoScreen({ className }: { className?: string }) {
                                         {isPinned(user.sid) && <Pin />}
                                         {!user.isMicrophoneEnabled && <MicOff />}
                                         {userMetadata && userMetadata.upHand === 'yes' && <Hand />}
+                                        {user.isScreenShareEnabled && <Monitor />}
                                     </div>
                                     <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full">
                                         <Avatar className="size-24">
