@@ -21,8 +21,13 @@ import {
     EgressClient,
     EncodedFileOutput,
     EncodedFileType,
+    EncodedOutputs,
+    EncodingOptionsPreset,
     GCPUpload,
+    RoomCompositeOptions,
     RoomServiceClient,
+    SegmentedFileOutput,
+    StreamOutput,
     TrackSource,
 } from 'livekit-server-sdk';
 import cred from '@ai/meetai-41ada.json';
@@ -378,21 +383,26 @@ export async function startRecoding(formData: FormData) {
     const apiHost = process.env.NEXT_PUBLIC_LIVEKIT_WEBSOCKET_URL;
     const credentials: TCredentials = cred;
     const egressClient = new EgressClient(apiHost!, apiKey, apiSecret);
+    const outputs: EncodedOutputs | EncodedFileOutput | StreamOutput | SegmentedFileOutput = {
+        file: new EncodedFileOutput({
+            filepath: `recordings/${roomName}-${Date.now()}.mp4`,
+            fileType: EncodedFileType.MP4,
+            output: {
+                case: 'gcp',
+                value: new GCPUpload({
+                    credentials: JSON.stringify(credentials),
+                    bucket: 'meetai_bucket',
+                }),
+            },
+        }),
+    };
+    const options: RoomCompositeOptions = {
+        encodingOptions: EncodingOptionsPreset.H264_1080P_30,
+        audioOnly: true,
+    };
 
     try {
-        const { egressId } = await egressClient.startRoomCompositeEgress(roomName, {
-            file: new EncodedFileOutput({
-                filepath: `recordings/${roomName}-${Date.now()}.mp4`,
-                fileType: EncodedFileType.MP4,
-                output: {
-                    case: 'gcp',
-                    value: new GCPUpload({
-                        credentials: JSON.stringify(credentials),
-                        bucket: 'meetai_bucket',
-                    }),
-                },
-            }),
-        });
+        const { egressId } = await egressClient.startRoomCompositeEgress(roomName, outputs, options);
         return {
             error: null,
             code: 200,

@@ -83,6 +83,13 @@ export default function ControlPanel() {
         return () => clearInterval(intervalId);
     }, []);
 
+    useEffect(() => {
+        if (changingRecodingState && isRecording !== undefined) {
+            setChangingRecodingState(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isRecording]);
+
     room.on(RoomEvent.Disconnected, () => {
         quitMeet();
     });
@@ -179,7 +186,10 @@ export default function ControlPanel() {
             }
             console.log('démarrer le meet', response);
         }
-        setChangingRecodingState(false);
+
+        if (is_recording !== isRecording) {
+            setChangingRecodingState(false);
+        }
     };
 
     return (
@@ -193,7 +203,7 @@ export default function ControlPanel() {
                     <span className={cn(getNetworkQualityClass().color)}>{getNetworkQualityClass().icon}</span>
                 </div>
             </div>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 items-center">
                 <div className="media-control">
                     <Button
                         className="bg-transparent hover:bg-transparent"
@@ -240,13 +250,15 @@ export default function ControlPanel() {
                     <Hand />
                 </Button>
                 <Button
-                    className={cn('other-control-primary', { '!bg-orange-600': isRecording })}
+                    className={cn('other-control-primary flex items-center justify-center', {
+                        '!bg-orange-600': isRecording,
+                    })}
                     disabled={changingRecodingState}
                     onClick={handleRecordToggle}
                 >
                     {isRecording && !changingRecodingState && <CircleStop />}
                     {!isRecording && !changingRecodingState && <Play />}
-                    {changingRecodingState && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
+                    {changingRecodingState && <Loader2 className="h-4 w-4 animate-spin" />}
                 </Button>
                 <Button className="other-control-secondary" onClick={quitMeet}>
                     <PhoneOff />
