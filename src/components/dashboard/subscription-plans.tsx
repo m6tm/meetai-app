@@ -62,7 +62,6 @@ export function SubscriptionPlans() {
                     </div>
                 </CardContent>
                 <CardFooter className="flex flex-col space-y-2">
-                    <Button className="w-full">Gérer l&apos;abonnement</Button>
                     <Button variant="outline" className="w-full">
                         Annuler l&apos;abonnement
                     </Button>
@@ -75,7 +74,7 @@ export function SubscriptionPlans() {
                     <CardDescription>Choisissez le plan qui correspond le mieux à vos besoins</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <RadioGroup defaultValue="pro" className="space-y-4">
+                    <RadioGroup defaultValue="pro" className="grid gap-4 lg:grid-cols-3">
                         <div className="flex items-start space-x-4 rounded-md border p-4">
                             <RadioGroupItem value="free" id="free" className="mt-1" />
                             <div className="flex-1 space-y-2">

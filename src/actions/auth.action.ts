@@ -7,49 +7,55 @@
  * distributed, or transmitted in any form or by any means without
  * the prior written permission of Meet ai LLC.
  */
-"use server";
+'use server';
 
-import { getPrisma } from "@ai/adapters/db"
-import { createSession, deleteSession } from "@ai/lib/session";
-import { DEFAULT_AVATAR } from "@ai/utils/constants";
-import { faker } from "@faker-js/faker"
-import { TypePlan } from "@prisma/client";
-import { z } from "zod"
+import { getPrisma } from '@ai/adapters/db';
+import { createSession, deleteSession, getSession } from '@ai/lib/session';
+import { DEFAULT_AVATAR } from '@ai/utils/constants';
+import { faker } from '@faker-js/faker';
+import { TypePlan } from '@prisma/client';
+import { z } from 'zod';
 
 export async function signOutNow() {
-    await deleteSession('session')
+    await deleteSession('session');
     return {
         error: null,
         data: null,
-        code: 200
+        code: 200,
     };
 }
 
 const signInValidator = z.object({
-    email: z.string({
-        required_error: "L'email est requis"
-    }).email({
-        message: "Le format de l'email est incorrect"
-    }),
-    name: z.string({
-        invalid_type_error: "Le nom doit être une chaîne de caractères"
-    }).optional(),
-    avatar: z.string({
-        invalid_type_error: "L'avatar doit être une chaîne de caractères"
-    }).optional(),
+    email: z
+        .string({
+            required_error: "L'email est requis",
+        })
+        .email({
+            message: "Le format de l'email est incorrect",
+        }),
+    name: z
+        .string({
+            invalid_type_error: 'Le nom doit être une chaîne de caractères',
+        })
+        .optional(),
+    avatar: z
+        .string({
+            invalid_type_error: "L'avatar doit être une chaîne de caractères",
+        })
+        .optional(),
 });
 
 export async function newSignin(formData: FormData) {
-    const passed = await signInValidator.safeParse(Object.fromEntries(formData.entries()))
+    const passed = await signInValidator.safeParse(Object.fromEntries(formData.entries()));
 
     if (!passed.success) {
         return {
             error: passed.error.issues[0].message,
             code: 400,
-            data: null
-        }
+            data: null,
+        };
     }
-    const { email, name, avatar } = passed.data
+    const { email, name, avatar } = passed.data;
 
     const prisma = getPrisma();
     const user_exist = await prisma.user.findUnique({
@@ -59,7 +65,7 @@ export async function newSignin(formData: FormData) {
     });
 
     if (user_exist) {
-        await createSession(user_exist.email, 'session', '/');
+        await createSession(user_exist.email, 'session');
         return {
             error: 'User already exists',
             data: null,
@@ -105,7 +111,6 @@ export async function newSignin(formData: FormData) {
             data: user,
             code: 200,
         };
-
     } catch (error) {
         return {
             error: 'Something went wrong' + ' ' + (error as Error).message,

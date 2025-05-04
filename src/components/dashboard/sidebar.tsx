@@ -9,7 +9,7 @@
  */
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@ai/i18n/routing';
 import { usePathname } from 'next/navigation';
 import { Calendar, FileText, Home, Menu, Mic, Settings, Video, X, CreditCard } from 'lucide-react';
 

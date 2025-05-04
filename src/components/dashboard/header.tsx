@@ -11,7 +11,7 @@
 
 import type React from 'react';
 
-import Link from 'next/link';
+import { Link } from '@ai/i18n/routing';
 import { Bell, Plus, Search, User } from 'lucide-react';
 
 import { Button } from '@ai/components/ui/button';
@@ -25,9 +25,12 @@ import {
 } from '@ai/components/ui/dropdown-menu';
 import { Input } from '@ai/components/ui/input';
 import { useDashboardSidebar } from './sidebar-provider';
+import { useContext } from 'react';
+import AppContext from '@ai/context';
 
 export function DashboardHeader() {
     const { toggle } = useDashboardSidebar();
+    const { logOut } = useContext(AppContext);
 
     return (
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 w-full">
@@ -87,7 +90,7 @@ export function DashboardHeader() {
                             <Link href="/dashboard/subscription">Abonnement</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>Déconnexion</DropdownMenuItem>
+                        <DropdownMenuItem onClick={logOut}>Déconnexion</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

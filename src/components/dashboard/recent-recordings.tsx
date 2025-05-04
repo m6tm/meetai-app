@@ -7,7 +7,7 @@
  * distributed, or transmitted in any form or by any means without
  * the prior written permission of Meet ai LLC.
  */
-import Link from 'next/link';
+import { Link } from '@ai/i18n/routing';
 import { Play, Video } from 'lucide-react';
 
 import { Button } from '@ai/components/ui/button';

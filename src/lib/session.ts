@@ -32,15 +32,10 @@ export async function decrypt(session: string | undefined = '') {
             return null;
         }
 
-        // Vérifiez que la clé secrète existe
-        if (!secretKey || secretKey.trim() === '') {
-            console.log('Session secret key is not defined');
-            return null;
-        }
-
         const { payload } = await jwtVerify(session, encodedKey, {
             algorithms: ['HS256'],
         });
+        console.log('payload', payload);
         return payload;
     } catch (error) {
         console.log('Failed to verify session', error);
@@ -105,6 +100,7 @@ export async function getSession(session_name: string = 'session'): Promise<Sess
         }
 
         const data = await decrypt(session);
+        console.log('session', data);
 
         // Vérifiez que le déchiffrement a réussi
         if (!data) {

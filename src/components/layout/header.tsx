@@ -49,11 +49,11 @@ export default function Header() {
 
     useEffect(() => {
         async function checkUser() {
-            const form = new FormData
-            if (user && user.email) form.append('email', user.email)
-            if (user && user.displayName) form.append('name', user.displayName)
-            if (user && user.photoURL) form.append('avatar', user.photoURL)
-            await newSignin(form)
+            const form = new FormData();
+            if (user && user.email) form.append('email', user.email);
+            if (user && user.displayName) form.append('name', user.displayName);
+            if (user && user.photoURL) form.append('avatar', user.photoURL);
+            await newSignin(form);
         }
         if (user && responded) checkUser();
     }, [user, router, responded]);
@@ -96,6 +96,9 @@ export default function Header() {
                                 <DropdownMenuItem disabled>{user.displayName}</DropdownMenuItem>
                                 <DropdownMenuItem disabled>Pricing Tier: Free</DropdownMenuItem>
                                 <DropdownMenuSeparator />
+                                <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/dashboard')}>
+                                    My space
+                                </DropdownMenuItem>
                                 <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
                                     Log out
                                 </DropdownMenuItem>
