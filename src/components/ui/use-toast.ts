@@ -8,6 +8,7 @@
  * the prior written permission of Meet ai LLC.
  */
 'use client';
+
 import * as React from 'react';
 
 import type { ToastActionElement, ToastProps } from '@ai/components/ui/toast';
