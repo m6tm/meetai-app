@@ -58,6 +58,7 @@ export type CreateInvitationResponse = {
 const createInvitationSchema = z.object({
     start_date: z.string().optional(),
     invited_emails: z.array(z.string().email()).optional(),
+    subject: z.string().optional(),
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -70,10 +71,7 @@ export async function createInvitation(state: defaultStateAction, form: FormData
         };
     }
 
-    const parsed = createInvitationSchema.safeParse({
-        start_date: form.get('start_date'),
-        invited_emails: form.getAll('invited_emails'),
-    });
+    const parsed = createInvitationSchema.safeParse(Object.fromEntries(form.entries()));
 
     if (!parsed.success) {
         console.error('Invalid form data', parsed.error);
@@ -85,7 +83,7 @@ export async function createInvitation(state: defaultStateAction, form: FormData
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { start_date, invited_emails } = parsed.data;
+    const { start_date, invited_emails, subject } = parsed.data;
 
     const session = await getSession('session');
     let meetCode = generateMeetCode();
@@ -113,6 +111,7 @@ export async function createInvitation(state: defaultStateAction, form: FormData
         data: {
             code: meetCode,
             startDate: start_date ? new Date(start_date) : undefined,
+            subject: subject,
         },
     });
 
@@ -205,12 +204,11 @@ export async function getMyMeetings() {
 
 const saveInstantMeetingValidator = z.object({
     code: z.string(),
+    email: z.string().email({ message: 'Invalid email address' }).optional(),
 });
 
 export async function saveInstantMeeting(form: FormData) {
-    const passed = saveInstantMeetingValidator.safeParse({
-        code: form.get('code'),
-    });
+    const passed = saveInstantMeetingValidator.safeParse(Object.fromEntries(form.entries()));
     if (!passed.success) {
         return {
             error: passed.error.issues[0].message,
@@ -218,7 +216,7 @@ export async function saveInstantMeeting(form: FormData) {
             data: null,
         };
     }
-    const { code } = passed.data;
+    const { code, email } = passed.data;
 
     const session = await getSession('session');
     if (!session) {
@@ -233,7 +231,7 @@ export async function saveInstantMeeting(form: FormData) {
 
     const user = await prisma.user.findUnique({
         where: {
-            email: session.userId,
+            email: email ? email : session.userId,
         },
     });
 

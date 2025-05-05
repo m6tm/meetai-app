@@ -54,6 +54,7 @@ model Subscription {
 model Meeting {
   id            Int            @id @default(autoincrement())
   code          String         @unique
+  subject       String?
   startDate     DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt

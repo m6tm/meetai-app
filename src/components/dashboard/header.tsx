@@ -12,7 +12,7 @@
 import type React from 'react';
 
 import { Link } from '@ai/i18n/routing';
-import { Bell, Plus, Search, User } from 'lucide-react';
+import { Bell, Loader2, Plus, Search, User } from 'lucide-react';
 
 import { Button } from '@ai/components/ui/button';
 import {
@@ -25,12 +25,28 @@ import {
 } from '@ai/components/ui/dropdown-menu';
 import { Input } from '@ai/components/ui/input';
 import { useDashboardSidebar } from './sidebar-provider';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import AppContext from '@ai/context';
+import { useMeet } from '@ai/hooks/use-meet';
+import { useUserStore } from '@ai/stores/user.store';
 
 export function DashboardHeader() {
     const { toggle } = useDashboardSidebar();
     const { logOut } = useContext(AppContext);
+    const { createInstantMeeting } = useMeet();
+    const { user } = useUserStore();
+    const [pendingCreateMeet, setPendingCreateMeet] = useState(false);
+
+    const handleCreateInstantMeeting = async () => {
+        try {
+            setPendingCreateMeet(true);
+            if (user && user.email) await createInstantMeeting(user.email);
+            if (!user || !user.email) await createInstantMeeting();
+            setPendingCreateMeet(false);
+        } catch (error) {
+            console.error('Error creating instant meeting:', error);
+        }
+    };
 
     return (
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 w-full">
@@ -51,8 +67,18 @@ export function DashboardHeader() {
                 </form>
             </div>
             <div className="flex flex-1 items-center justify-end gap-4">
-                <Button variant="outline" size="sm" className="h-8 gap-1">
-                    <Plus className="h-4 w-4" />
+                <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={pendingCreateMeet}
+                    onClick={handleCreateInstantMeeting}
+                    className="h-8 gap-1"
+                >
+                    {pendingCreateMeet ? (
+                        <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <Plus className="h-4 w-4" />
+                    )}
                     <span className="hidden sm:inline-flex">Nouvelle réunion</span>
                 </Button>
                 <DropdownMenu>

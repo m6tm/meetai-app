@@ -50,7 +50,7 @@ export default function AppLayout() {
     const [meetingCodeOpen, setMeetingCodeOpen] = useState(false);
     const { toast } = useToast();
     const [joinCode, setJoinCode] = useState(''); // State for the join code input
-    const { user } = useUserStore();
+    const { user, responded } = useUserStore();
     const router = useRouter();
     const [state, formAction, pending] = useActionState(createInvitation, initialActionState);
     const resetBtnRef = useRef<HTMLButtonElement>(null);
@@ -135,6 +135,7 @@ export default function AppLayout() {
         if (user) {
             const form = new FormData();
             form.append('code', meetGetCode);
+            if (user && user.email) form.append('email', user.email);
             const response = await saveInstantMeeting(form);
             console.log(response);
         }
@@ -153,7 +154,7 @@ export default function AppLayout() {
                         Connect with anyone, anywhere, instantly.
                     </p>
                     <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:space-x-4 justify-center">
-                        <Button onClick={handleInstantMeeting} disabled={meetCreating}>
+                        <Button onClick={handleInstantMeeting} disabled={meetCreating || !responded}>
                             {meetCreating ? (
                                 <>
                                     Creating...
@@ -207,6 +208,15 @@ export default function AppLayout() {
                                                         name="start_date"
                                                         value={getFullDateTime()}
                                                         onChange={() => {}}
+                                                    />
+                                                </div>
+                                                <div className="grid gap-2">
+                                                    <Label htmlFor="subject">Sujet du meet</Label>
+                                                    <Input
+                                                        type="text"
+                                                        id="subject"
+                                                        placeholder="Enter subject"
+                                                        className="w-[240px]"
                                                     />
                                                 </div>
                                                 <div className="grid gap-2">

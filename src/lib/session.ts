@@ -97,7 +97,6 @@ export async function getSession(session_name: string = 'session'): Promise<Sess
         }
 
         const data = await decrypt(session);
-        console.log('session', data);
 
         // Vérifiez que le déchiffrement a réussi
         if (!data) {
