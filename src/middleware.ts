@@ -10,14 +10,25 @@
 
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './i18n/routing';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from './lib/session';
+import { cookies } from 'next/headers';
 
 export default async function middleware(request: NextRequest) {
     const session = await getSession();
     const handleI18nRouting = createMiddleware(routing);
     const response = handleI18nRouting(request);
-    console.log(session);
+    const pathname = request.nextUrl.pathname;
+    const currentLocale = (await cookies()).get('NEXT_LOCALE')?.value;
+
+    if (!currentLocale) {
+        return NextResponse.redirect(new URL(`/${routing.defaultLocale}`, request.url));
+    }
+    const isDashboard = pathname.startsWith(`/${currentLocale}/dashboard`);
+
+    if (!session && isDashboard) {
+        return NextResponse.redirect(new URL('/', request.url));
+    }
 
     return response;
 }

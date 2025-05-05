@@ -26,7 +26,6 @@ export async function encrypt(payload: SessionPayload) {
 
 export async function decrypt(session: string | undefined = '') {
     try {
-        // Vérifiez que la session existe et qu'elle n'est pas vide
         if (!session || session.trim() === '') {
             console.log('Session is empty or undefined');
             return null;
@@ -35,12 +34,10 @@ export async function decrypt(session: string | undefined = '') {
         const { payload } = await jwtVerify(session, encodedKey, {
             algorithms: ['HS256'],
         });
-        console.log('payload', payload);
         return payload;
     } catch (error) {
-        console.log('Failed to verify session', error);
-        // Retournez explicitement null en cas d'erreur
-        return null;
+        console.log('Failed to verify session');
+        throw error;
     }
 }
 
