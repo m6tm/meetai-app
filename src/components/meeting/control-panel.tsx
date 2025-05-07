@@ -8,33 +8,51 @@
  * the prior written permission of Meet ai LLC.
  */
 'use client';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@ui/button';
 import {
     ChevronDown,
     ChevronUp,
+    CircleStop,
     Hand,
     Info,
+    Loader2,
     MessageSquare,
     Mic,
     MicOff,
     MonitorUp,
     PhoneOff,
+    Play,
+    Signal,
+    SignalHigh,
+    SignalLow,
+    SignalMedium,
+    SignalZero,
     Users,
     Video,
     VideoOff,
+    MonitorOff,
 } from 'lucide-react';
 import { MEDIA_CONTROL_TYPE, MEET_PANEL_TYPE } from '@ai/enums/meet-panel';
-import { cn } from '@ai/lib/utils';
+import { cn, deserializeData } from '@ai/lib/utils';
 import ControlPanelMediaAddon from './control-panel-media-addon';
-import { useMeetPanelStore } from '@ai/app/stores/meet.stote';
+import { useMeetPanelStore } from '@ai/stores/meet.stote';
 import { format } from 'date-fns';
-import { useChat, useLocalParticipant, useRemoteParticipants, useRoomContext } from '@livekit/components-react';
+import {
+    useChat,
+    useConnectionQualityIndicator,
+    useIsRecording,
+    useLocalParticipant,
+    useRemoteParticipants,
+    useRoomContext,
+    useRoomInfo,
+} from '@livekit/components-react';
 import { db } from '@ai/db';
 import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
 import { TParticipantMetadata } from '@ai/types/data';
-import { RoomEvent } from 'livekit-client';
+import { ConnectionQuality, RoomEvent } from 'livekit-client';
 import { useRouter } from '@ai/i18n/routing';
+import { startRecoding, stopRecoding } from '@ai/actions/meet.action';
 
 export default function ControlPanel() {
     const { setMeetPanel, meetPanel, mediaControl, setMediaControl } = useMeetPanelStore();
@@ -46,6 +64,12 @@ export default function ControlPanel() {
     const { localParticipant } = useLocalParticipant();
     const remoteParticipants = useRemoteParticipants();
     const { metadata, setMetadata } = useParticipantAttributeMetadata(localParticipant);
+    const { quality } = useConnectionQualityIndicator({ participant: localParticipant });
+    const roomInfo = useRoomInfo();
+    const [changingRecodingState, setChangingRecodingState] = useState(false);
+    const [egressId, setEgressId] = useState<string | undefined>(undefined);
+    const isRecording = useIsRecording(room);
+    const [changingScreenShareState, setChangingScreenShareState] = useState(false);
 
     useEffect(() => {
         const updateTime = () => {
@@ -61,8 +85,14 @@ export default function ControlPanel() {
         return () => clearInterval(intervalId);
     }, []);
 
+    useEffect(() => {
+        if (changingRecodingState && isRecording !== undefined) {
+            setChangingRecodingState(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isRecording]);
+
     room.on(RoomEvent.Disconnected, () => {
-        console.log('Disconnected from room');
         quitMeet();
     });
 
@@ -87,6 +117,59 @@ export default function ControlPanel() {
         }
     };
 
+    const handleScreenShare = async () => {
+        if (changingScreenShareState) return;
+
+        setChangingScreenShareState(true);
+
+        try {
+            if (localParticipant.isScreenShareEnabled) {
+                await localParticipant.setScreenShareEnabled(false);
+            } else {
+                await localParticipant.setScreenShareEnabled(true);
+            }
+        } catch (error) {
+            console.error("Erreur lors du partage d'écran:", error);
+        } finally {
+            setChangingScreenShareState(false);
+        }
+    };
+
+    const getNetworkQualityClass = () => {
+        switch (quality) {
+            case ConnectionQuality.Excellent:
+                return {
+                    name: 'excellent',
+                    color: 'text-green-500',
+                    icon: <Signal />,
+                };
+            case ConnectionQuality.Good:
+                return {
+                    name: 'good',
+                    color: 'text-blue-500',
+                    icon: <SignalHigh />,
+                };
+            case ConnectionQuality.Poor:
+                return {
+                    name: 'poor',
+                    color: 'text-yellow-500',
+                    icon: <SignalMedium />,
+                };
+            case ConnectionQuality.Lost:
+                return {
+                    name: 'lost',
+                    color: 'text-red-500',
+                    icon: <SignalLow />,
+                };
+            case ConnectionQuality.Unknown:
+                return {
+                    name: 'unknown',
+                    color: 'text-gray-500',
+                    icon: <SignalZero />,
+                };
+        }
+    };
+
     const handUpDown = () => {
         if (!metadata) return;
         const newMetadata = {
@@ -97,14 +180,50 @@ export default function ControlPanel() {
         setMetadata(newMetadata);
     };
 
+    const handleRecordToggle = async () => {
+        if (changingRecodingState) return;
+        setChangingRecodingState(true);
+        const is_recording = isRecording;
+        const { name: roomName } = roomInfo;
+        const form = new FormData();
+        if (is_recording && egressId) {
+            form.append('roomName', roomName);
+            form.append('egressId', egressId);
+            const response = await stopRecoding(form);
+            if (response.code === 200) {
+                setEgressId(undefined);
+                console.log('stoper succès');
+            }
+            console.log('stoper le meet', response);
+        }
+        if (!is_recording) {
+            form.append('roomName', roomName);
+            form.append('egressId', 'roomName');
+            const response = await startRecoding(form);
+            if (response.code == 200 && response.data) {
+                setEgressId(response.data.egressId);
+                console.log('démarrage succès');
+            }
+            console.log('démarrer le meet', response);
+        }
+
+        if (is_recording !== isRecording) {
+            setChangingRecodingState(false);
+        }
+    };
+
     return (
         <div className="control-bar z-10 relative">
             <ControlPanelMediaAddon />
-            <div className="text-white">
-                <span ref={hourRef}></span>&nbsp;|&nbsp;
+            <div className="text-white flex items-center space-x-3">
+                <span ref={hourRef}></span>
                 <span>{currentDate}</span>
+                <div className="flex items-center space-x-2">
+                    <span>{getNetworkQualityClass().name}</span>
+                    <span className={cn(getNetworkQualityClass().color)}>{getNetworkQualityClass().icon}</span>
+                </div>
             </div>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 items-center">
                 <div className="media-control">
                     <Button
                         className="bg-transparent hover:bg-transparent"
@@ -141,14 +260,28 @@ export default function ControlPanel() {
                         {localParticipant.isCameraEnabled ? <Video /> : <VideoOff />}
                     </Button>
                 </div>
-                <Button className="other-control-primary">
-                    <MonitorUp />
+                <Button
+                    className={cn('other-control-primary', { '!bg-orange-600': localParticipant.isScreenShareEnabled })}
+                    onClick={handleScreenShare}
+                >
+                    {localParticipant.isScreenShareEnabled ? <MonitorOff /> : <MonitorUp />}
                 </Button>
                 <Button
                     className={cn('other-control-primary', { '!bg-orange-600': metadata && metadata.upHand === 'yes' })}
                     onClick={handUpDown}
                 >
                     <Hand />
+                </Button>
+                <Button
+                    className={cn('other-control-primary flex items-center justify-center', {
+                        '!bg-orange-600': isRecording,
+                    })}
+                    disabled={changingRecodingState}
+                    onClick={handleRecordToggle}
+                >
+                    {isRecording && !changingRecodingState && <CircleStop />}
+                    {!isRecording && !changingRecodingState && <Play />}
+                    {changingRecodingState && <Loader2 className="h-4 w-4 animate-spin" />}
                 </Button>
                 <Button className="other-control-secondary" onClick={quitMeet}>
                     <PhoneOff />
@@ -173,7 +306,14 @@ export default function ControlPanel() {
                             : setMeetPanel(MEET_PANEL_TYPE.USERS)
                     }
                 >
-                    <div className="badge">{[localParticipant, ...remoteParticipants].length}</div>
+                    <div className="badge">
+                        {
+                            [localParticipant, ...remoteParticipants].filter((user) => {
+                                const userMetadata = deserializeData<TParticipantMetadata>(user.attributes.metadata);
+                                return userMetadata.joined === 'yes';
+                            }).length
+                        }
+                    </div>
                     <Users />
                 </Button>
                 <Button
@@ -184,11 +324,7 @@ export default function ControlPanel() {
                             : setMeetPanel(MEET_PANEL_TYPE.MESSAGES)
                     }
                 >
-                    {
-                        chatMessages.length > 0 && (
-                            <div className="badge">{chatMessages.length}</div>
-                        )
-                    }
+                    {chatMessages.length > 0 && <div className="badge">{chatMessages.length}</div>}
                     <MessageSquare />
                 </Button>
             </div>

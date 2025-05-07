@@ -16,17 +16,13 @@ import {
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
-    DropdownMenuPortal,
     DropdownMenuShortcut,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@ui/dropdown-menu';
 import { EllipsisVertical, Pin } from 'lucide-react';
 import { LocalParticipant, RemoteParticipant } from 'livekit-client';
 import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
-import { shortDisplayUserName } from '@ai/lib/utils';
+import { cn, shortDisplayUserName } from '@ai/lib/utils';
 import { removeParticipantPost } from '@ai/actions/meet.action';
 import { useRoomInfo } from '@livekit/components-react';
 
@@ -72,7 +68,7 @@ export default function ParticipantItem({ participant, localParticipant }: Parti
                     {isAdmin ? <span>{adminRole}</span> : <span>Participant de la réunion</span>}
                 </div>
             </div>
-            <div className="">
+            <div className={cn(isLocalParticipant && "hidden")}>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="size-10 rounded-full">
@@ -81,22 +77,14 @@ export default function ParticipantItem({ participant, localParticipant }: Parti
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56">
                         <DropdownMenuGroup>
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="cursor-pointer">
-                                    <Pin />
-                                    Epingler à l&apos;écran
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuPortal>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuItem className="cursor-pointer">
-                                            Pour moi uniquement
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="cursor-pointer">
-                                            Pour tous les participants
-                                        </DropdownMenuItem>
-                                    </DropdownMenuSubContent>
-                                </DropdownMenuPortal>
-                            </DropdownMenuSub>
+                            {
+                                !isLocalParticipant && (
+                                    <DropdownMenuItem className="cursor-pointer">
+                                        <Pin />
+                                        Pour moi uniquement
+                                    </DropdownMenuItem>
+                                )
+                            }
                             {!isLocalParticipant && isLocalAdmin && !isAdmin && (
                                 <DropdownMenuItem
                                     className="cursor-pointer"

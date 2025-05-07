@@ -20,20 +20,22 @@ import {
 } from '@ui/avatar';
 import '@styles/video-screen.css';
 import 'swiper/css';
-import { Hand, MicOff, MoreVertical, Pin } from 'lucide-react';
+import { Hand, MicOff, MoreVertical, Pin, Monitor } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
-    DropdownMenuPortal,
     DropdownMenuShortcut,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@ui/dropdown-menu';
-import { useLocalParticipant, useRemoteParticipants, useRoomInfo, VideoTrack } from '@livekit/components-react';
+import {
+    useLocalParticipant,
+    useRemoteParticipants,
+    useRoomInfo,
+    VideoTrack,
+    AudioTrack,
+} from '@livekit/components-react';
 import { RemoteParticipant, Track } from 'livekit-client';
 import { TParticipantMetadata } from '@ai/types/data';
 import { useParticipantAttributeMetadata } from '@ai/hooks/useParticipantAttribute';
@@ -41,7 +43,7 @@ import { removeParticipantPost } from '@ai/actions/meet.action';
 
 export default function VideoScreen({ className }: { className?: string }) {
     const mainVideoScreenRef = React.useRef<HTMLDivElement>(null);
-    const room = useRoomInfo();
+    const roomInfo = useRoomInfo();
     const { localParticipant } = useLocalParticipant();
     const remoteParticipants = useRemoteParticipants();
     const [participantsPinned, setParticipantsPinned] = React.useState<Record<string, boolean>>({});
@@ -85,7 +87,7 @@ export default function VideoScreen({ className }: { className?: string }) {
     async function rejectRemoteParticipant(participant: RemoteParticipant) {
         if (!metadata) return;
         const role = metadata.role;
-        const code = room.name;
+        const code = roomInfo.name;
         const participantIdentity = participant.identity;
         const formData = new FormData();
         formData.append('code', code);
@@ -110,10 +112,7 @@ export default function VideoScreen({ className }: { className?: string }) {
         <div className="w-full h-full relative z-0">
             {
                 <div className="main-screen">
-                    <div
-                        ref={mainVideoScreenRef}
-                        className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full bg-slate-600"
-                    >
+                    <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full bg-slate-600">
                         <Avatar className="size-36 flex justify-center items-center uppercase bg-muted">
                             {metadata && <AvatarImage src={metadata.avatar} alt={`Logo de ${localParticipant.name}`} />}
                             <AvatarFallback className="uppercase">
@@ -124,32 +123,12 @@ export default function VideoScreen({ className }: { className?: string }) {
                     <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                {/* <Button variant="ghost" className="more-btn size-10 rounded-full">
+                                <Button variant="ghost" className="more-btn size-10 rounded-full">
                                     <MoreVertical />
-                                </Button> */}
+                                </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56">
                                 <DropdownMenuGroup>
-                                    <DropdownMenuSub>
-                                        <DropdownMenuSubTrigger className="cursor-pointer">
-                                            <Pin />
-                                            Epingler à l&apos;écran
-                                        </DropdownMenuSubTrigger>
-                                        <DropdownMenuPortal>
-                                            <DropdownMenuSubContent>
-                                                <DropdownMenuItem className="cursor-pointer">
-                                                    Pour moi uniquement
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem className="cursor-pointer">
-                                                    Pour tous les participants
-                                                </DropdownMenuItem>
-                                            </DropdownMenuSubContent>
-                                        </DropdownMenuPortal>
-                                    </DropdownMenuSub>
-                                    <DropdownMenuItem className="cursor-pointer">
-                                        Retirer de la réunion
-                                        <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
-                                    </DropdownMenuItem>
                                     <DropdownMenuItem className="cursor-pointer" onClick={fullScreen}>
                                         Mettre en plein écran
                                         <DropdownMenuShortcut>⌘M</DropdownMenuShortcut>
@@ -158,26 +137,41 @@ export default function VideoScreen({ className }: { className?: string }) {
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
-                    {!hasPinnedParticipants() && localParticipant && localParticipant.isCameraEnabled && (
-                        <VideoTrack
-                            trackRef={{
-                                participant: localParticipant,
-                                source: Track.Source.Camera,
-                                publication: localParticipant.getTrackPublication(Track.Source.Camera)!,
-                            }}
-                            className="w-full h-full absolute object-cover"
-                        />
-                    )}
-                    {hasPinnedParticipants() && pinnedParticipant && pinnedParticipant.isCameraEnabled && (
-                        <VideoTrack
-                            trackRef={{
-                                participant: pinnedParticipant,
-                                source: Track.Source.Camera,
-                                publication: pinnedParticipant.getTrackPublication(Track.Source.Camera)!,
-                            }}
-                            className="w-full h-full absolute object-cover"
-                        />
-                    )}
+                    <div ref={mainVideoScreenRef}>
+                        {!hasPinnedParticipants() &&
+                            localParticipant &&
+                            localParticipant.isCameraEnabled &&
+                            !localParticipant.isScreenShareEnabled && (
+                                <VideoTrack
+                                    trackRef={{
+                                        participant: localParticipant,
+                                        source: Track.Source.Camera,
+                                        publication: localParticipant.getTrackPublication(Track.Source.Camera)!,
+                                    }}
+                                    className="w-full h-full absolute object-cover"
+                                />
+                            )}
+                        {!hasPinnedParticipants() && localParticipant && localParticipant.isScreenShareEnabled && (
+                            <VideoTrack
+                                trackRef={{
+                                    participant: localParticipant,
+                                    source: Track.Source.ScreenShare,
+                                    publication: localParticipant.getTrackPublication(Track.Source.ScreenShare)!,
+                                }}
+                                className="w-full h-full absolute object-cover"
+                            />
+                        )}
+                        {hasPinnedParticipants() && pinnedParticipant && pinnedParticipant.isCameraEnabled && (
+                            <VideoTrack
+                                trackRef={{
+                                    participant: pinnedParticipant,
+                                    source: Track.Source.Camera,
+                                    publication: pinnedParticipant.getTrackPublication(Track.Source.Camera)!,
+                                }}
+                                className="w-full h-full absolute object-cover"
+                            />
+                        )}
+                    </div>
                 </div>
             }
             <div className="other-screen">
@@ -188,6 +182,7 @@ export default function VideoScreen({ className }: { className?: string }) {
                     // onSwiper={(swiper) => console.log(swiper)}
                     className="h-full"
                 >
+                    {/* Remote Participants */}
                     {remoteParticipants
                         .filter((user) => {
                             const metadata = deserializeData<TParticipantMetadata>(user.attributes.metadata);
@@ -210,6 +205,7 @@ export default function VideoScreen({ className }: { className?: string }) {
                                         {isPinned(user.sid) && <Pin />}
                                         {!user.isMicrophoneEnabled && <MicOff />}
                                         {userMetadata && userMetadata.upHand === 'yes' && <Hand />}
+                                        {user.isScreenShareEnabled && <Monitor />}
                                     </div>
                                     <div className="absolute top-0 left-0 z-0 flex items-center justify-center w-full h-full">
                                         <Avatar className="size-24">
@@ -259,7 +255,7 @@ export default function VideoScreen({ className }: { className?: string }) {
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
-                                    {user && user.isCameraEnabled && (
+                                    {user && user.isCameraEnabled && !user.isScreenShareEnabled && (
                                         <VideoTrack
                                             trackRef={{
                                                 participant: user,
@@ -267,6 +263,26 @@ export default function VideoScreen({ className }: { className?: string }) {
                                                 publication: user.getTrackPublication(Track.Source.Camera)!,
                                             }}
                                             className={cn('w-full h-full z-10 object-cover absolute', className)}
+                                        />
+                                    )}
+                                    {user && user.isScreenShareEnabled && (
+                                        <VideoTrack
+                                            trackRef={{
+                                                participant: user,
+                                                source: Track.Source.ScreenShare,
+                                                publication: user.getTrackPublication(Track.Source.ScreenShare)!,
+                                            }}
+                                            className={cn('w-full h-full z-10 object-cover absolute', className)}
+                                        />
+                                    )}
+                                    {user && user.isMicrophoneEnabled && (
+                                        <AudioTrack
+                                            trackRef={{
+                                                participant: user,
+                                                source: Track.Source.Microphone,
+                                                publication: user.getTrackPublication(Track.Source.Microphone)!,
+                                            }}
+                                            className="hidden"
                                         />
                                     )}
                                 </SwiperSlide>

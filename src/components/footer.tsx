@@ -8,7 +8,7 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import Link from 'next/link';
+import { Link } from '@ai/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { Input } from '@ai/components/ui/input';
 import { Label } from '@ai/components/ui/label';
@@ -61,9 +61,7 @@ export default function Footer() {
                 </ul>
             </div>
             <div className="md:col-span-2 lg:col-span-3 order-3">
-                <p className="text-white text-center text-sm">
-                    Copyright © 2024 Meet ai LLC. All rights reserved.
-                </p>
+                <p className="text-white text-center text-sm">Copyright © 2024 Meet ai LLC. All rights reserved.</p>
             </div>
         </footer>
     );

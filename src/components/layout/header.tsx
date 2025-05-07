@@ -20,10 +20,10 @@ import {
 } from '@ai/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@ai/components/ui/avatar';
 import { useContext, useEffect } from 'react';
-import { signIn } from '@ai/actions/auth.action';
+import { newSignin } from '@ai/actions/auth.action';
 import { useRouter } from '@ai/i18n/routing';
 import AppContext from '@ai/context';
-import { useUserStore } from '@ai/app/stores/user.store';
+import { useUserStore } from '@ai/stores/user.store';
 import { DEFAULT_AVATAR } from '@ai/utils/constants';
 
 export default function Header() {
@@ -49,8 +49,11 @@ export default function Header() {
 
     useEffect(() => {
         async function checkUser() {
-            await signIn(user?.email, user?.displayName, user?.photoURL);
-            router.push('/');
+            const form = new FormData();
+            if (user && user.email) form.append('email', user.email);
+            if (user && user.displayName) form.append('name', user.displayName);
+            if (user && user.photoURL) form.append('avatar', user.photoURL);
+            await newSignin(form);
         }
         if (user && responded) checkUser();
     }, [user, router, responded]);
@@ -93,6 +96,9 @@ export default function Header() {
                                 <DropdownMenuItem disabled>{user.displayName}</DropdownMenuItem>
                                 <DropdownMenuItem disabled>Pricing Tier: Free</DropdownMenuItem>
                                 <DropdownMenuSeparator />
+                                <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/dashboard')}>
+                                    My space
+                                </DropdownMenuItem>
                                 <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
                                     Log out
                                 </DropdownMenuItem>
