@@ -19,9 +19,11 @@ export default async function middleware(request: NextRequest) {
     const handleI18nRouting = createMiddleware(routing);
     const response = handleI18nRouting(request);
     const pathname = request.nextUrl.pathname;
-    const currentLocale = (await cookies()).get('NEXT_LOCALE')?.value;
+    const _cookies = await cookies();
+    const currentLocale = _cookies.get('NEXT_LOCALE')?.value;
 
     if (!currentLocale) {
+        _cookies.set('NEXT_LOCALE', routing.defaultLocale);
         return NextResponse.redirect(new URL(`/${routing.defaultLocale}`, request.url));
     }
     const isDashboard = pathname.startsWith(`/${currentLocale}/dashboard`);
