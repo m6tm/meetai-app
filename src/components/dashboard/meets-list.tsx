@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { Copy, ExternalLink, MoreHorizontal, Plus, Search } from 'lucide-react';
 
 import { Button } from '@ai/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ai/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@ai/components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,56 +24,22 @@ import {
 } from '@ai/components/ui/dropdown-menu';
 import { Input } from '@ai/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@ai/components/ui/table';
+import { getMyMeets } from '@ai/actions/meet.client.action';
+import { useQuery } from '@tanstack/react-query';
 
 export function MeetsList() {
     const [searchQuery, setSearchQuery] = useState('');
+    const myMeetsQuery = useQuery({ queryKey: ['my-meets'], queryFn: getMyMeets });
 
-    const meets = [
-        {
-            id: 'meet-1',
-            title: "Réunion d'équipe hebdomadaire",
-            date: "Aujourd'hui, 14:00",
-            link: 'https://aimeet.app/m/abc123',
-            participants: 8,
-        },
-        {
-            id: 'meet-2',
-            title: 'Présentation client',
-            date: 'Hier, 10:30',
-            link: 'https://aimeet.app/m/def456',
-            participants: 5,
-        },
-        {
-            id: 'meet-3',
-            title: 'Brainstorming produit',
-            date: '12 mai, 15:00',
-            link: 'https://aimeet.app/m/ghi789',
-            participants: 6,
-        },
-        {
-            id: 'meet-4',
-            title: 'Entretien candidat',
-            date: '10 mai, 11:00',
-            link: 'https://aimeet.app/m/jkl012',
-            participants: 3,
-        },
-        {
-            id: 'meet-5',
-            title: 'Formation nouvelle plateforme',
-            date: '8 mai, 09:30',
-            link: 'https://aimeet.app/m/mno345',
-            participants: 12,
-        },
-    ];
-
-    const filteredMeets = meets.filter((meet) => meet.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    const filteredMeets = myMeetsQuery.data
+        ? myMeetsQuery.data.filter((meet) => meet.title.toLowerCase().includes(searchQuery.toLowerCase()))
+        : [];
 
     return (
         <Card>
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>
-                        <CardTitle>Liens de réunions</CardTitle>
                         <CardDescription>Gérez tous vos liens de réunions générés</CardDescription>
                     </div>
                     <Button className="gap-1">

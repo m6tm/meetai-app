@@ -8,6 +8,8 @@
  * the prior written permission of Meet ai LLC.
  */
 import { MeetsList } from '@ai/components/dashboard/meets-list';
+import { Suspense } from 'react';
+import Loading from './loading';
 
 export default function MeetsPage() {
     return (
@@ -15,7 +17,9 @@ export default function MeetsPage() {
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold">Liens de réunions</h1>
             </div>
-            <MeetsList />
+            <Suspense fallback={<Loading />}>
+                <MeetsList />
+            </Suspense>
         </div>
     );
 }
