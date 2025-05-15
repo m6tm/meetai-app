@@ -81,12 +81,12 @@ export async function deleteSession(session_name: string = 'session') {
     cookieStore.delete(session_name);
 }
 
-type Session = {
+export type TSession = {
     userId: string;
     expiresAt: string;
 };
 
-export async function getSession(session_name: string = 'session'): Promise<Session | null> {
+export async function getSession(session_name: string = 'session'): Promise<TSession | null> {
     try {
         const session = (await cookies()).get(session_name)?.value;
 
@@ -104,7 +104,7 @@ export async function getSession(session_name: string = 'session'): Promise<Sess
             return null;
         }
 
-        const { userId, expiresAt } = data as Session;
+        const { userId, expiresAt } = data as TSession;
 
         // Vérifiez que les données nécessaires sont présentes
         if (!userId || !expiresAt) {
