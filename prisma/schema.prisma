@@ -16,6 +16,7 @@ model User {
   createdAt    DateTime       @default(now())
   nickname     String         @unique
   updatedAt    DateTime       @updatedAt
+  bio          String?
   subscription Subscription?
   contacts     UserContact[]
   meetings     GuestMeeting[]

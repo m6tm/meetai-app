@@ -11,7 +11,7 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -33,6 +33,7 @@ import { Textarea } from '@ai/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@ai/components/ui/select';
 import { Switch } from '@ai/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@ai/components/ui/tabs';
+import { getUserInfo } from '@ai/actions/user.action';
 
 const profileFormSchema = z.object({
     name: z.string().min(2, {
@@ -48,11 +49,11 @@ const profileFormSchema = z.object({
 });
 
 const notificationsFormSchema = z.object({
-    emailNotifications: z.boolean().default(true),
-    meetingReminders: z.boolean().default(true),
-    recordingComplete: z.boolean().default(true),
-    transcriptionComplete: z.boolean().default(true),
-    marketingEmails: z.boolean().default(false),
+    emailNotifications: z.boolean(),
+    meetingReminders: z.boolean(),
+    recordingComplete: z.boolean(),
+    transcriptionComplete: z.boolean(),
+    marketingEmails: z.boolean(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -60,44 +61,69 @@ type NotificationsFormValues = z.infer<typeof notificationsFormSchema>;
 
 export function AccountSettings() {
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); // Nouvel état de chargement
 
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
-        defaultValues: {
-            name: 'Jean Dupont',
-            email: 'jean.dupont@example.com',
-            bio: 'Chef de projet chez Acme Inc.',
-            language: 'fr',
-        },
+        // defaultValues seront définis après le chargement des données utilisateur
     });
 
     const notificationsForm = useForm<NotificationsFormValues>({
         resolver: zodResolver(notificationsFormSchema),
-        defaultValues: {
-            emailNotifications: true,
-            meetingReminders: true,
-            recordingComplete: true,
-            transcriptionComplete: true,
-            marketingEmails: false,
-        },
+        // defaultValues seront définis après le chargement des données utilisateur
     });
+
+    useEffect(() => {
+        async function fetchUserInfo() {
+            setIsLoading(true);
+            const user = await getUserInfo();
+            if (user) {
+                // Mettre à jour les valeurs par défaut des formulaires
+                profileForm.reset({
+                    name: user.name || '',
+                    email: user.email,
+                    bio: user.bio || '', // Gérer le cas où bio est null
+                    language: user.language || 'fr', // Gérer le cas où language est null, avec une valeur par défaut
+                });
+                // Supposons que les préférences de notification sont stockées dans l'objet utilisateur
+                // Si elles sont stockées séparément, il faudrait une action dédiée pour les récupérer
+                notificationsForm.reset({
+                    emailNotifications: true,
+                    meetingReminders: true,
+                    recordingComplete: true,
+                    transcriptionComplete: true,
+                    marketingEmails: false,
+                });
+            }
+            setIsLoading(false);
+        }
+
+        fetchUserInfo();
+    }, []); // Le tableau vide assure que l'effet ne s'exécute qu'une seule fois au montage
 
     function onProfileSubmit(data: ProfileFormValues) {
         setIsSaving(true);
-        // Simuler une requête API
+        // TODO: Appeler une action pour mettre à jour le profil utilisateur
+        console.log('Profile data to save:', data);
         setTimeout(() => {
-            console.log(data);
             setIsSaving(false);
+            // Afficher un message de succès ou gérer les erreurs
         }, 1000);
     }
 
     function onNotificationsSubmit(data: NotificationsFormValues) {
         setIsSaving(true);
-        // Simuler une requête API
+        // TODO: Appeler une action pour mettre à jour les préférences de notification
+        console.log('Notifications data to save:', data);
         setTimeout(() => {
-            console.log(data);
             setIsSaving(false);
+            // Afficher un message de succès ou gérer les erreurs
         }, 1000);
+    }
+
+    // Afficher un indicateur de chargement pendant la récupération des données
+    if (isLoading) {
+        return <div>Chargement des paramètres utilisateur...</div>; // Remplacez par un composant de chargement approprié
     }
 
     return (
