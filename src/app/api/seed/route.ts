@@ -8,7 +8,7 @@
  * the prior written permission of Meet ai LLC.
  */
 
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { TypePlan } from '@prisma/client';
 import { getPrisma } from '@ai/adapters/db';
@@ -28,35 +28,39 @@ export async function POST() {
     const plans = [
         {
             name: 'Basic',
-            price: new Decimal(0),
+            price: new Prisma.Decimal(0),
             type: TypePlan.BASIC,
         },
         {
             name: 'Most popular',
-            price: new Decimal(49.99),
+            price: new Prisma.Decimal(49.99),
             type: TypePlan.SILVER,
         },
         {
             name: 'Recommended',
-            price: new Decimal(99.99),
+            price: new Prisma.Decimal(99.99),
             type: TypePlan.GOLDEN,
         },
     ];
 
-    for (const plan of plans) {
-        await prisma.plan.upsert({
-            where: { name: plan.name },
-            update: {
-                price: plan.price,
-                type: plan.type,
-            },
-            create: {
-                name: plan.name,
-                price: plan.price,
-                type: plan.type,
-            },
-        });
-    }
+    await Promise.all(
+        plans.map(async (plan) => {
+            const existingPlan = await prisma.plan.findUnique({
+                where: { name: plan.name },
+            });
+
+            if (existingPlan) {
+                await prisma.plan.update({
+                    where: { name: plan.name },
+                    data: { price: plan.price, type: plan.type },
+                });
+            } else {
+                await prisma.plan.create({
+                    data: { name: plan.name, price: plan.price, type: plan.type },
+                });
+            }
+        }),
+    );
 
     const user = await prisma.user.upsert({
         where: { email: 'test@test.com' },
